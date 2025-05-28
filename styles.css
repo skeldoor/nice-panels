@@ -142,55 +142,38 @@ body {
     background-repeat: no-repeat;
 }
 
-.edge {
-    background-repeat: repeat;
-}
-
 /* Corner pieces */
 .tl {
     top: 0;
     left: 0;
-    background-image: url('resources/tl.png');
+    background-image: url('resources/frames/frame1/tl.png');
 }
 
 .tr {
     top: 0;
     right: 0;
-    background-image: url('resources/tr.png');
+    background-image: url('resources/frames/frame1/tr.png');
 }
 
 .bl {
     bottom: 0;
     left: 0;
-    background-image: url('resources/bl.png');
+    background-image: url('resources/frames/frame1/bl.png');
 }
 
 .br {
     bottom: 0;
     right: 0;
-    background-image: url('resources/br.png');
+    background-image: url('resources/frames/frame1/br.png');
 }
 
 /* Edges */
-
-/* For horizontal edges (top and bottom) */
-.edge.top,
-.edge.bottom {
-    background-size: 32px 32px;
-}
-
-/* For vertical edges (left and right) */
-.edge.left,
-.edge.right {
-    background-size: 32px 32px;
-}
-
 .edge.top {
     top: 0;
     left: 32px;
     right: 32px;
     height: 32px;
-    background-image: url('resources/t.png');
+    background-image: url('resources/frames/frame1/t.png');
 }
 
 .edge.bottom {
@@ -198,7 +181,7 @@ body {
     left: 32px;
     right: 32px;
     height: 32px;
-    background-image: url('resources/b.png');
+    background-image: url('resources/frames/frame1/b.png');
 }
 
 .edge.left {
@@ -206,7 +189,7 @@ body {
     bottom: 32px;
     left: 0;
     width: 32px;
-    background-image: url('resources/l.png');
+    background-image: url('resources/frames/frame1/l.png');
 }
 
 .edge.right {
@@ -214,7 +197,7 @@ body {
     bottom: 32px;
     right: 0;
     width: 32px;
-    background-image: url('resources/r.png');
+    background-image: url('resources/frames/frame1/r.png');
 }
 
 .panel-text {
@@ -373,4 +356,23 @@ canvas {
 
 .check-mark.right {
     right: 32px; /* Will be adjusted by JS based on scale */
+}
+
+.panel-text-row {
+    display: flex;
+    align-items: center;
+}
+
+.panel-text-row.primary-right {
+    flex-direction: row-reverse;
+}
+
+.panel-text-row.secondary-right {
+    flex-direction: row-reverse;
+}
+
+.text-icon {
+    display: none; /* Hidden by default */
+    height: auto; /* Will be set dynamically based on text size */
+    margin: 0 5px;
 }
