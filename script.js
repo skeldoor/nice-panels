@@ -158,15 +158,22 @@ function updatePanel() {
     updateTextShadow(secondaryElement, 'secondaryTextShadow');
 
     // Show/hide secondary text based on content
-    secondaryElement.style.display = secondaryText ? 'block' : 'none';
-
+    const secondaryRow = panel.querySelector('.panel-text-row.secondary');
+    secondaryRow.style.display = secondaryText ? 'flex' : 'none';
+    
+    // Add this line to update the text icons
+    updateTextIcons();
+    
     // Adjust flex direction based on whether both texts are present
     const textContainer = panel.querySelector('.text-container');
     textContainer.style.justifyContent = secondaryText ? 'space-between' : 'center';
 
     // Add this line before updating corners
     updateImageLayout();
-
+    
+    // Call updateFrameType first to ensure frame is properly set
+    updateFrameType();
+    
     // Update border color
     handleBorderColorPreset();
 
@@ -444,4 +451,91 @@ function updateCheckMark() {
     }
     
     panel.appendChild(checkMark);
+}
+
+function updateTextIcons() {
+    // Primary text icon
+    const primaryIcon = document.querySelector('.primary-icon');
+    const primaryIconType = document.getElementById('primaryTextIcon').value;
+    const primaryIconPosition = document.getElementById('primaryIconPosition').value;
+    const primaryFontSize = parseInt(document.getElementById('primaryFontSize').value);
+    const primaryTextRow = document.querySelector('.panel-text-row.primary');
+    
+    if (primaryIconType !== 'none') {
+        primaryIcon.src = `resources/text-icons/${primaryIconType}.png`;
+        primaryIcon.style.height = `${primaryFontSize}px`; // Scale icon to match text size
+        primaryIcon.style.display = 'block';
+        
+        // Set position
+        if (primaryIconPosition === 'right') {
+            primaryTextRow.classList.add('primary-right');
+        } else {
+            primaryTextRow.classList.remove('primary-right');
+        }
+    } else {
+        primaryIcon.style.display = 'none';
+    }
+    
+    // Secondary text icon
+    const secondaryIcon = document.querySelector('.secondary-icon');
+    const secondaryIconType = document.getElementById('secondaryTextIcon').value;
+    const secondaryIconPosition = document.getElementById('secondaryIconPosition').value;
+    const secondaryFontSize = parseInt(document.getElementById('secondaryFontSize').value);
+    const secondaryTextRow = document.querySelector('.panel-text-row.secondary');
+    
+    if (secondaryIconType !== 'none') {
+        secondaryIcon.src = `resources/text-icons/${secondaryIconType}.png`;
+        secondaryIcon.style.height = `${secondaryFontSize}px`; // Scale icon to match text size
+        secondaryIcon.style.display = 'block';
+        
+        // Set position
+        if (secondaryIconPosition === 'right') {
+            secondaryTextRow.classList.add('secondary-right');
+        } else {
+            secondaryTextRow.classList.remove('secondary-right');
+        }
+    } else {
+        secondaryIcon.style.display = 'none';
+    }
+}
+// Add these to your existing event listeners
+document.getElementById('primaryTextIcon').addEventListener('change', updatePanel);
+document.getElementById('primaryIconPosition').addEventListener('change', updatePanel);
+document.getElementById('secondaryTextIcon').addEventListener('change', updatePanel);
+document.getElementById('secondaryIconPosition').addEventListener('change', updatePanel);
+document.getElementById('frameType').addEventListener('change', function() {
+    updateFrameType();
+});
+
+
+function updateFrameType() {
+    const frameType = document.getElementById('frameType').value;
+    const panel = document.getElementById('panel');
+    
+    // Define the path based on selected frame type
+    let framePath = `resources/frames/${frameType}/`;
+    
+    // Update corner background images
+    const cornerTL = panel.querySelector('.corner.tl');
+    const cornerTR = panel.querySelector('.corner.tr');
+    const cornerBL = panel.querySelector('.corner.bl');
+    const cornerBR = panel.querySelector('.corner.br');
+    
+    cornerTL.style.backgroundImage = `url('${framePath}tl.png')`;
+    cornerTR.style.backgroundImage = `url('${framePath}tr.png')`;
+    cornerBL.style.backgroundImage = `url('${framePath}bl.png')`;
+    cornerBR.style.backgroundImage = `url('${framePath}br.png')`;
+    
+    // Update edge background images
+    const edgeTop = panel.querySelector('.edge.top');
+    const edgeBottom = panel.querySelector('.edge.bottom');
+    const edgeLeft = panel.querySelector('.edge.left');
+    const edgeRight = panel.querySelector('.edge.right');
+    
+    edgeTop.style.backgroundImage = `url('${framePath}t.png')`;
+    edgeBottom.style.backgroundImage = `url('${framePath}b.png')`;
+    edgeLeft.style.backgroundImage = `url('${framePath}l.png')`;
+    edgeRight.style.backgroundImage = `url('${framePath}r.png')`;
+    
+    // DO NOT call updatePanel() here to avoid the infinite loop
 }

@@ -50,6 +50,49 @@
         <!-- Replace the existing text controls with these new controls -->
         <div class="text-controls">
             <div class="text-group">
+                <label>Primary Text Icon:
+                    <select id="primaryTextIcon">
+                        <option value="none">None</option>
+                        <option value="agility">Agility</option>
+                        <option value="attack">Attack</option>
+                        <option value="Clue_scroll_(beginner)">Clue Scroll (Beginner)</option>
+                        <option value="Clue_scroll_(easy)">Clue Scroll (Easy)</option>
+                        <option value="Clue_scroll_(medium)">Clue Scroll (Medium)</option>
+                        <option value="Clue_scroll_(hard)">Clue Scroll (Hard)</option>
+                        <option value="Clue_scroll_(elite)">Clue Scroll (Elite)</option>
+                        <option value="Clue_scroll_(master)">Clue Scroll (Master)</option>
+                        <option value="collectionlog">Collection Log</option>
+                        <option value="construction">Construction</option>
+                        <option value="cooking">Cooking</option>
+                        <option value="crafting">Crafting</option>
+                        <option value="defence">Defence</option>
+                        <option value="farming">Farming</option>
+                        <option value="firemaking">Firemaking</option>
+                        <option value="fishing">Fishing</option>
+                        <option value="fletching">Fletching</option>
+                        <option value="herblore">Herblore</option>
+                        <option value="hitpoints">Hitpoints</option>
+                        <option value="hunter">Hunter</option>
+                        <option value="magic">Magic</option>
+                        <option value="mining">Mining</option>
+                        <option value="prayer">Prayer</option>
+                        <option value="ranged">Ranged</option>
+                        <option value="runecraft">Runecraft</option>
+                        <option value="slayer">Slayer</option>
+                        <option value="smithing">Smithing</option>
+                        <option value="spade">Spade</option>
+                        <option value="strength">Strength</option>
+                        <option value="thieving">Thieving</option>
+                        <option value="total">Total</option>
+                        <option value="woodcutting">Woodcutting</option>
+                    </select>
+                </label>
+                <label>Icon Position:
+                    <select id="primaryIconPosition">
+                        <option value="left">Left</option>
+                        <option value="right">Right</option>
+                    </select>
+                </label>
                 <label>Primary Text: <textarea id="primaryText" rows="2">Welcome to The Future</textarea></label>
                 <label>Font: 
                     <!-- Update the font select options in both text groups -->
@@ -64,6 +107,49 @@
             </div>
             
             <div class="text-group">
+                <label>Secondary Text Icon:
+                    <select id="secondaryTextIcon">
+                        <option value="none">None</option>
+                        <option value="agility">Agility</option>
+                        <option value="attack">Attack</option>
+                        <option value="Clue_scroll_(beginner)">Clue Scroll (Beginner)</option>
+                        <option value="Clue_scroll_(easy)">Clue Scroll (Easy)</option>
+                        <option value="Clue_scroll_(medium)">Clue Scroll (Medium)</option>
+                        <option value="Clue_scroll_(hard)">Clue Scroll (Hard)</option>
+                        <option value="Clue_scroll_(elite)">Clue Scroll (Elite)</option>
+                        <option value="Clue_scroll_(master)">Clue Scroll (Master)</option>
+                        <option value="collectionlog">Collection Log</option>
+                        <option value="construction">Construction</option>
+                        <option value="cooking">Cooking</option>
+                        <option value="crafting">Crafting</option>
+                        <option value="defence">Defence</option>
+                        <option value="farming">Farming</option>
+                        <option value="firemaking">Firemaking</option>
+                        <option value="fishing">Fishing</option>
+                        <option value="fletching">Fletching</option>
+                        <option value="herblore">Herblore</option>
+                        <option value="hitpoints">Hitpoints</option>
+                        <option value="hunter">Hunter</option>
+                        <option value="magic">Magic</option>
+                        <option value="mining">Mining</option>
+                        <option value="prayer">Prayer</option>
+                        <option value="ranged">Ranged</option>
+                        <option value="runecraft">Runecraft</option>
+                        <option value="slayer">Slayer</option>
+                        <option value="smithing">Smithing</option>
+                        <option value="spade">Spade</option>
+                        <option value="strength">Strength</option>
+                        <option value="thieving">Thieving</option>
+                        <option value="total">Total</option>
+                        <option value="woodcutting">Woodcutting</option>
+                    </select>
+                </label>
+                <label>Icon Position:
+                    <select id="secondaryIconPosition">
+                        <option value="left">Left</option>
+                        <option value="right">Right</option>
+                    </select>
+                </label>
                 <label>Secondary Text: <textarea id="secondaryText" rows="2"></textarea></label>
                 <label>Font: 
                     <!-- And in the secondary text group -->
@@ -89,6 +175,13 @@
         <label>Image Size: <input type="number" id="imageSize" value="43" min="32" max="400">px</label>
         <label>Holder Size: <input type="number" id="holderSize" value="60" min="16" max="200">px</label>
         <label>
+    Frame Style: 
+    <select id="frameType" onchange="updateFrameType()">
+        <option value="frame1">Frame 1</option>
+        <option value="frame2">Frame 2</option>
+        <!-- Add more frame options as needed -->
+    </select>
+</label>
 </label>
     </div>
     <!-- Add this right after the panel-controls div, before the panel-container -->
@@ -109,8 +202,14 @@
                     <img id="panelImage" class="panel-image hidden">
                 </div>
                 <div class="text-container">
-                    <div class="panel-text primary"></div>
-                    <div class="panel-text secondary"></div>
+                    <div class="panel-text-row primary">
+                        <img class="text-icon primary-icon" src="" alt="">
+                        <div class="panel-text primary"></div>
+                    </div>
+                    <div class="panel-text-row secondary">
+                        <img class="text-icon secondary-icon" src="" alt="">
+                        <div class="panel-text secondary"></div>
+                    </div>
                 </div>
             </div>
             <div class="edge right"></div>
