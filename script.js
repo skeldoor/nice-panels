@@ -51,7 +51,7 @@ function updateImageLayout() {
 
     if (position === 'none' || !image.src || image.src === window.location.href) {
         imageContainer.classList.add('hidden');
-        content.style.flexDirection = 'row';
+        content.style.flexDirection = 'column';
         return;
     }
 
@@ -66,7 +66,22 @@ function updateImageLayout() {
     image.style.height = `${scaledImageSize}px`;
 
     // Set flex direction based on position
-    content.style.flexDirection = position === 'left' ? 'row' : 'row-reverse';
+    switch (position) {
+        case 'left':
+            content.style.flexDirection = 'row';
+            break;
+        case 'right':
+            content.style.flexDirection = 'row-reverse';
+            break;
+        case 'top':
+            content.style.flexDirection = 'column';
+            break;
+        case 'bottom':
+            content.style.flexDirection = 'column-reverse';
+            break;
+        default:
+            content.style.flexDirection = 'row';
+    }
 }
 
 function handleImageUpload(event) {
@@ -434,7 +449,24 @@ function updateCheckMark() {
     checkMark.src = `resources/check-${checkType}.png`;
     
     // Position on opposite side of the image
-    const position = imagePosition === 'left' ? 'right' : 'left';
+    let position;
+    switch (imagePosition) {
+        case 'left':
+            position = 'right';
+            break;
+        case 'right':
+            position = 'left';
+            break;
+        case 'top':
+            position = 'right'; // Default to right for top/bottom image
+            break;
+        case 'bottom':
+            position = 'right'; // Default to right for top/bottom image
+            break;
+        default:
+            position = 'left';
+    }
+    
     checkMark.classList.add(position);
     
     // Apply scaling
@@ -461,16 +493,26 @@ function updateTextIcons() {
     const primaryFontSize = parseInt(document.getElementById('primaryFontSize').value);
     const primaryTextRow = document.querySelector('.panel-text-row.primary');
     
+    // Remove all position classes first
+    primaryTextRow.classList.remove('primary-right', 'primary-top', 'primary-bottom');
+    
     if (primaryIconType !== 'none') {
         primaryIcon.src = `resources/text-icons/${primaryIconType}.png`;
         primaryIcon.style.height = `${primaryFontSize}px`; // Scale icon to match text size
         primaryIcon.style.display = 'block';
         
-        // Set position
-        if (primaryIconPosition === 'right') {
-            primaryTextRow.classList.add('primary-right');
-        } else {
-            primaryTextRow.classList.remove('primary-right');
+        // Set position based on selection
+        switch (primaryIconPosition) {
+            case 'right':
+                primaryTextRow.classList.add('primary-right');
+                break;
+            case 'top':
+                primaryTextRow.classList.add('primary-top');
+                break;
+            case 'bottom':
+                primaryTextRow.classList.add('primary-bottom');
+                break;
+            // 'left' is the default, no class needed
         }
     } else {
         primaryIcon.style.display = 'none';
@@ -483,16 +525,26 @@ function updateTextIcons() {
     const secondaryFontSize = parseInt(document.getElementById('secondaryFontSize').value);
     const secondaryTextRow = document.querySelector('.panel-text-row.secondary');
     
+    // Remove all position classes first
+    secondaryTextRow.classList.remove('secondary-right', 'secondary-top', 'secondary-bottom');
+    
     if (secondaryIconType !== 'none') {
         secondaryIcon.src = `resources/text-icons/${secondaryIconType}.png`;
         secondaryIcon.style.height = `${secondaryFontSize}px`; // Scale icon to match text size
         secondaryIcon.style.display = 'block';
         
-        // Set position
-        if (secondaryIconPosition === 'right') {
-            secondaryTextRow.classList.add('secondary-right');
-        } else {
-            secondaryTextRow.classList.remove('secondary-right');
+        // Set position based on selection
+        switch (secondaryIconPosition) {
+            case 'right':
+                secondaryTextRow.classList.add('secondary-right');
+                break;
+            case 'top':
+                secondaryTextRow.classList.add('secondary-top');
+                break;
+            case 'bottom':
+                secondaryTextRow.classList.add('secondary-bottom');
+                break;
+            // 'left' is the default, no class needed
         }
     } else {
         secondaryIcon.style.display = 'none';
