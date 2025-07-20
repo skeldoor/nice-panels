@@ -4,7 +4,8 @@
   "description": "Bank view panel generator",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "vercel-build": "yum install -y nss"
   },
   "dependencies": {
     "@sparticuz/chromium": "^123.0.1",
