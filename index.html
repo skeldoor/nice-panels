@@ -17,7 +17,7 @@
         <label>Scale: <input type="number" id="scale" value="3" min="1" max="8"></label>
         <!-- Replace the existing background color input with this -->
         <label>
-            Background Color: 
+            Background Color:
             <select id="bgColorPreset" onchange="handleBgColorPreset()">
                 <option value="#CBBA95">Default Brown</option>
                 <option value="#483D32">Dark Brown</option>
@@ -85,6 +85,7 @@
                         <option value="thieving">Thieving</option>
                         <option value="total">Total</option>
                         <option value="woodcutting">Woodcutting</option>
+                        <option value="quest">Quest</option>
                     </select>
                 </label>
                 <label>Icon Position:
@@ -96,7 +97,7 @@
                     </select>
                 </label>
                 <label>Primary Text: <textarea id="primaryText" rows="2">Welcome to The Future</textarea></label>
-                <label>Font: 
+                <label>Font:
                     <!-- Update the font select options in both text groups -->
                     <select id="primaryFontSelect">
                         <option value="chat">Chat</option>
@@ -107,7 +108,7 @@
                 <label>Font Color: <input type="color" id="primaryFontColor" value="#ffff00"></label>
                 <label>Text Shadow: <input type="checkbox" id="primaryTextShadow" checked></label>
             </div>
-            
+
             <div class="text-group">
                 <label>Secondary Text Icon:
                     <select id="secondaryTextIcon">
@@ -144,6 +145,7 @@
                         <option value="thieving">Thieving</option>
                         <option value="total">Total</option>
                         <option value="woodcutting">Woodcutting</option>
+                        <option value="quest">Quest</option>
                     </select>
                 </label>
                 <label>Icon Position:
@@ -155,7 +157,7 @@
                     </select>
                 </label>
                 <label>Secondary Text: <textarea id="secondaryText" rows="2"></textarea></label>
-                <label>Font: 
+                <label>Font:
                     <!-- And in the secondary text group -->
                     <select id="secondaryFontSelect">
                         <option value="chat">Chat</option>
@@ -181,7 +183,7 @@
         <label>Image Size: <input type="number" id="imageSize" value="43" min="32" max="400">px</label>
         <label>Holder Size: <input type="number" id="holderSize" value="60" min="16" max="200">px</label>
         <label>
-    Frame Style: 
+    Frame Style:
     <select id="frameType" onchange="updateFrameType()">
         <option value="frame1">Frame 1</option>
         <option value="frame2">Frame 2</option>

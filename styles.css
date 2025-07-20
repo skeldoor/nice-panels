@@ -56,6 +56,11 @@ body {
     width: 150px;
 }
 
+/* Make URL input fields wider so you can see the full URL */
+#imageUrl, #itemUrl {
+    width: 400px !important;
+}
+
 .custom-panel {
     position: relative;
     width: 300px;
@@ -260,10 +265,6 @@ body {
     display: none;
 }
 
-/* Adjust input styles */
-#imageUrl {
-    width: 200px;
-}
 .text-controls {
     display: flex;
     flex-direction: column;
