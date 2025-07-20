@@ -3,6 +3,7 @@ const puppeteer = require('puppeteer-core');
 const chromium = require('@sparticuz/chromium');
 const path = require('path');
 const sizeOf = require('image-size');
+const fs = require('fs');
 
 const app = express();
 
@@ -37,8 +38,13 @@ app.post('/api/screenshot', async (req, res) => {
             height: dimensions.height,
         });
         
-        const url = `file://${path.join(__dirname, 'bankview', 'index.html')}`;
-        await page.goto(url, { waitUntil: 'networkidle0' });
+        const htmlPath = path.join(__dirname, 'bankview', 'index.html');
+        const html = fs.readFileSync(htmlPath, 'utf8');
+        await page.setContent(html, {
+            waitUntil: 'networkidle0',
+            // Set the base URL to resolve relative paths for images, etc.
+            baseURL: `file://${path.join(__dirname, 'bankview')}/`
+        });
 
         await page.evaluate((state) => {
             window.generateBank(state);
