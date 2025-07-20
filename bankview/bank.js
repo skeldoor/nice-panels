@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveImageBtn.disabled = true;
         saveImageBtn.textContent = 'Please wait...';
 
-        fetch('/screenshot', {
+        fetch('/api/screenshot', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
