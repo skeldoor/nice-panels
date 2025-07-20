@@ -1,0 +1,618 @@
+/* Shared Styles */
+@font-face {
+    font-family: 'RuneScape UF';
+    src: url('fonts/classic.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'chat';
+    src: url('fonts/chat.ttf') format('truetype');
+    font-display: swap;
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: none;
+}
+
+@font-face {
+    font-family: 'fancy';
+    src: url('fonts/fancy.otf') format('truetype');
+    font-display: swap;
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: none;
+}
+
+@font-face {
+    font-family: 'OSRS Font';
+    src: url('fonts/small.ttf') format('truetype');
+    font-display: swap;
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: none;
+}
+
+@font-face {
+    font-family: 'RuneScape Plain 11';
+    src: url('fonts/RuneScape-Plain-11.otf') format('opentype');
+}
+@font-face {
+    font-family: 'RuneScape Bold 12';
+    src: url('fonts/RuneScape-Bold-12.otf') format('opentype');
+}
+
+body {
+    background-color: #333; /* Dark background for the whole site */
+    color: #fff;
+    font-family: 'RuneScape UF', sans-serif; /* Default site font */
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    color: #ffcc00; /* OSRS yellow for main headings */
+    font-size: 48px;
+    text-shadow: 2px 2px #000;
+    text-align: center;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    text-align: center;
+}
+
+li {
+    margin: 10px 0;
+}
+
+a {
+    color: #ffcc00;
+    text-decoration: none;
+    font-size: 24px;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.back-link {
+    display: block;
+    margin-top: 20px;
+    text-align: center; /* Center the back link */
+}
+
+footer {
+    text-align: center;
+    margin-top: 50px;
+    color: #aaa;
+}
+
+footer a {
+    color: #ffcc00;
+    font-size: 16px;
+}
+
+/* Panel-specific styles from old styles.css */
+
+.site-title {
+    font-family: 'chat';
+    color: #ffff00;
+    font-size: 48px;
+    margin: 20px;
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+
+.panel-controls {
+    margin-bottom: 20px;
+    line-height: 2;
+    background-color: #444; /* A slightly lighter container for controls */
+    padding: 15px;
+    border-radius: 5px;
+    text-align: left;
+}
+
+.panel-controls textarea {
+    width: 250px;
+    resize: vertical;
+    min-height: 60px;
+    vertical-align: top;
+}
+
+.panel-controls label {
+    margin-right: 15px;
+    display: inline-block;
+}
+
+.panel-controls input[type="number"] {
+    width: 60px;
+}
+
+.panel-controls input[type="text"] {
+    width: 150px;
+}
+
+#imageUrl, #itemUrl {
+    width: 400px !important;
+}
+
+.custom-panel {
+    position: relative;
+    width: 300px;
+    height: 200px;
+    margin: 20px auto; /* Center the panel */
+}
+
+.panel-image-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: auto;
+    height: auto;
+}
+
+.panel-image {
+    position: relative;
+    z-index: 1;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+}
+
+.content {
+  position: absolute;
+  background-color: #CBBA95;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  overflow: hidden;
+  padding: 20px;
+}
+
+.shadow-overlay {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0,0,0,0) 30%,
+    rgba(0,0,0,0.3) 100%
+  ),
+  linear-gradient(to top, rgba(0,0,0,0.4), transparent 5%),
+  linear-gradient(to bottom, rgba(0,0,0,0.4), transparent 5%),
+  linear-gradient(to left, rgba(0,0,0,0.4), transparent 2%),
+  linear-gradient(to right, rgba(0,0,0,0.4), transparent 2%);
+}
+
+.content::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.15' numOctaves='4' stitchTiles='stitch' result='noise'/%3E%3CfeColorMatrix type='saturate' values='0' in='noise' result='graynoise'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' fill='white'/%3E%3C/svg%3E");
+    opacity: 0.15;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    z-index: 1;
+    background-repeat: repeat;
+    background-size: 400px 400px;
+}
+
+.corner, .edge {
+    position: absolute;
+    z-index: 2;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+}
+
+.corner {
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+
+.tl {
+    top: 0;
+    left: 0;
+    background-image: url('resources/frames/frame1/tl.png');
+}
+
+.tr {
+    top: 0;
+    right: 0;
+    background-image: url('resources/frames/frame1/tr.png');
+}
+
+.bl {
+    bottom: 0;
+    left: 0;
+    background-image: url('resources/frames/frame1/bl.png');
+}
+
+.br {
+    bottom: 0;
+    right: 0;
+    background-image: url('resources/frames/frame1/br.png');
+}
+
+.edge.top {
+    top: 0;
+    left: 32px;
+    right: 32px;
+    height: 32px;
+    background-image: url('resources/frames/frame1/t.png');
+}
+
+.edge.bottom {
+    bottom: 0;
+    left: 32px;
+    right: 32px;
+    height: 32px;
+    background-image: url('resources/frames/frame1/b.png');
+}
+
+.edge.left {
+    top: 32px;
+    bottom: 32px;
+    left: 0;
+    width: 32px;
+    background-image: url('resources/frames/frame1/l.png');
+}
+
+.edge.right {
+    top: 32px;
+    bottom: 32px;
+    right: 0;
+    width: 32px;
+    background-image: url('resources/frames/frame1/r.png');
+}
+
+.panel-text {
+    flex: 1;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    transition: text-shadow 0.3s ease;
+}
+
+.panel-container {
+    display: flex;
+    justify-content: center;
+}
+
+.panel-image-container.hidden {
+    display: none;
+}
+
+.item-holder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+    filter: drop-shadow(5px 5px 0px rgba(0, 0, 0, 1));
+    z-index: 1;
+}
+
+.panel-image {
+    position: relative;
+    padding: 10%;
+    z-index: 2;
+    filter: drop-shadow(4.5px 4.5px #222);
+    object-fit: contain;
+    max-height: calc(100% - 40px);
+}
+
+.panel-image.hidden {
+    display: none;
+}
+
+.text-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.text-group {
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.text-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    position: relative;
+    z-index: 2;
+}
+
+.panel-text {
+    width: 100%;
+    text-align: center;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+.panel-text.secondary {
+    margin-top: 10px;
+}
+.save-controls {
+    text-align: center;
+    margin: 10px 0;
+}
+
+.save-button {
+    padding: 8px 16px;
+    font-size: 14px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.save-button:hover {
+    background-color: #45a049;
+}
+
+.custom-panel, .corner, .edge, .panel-image, .panel-image-container::before, canvas {
+    image-rendering: pixelated !important;
+    image-rendering: -moz-crisp-edges !important;
+    image-rendering: crisp-edges !important;
+    -ms-interpolation-mode: nearest-neighbor !important;
+}
+
+.check-mark {
+    position: absolute;
+    top: 32px;
+    z-index: 3;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+}
+
+.check-mark.left {
+    left: 32px;
+}
+
+.check-mark.right {
+    right: 32px;
+}
+
+.panel-text-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.panel-text-row.primary-right, .panel-text-row.secondary-right {
+    flex-direction: row-reverse;
+}
+
+.panel-text-row.primary-top, .panel-text-row.secondary-top {
+    flex-direction: column;
+}
+
+.panel-text-row.primary-bottom, .panel-text-row.secondary-bottom {
+    flex-direction: column-reverse;
+}
+
+.text-icon {
+    display: none;
+    height: auto;
+    margin: 0 5px;
+}
+
+.panel-text-row.primary-top .text-icon,
+.panel-text-row.primary-bottom .text-icon,
+.panel-text-row.secondary-top .text-icon,
+.panel-text-row.secondary-bottom .text-icon {
+    margin: 5px 0;
+}
+/* Bank View Panel Styles */
+#bank-viewer-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.bank-panel {
+    position: relative;
+}
+
+.bank-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.bank-tabs {
+    position: absolute;
+    top: 92px;
+    left: 168px;
+    right: 129px;
+    height: 35px;
+    z-index: 2;
+    display: flex;
+    gap: 0px;
+}
+
+.bank-tab {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.tab-background {
+    display: block;
+}
+
+.tab-item {
+    position: absolute;
+    max-width: 70%;
+    max-height: 70%;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    filter: drop-shadow(2.5px 2.5px 0 rgba(0, 0, 0, 0.2));
+}
+
+.bank-grid {
+    position: absolute;
+    top: 169px;
+    left: 114px;
+    right: 129px;
+    bottom: 141px;
+    z-index: 2;
+    display: grid;
+    gap: 4px;
+}
+
+.bank-space-counter {
+    position: absolute;
+    top: 8px;
+    left: 14px;
+    z-index: 2;
+    font-family: 'RuneScape Plain 11', sans-serif;
+    font-size: 31px;
+    color: #ff981f;
+    text-shadow: 2.5px 2.5px 0 #000;
+    height: 70px;
+    width: 50px;
+}
+
+#bank-space-used {
+    position: absolute;
+    top: 5px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+}
+
+#bank-space-max {
+    position: absolute;
+    top: 29px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+}
+.bank-item {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.item-icon {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    filter: drop-shadow(2.5px 2.5px 0 rgba(0, 0, 0, 0.2));
+}
+
+.item-count {
+    position: absolute;
+    top: 0px;
+    left: 5px;
+    font-family: 'RuneScape Plain 11', sans-serif;
+    font-size: 36px;
+    color: #ffff00; /* OSRS yellow */
+    text-shadow: 2.5px 2.5px 0 #000;
+    z-index: 3;
+    pointer-events: none; /* So it doesn't interfere with any item interactions */
+}
+/* Control Interface Styles */
+#control-interface {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #444;
+    border-radius: 5px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+#control-interface h2 {
+    color: #ffcc00;
+    font-size: 24px;
+    text-shadow: 1px 1px #000;
+    margin-top: 0;
+}
+
+.control-group {
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+}
+
+.control-group label {
+    width: 120px;
+    flex-shrink: 0;
+}
+
+.control-group label {
+    margin-right: 10px;
+}
+
+.item-list {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #333;
+    border-radius: 3px;
+    min-height: 50px;
+}
+
+.item-admin-entry.dragging {
+    opacity: 0.5;
+}
+
+.bank-view-body .container {
+    max-width: none;
+}
+.bank-title {
+    position: absolute;
+    top: 20px;
+    left: -2px;
+    width: 100%;
+    text-align: center;
+    font-family: 'RuneScape Bold 12', sans-serif;
+    font-size: 32.15px;
+    color: #ff981f;
+    text-shadow: 2.5px 2.5px 0 #000;
+    z-index: 3;
+}
+#bank-value-display {
+    margin-left: 5px; /* Add some space between the title and the value */
+}

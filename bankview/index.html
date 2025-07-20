@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Skeldoor's Bank View Panel</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body class="bank-view-body">
+    <div class="container">
+        <a href="/" class="back-link">< Back to Home</a>
+        <h1>Skeldoor's Bank View Panel</h1>
+        <div id="control-interface" class="panel-controls">
+            <div class="controls-column">
+                <h2>Global Settings</h2>
+                <div class="control-group">
+                    <label for="grid-columns">Grid Columns:</label>
+                    <input type="number" id="grid-columns" value="8">
+                </div>
+                <div class="control-group">
+                    <label for="grid-rows">Grid Rows:</label>
+                    <input type="number" id="grid-rows" value="5">
+                </div>
+                <div class="control-group">
+                    <label for="max-spaces">Max Bank Spaces:</label>
+                    <input type="number" id="max-spaces" value="800">
+                </div>
+                <div class="control-group">
+                    <label for="bank-value">Bank Value:</label>
+                    <input type="text" id="bank-value" value="0">
+                </div>
+                <div class="control-group">
+                    <label for="bank-title-text">Bank Title:</label>
+                    <input type="text" id="bank-title-text" value="The Bank of Gielinor">
+                </div>
+               <div class="control-group">
+                   <button id="save-image-btn">Save as Image</button>
+               </div>
+
+                <h2>Bank Tab Settings</h2>
+                <div class="control-group">
+                    <label for="bank-tabs-count">Number of Tabs:</label>
+                    <input type="number" id="bank-tabs-count" min="0" max="9" value="0">
+                </div>
+                <div id="bank-tabs-items" class="item-list">
+                    <!-- Tab item controls will be generated here -->
+                </div>
+            </div>
+            <div class="controls-column">
+                <h2>Item Management</h2>
+                <div class="control-group">
+                    <label for="item-icon-url">Item Icon URL:</label>
+                    <input type="text" id="item-icon-url" placeholder="Enter image URL">
+                </div>
+                <div class="control-group">
+                    <label for="item-count">Item Count:</label>
+                    <input type="number" id="item-count" value="1">
+                    <button id="add-item-btn">Add Item</button>
+                </div>
+                <div id="item-list" class="item-list">
+                    <!-- Added items will appear here -->
+                </div>
+
+                <button id="generate-btn">Generate/Update Bank</button>
+
+                <h2>Debug Controls</h2>
+                <div class="control-group">
+                    <button id="debug-1">1 Bronze Axe</button>
+                    <button id="debug-2">Toad's Legs</button>
+                    <button id="debug-3">8 Varying Count Axes</button>
+                    <button id="debug-layout">Basic Bank</button>
+                    <button id="debug-rich">Rich Bank</button>
+                    <button id="raid-items-btn">Raid Items</button>
+                </div>
+            </div>
+        </div>
+        <div id="bank-viewer-container">
+            <div class="bank-panel">
+                <img src="/Bank.png" class="bank-background" alt="Bank Background">
+                <div class="bank-title">
+                    <span>The Bank of Gielinor</span>
+                    <span id="bank-value-display"></span>
+                </div>
+                <div class="bank-tabs">
+                    <!-- Tabs will be generated here -->
+                </div>
+                <div class="bank-grid">
+                    <!-- Bank items will be generated here -->
+                </div>
+                <div class="bank-space-counter">
+                    <span id="bank-space-used">0</span>
+                    <span id="bank-space-max">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="bank.js"></script>
+</body>
+</html>

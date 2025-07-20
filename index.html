@@ -2,232 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Custom Panels</title>
-    <!-- Add these lines -->
-    <link rel="preload" href="fonts/chat.ttf" as="font" type="font/ttf" crossorigin>
-    <link rel="preload" href="fonts/fancy.otf" as="font" type="font/ttf" crossorigin>
-    <link rel="stylesheet" href="styles.css">
+    <title>Skeldoor's OSRS Panel Generator</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1 class="site-title">Skel's Panels</h1>
-    <!-- Rest of your existing HTML -->
-    <div class="panel-controls">
-        <label>Width: <input type="number" id="width" value="800" min="64"></label>
-        <label>Height: <input type="number" id="height" value="250" min="64"></label>
-        <label>Scale: <input type="number" id="scale" value="3" min="1" max="8"></label>
-        <!-- Replace the existing background color input with this -->
-        <label>
-            Background Color:
-            <select id="bgColorPreset" onchange="handleBgColorPreset()">
-                <option value="#CBBA95">Default Brown</option>
-                <option value="#483D32">Dark Brown</option>
-                <option value="#1F8600">Green</option>
-                <option value="#911200">Red</option>
-                <option value="custom">Custom...</option>
-            </select>
-            <input type="color" id="bgColor" value="#CBBA95" style="display: none;">
-        </label>
-        Border Color:
-        <select id="borderColorPreset" onchange="handleBorderColorPreset()">
-            <option value="normal">Default</option>
-            <option value="#00FF00">Green</option>
-            <option value="#FF0000">Red</option>
-        </select>
-        <label>
-            Check Mark:
-            <select id="checkType" onchange="updatePanel()">
-                <option value="none">None</option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-            </select>
-        </label>
-        <label>
-            Check Size:
-            <input type="number" id="checkSize" value="32" min="16" max="128" onchange="updatePanel()">
-        </label>
-
-        <br>
-        <!-- Replace the existing text controls with these new controls -->
-        <div class="text-controls">
-            <div class="text-group">
-                <label>Primary Text Icon:
-                    <select id="primaryTextIcon">
-                        <option value="none">None</option>
-                        <option value="agility">Agility</option>
-                        <option value="attack">Attack</option>
-                        <option value="Clue_scroll_(beginner)">Clue Scroll (Beginner)</option>
-                        <option value="Clue_scroll_(easy)">Clue Scroll (Easy)</option>
-                        <option value="Clue_scroll_(medium)">Clue Scroll (Medium)</option>
-                        <option value="Clue_scroll_(hard)">Clue Scroll (Hard)</option>
-                        <option value="Clue_scroll_(elite)">Clue Scroll (Elite)</option>
-                        <option value="Clue_scroll_(master)">Clue Scroll (Master)</option>
-                        <option value="collectionlog">Collection Log</option>
-                        <option value="construction">Construction</option>
-                        <option value="cooking">Cooking</option>
-                        <option value="crafting">Crafting</option>
-                        <option value="defence">Defence</option>
-                        <option value="farming">Farming</option>
-                        <option value="firemaking">Firemaking</option>
-                        <option value="fishing">Fishing</option>
-                        <option value="fletching">Fletching</option>
-                        <option value="herblore">Herblore</option>
-                        <option value="hitpoints">Hitpoints</option>
-                        <option value="hunter">Hunter</option>
-                        <option value="magic">Magic</option>
-                        <option value="mining">Mining</option>
-                        <option value="prayer">Prayer</option>
-                        <option value="ranged">Ranged</option>
-                        <option value="runecraft">Runecraft</option>
-                        <option value="slayer">Slayer</option>
-                        <option value="smithing">Smithing</option>
-                        <option value="spade">Spade</option>
-                        <option value="strength">Strength</option>
-                        <option value="thieving">Thieving</option>
-                        <option value="total">Total</option>
-                        <option value="woodcutting">Woodcutting</option>
-                        <option value="quest">Quest</option>
-                    </select>
-                </label>
-                <label>Icon Position:
-                    <select id="primaryIconPosition">
-                        <option value="left">Left</option>
-                        <option value="right">Right</option>
-                        <option value="top">Top</option>
-                        <option value="bottom">Bottom</option>
-                    </select>
-                </label>
-                <label>Primary Text: <textarea id="primaryText" rows="2">Welcome to The Future</textarea></label>
-                <label>Font:
-                    <!-- Update the font select options in both text groups -->
-                    <select id="primaryFontSelect">
-                        <option value="chat">Chat</option>
-                        <option value="fancy">Fancy</option>
-                    </select>
-                </label>
-                <label>Font Size: <input type="number" id="primaryFontSize" value="65" min="8" max="144"></label>
-                <label>Font Color: <input type="color" id="primaryFontColor" value="#ffff00"></label>
-                <label>Text Shadow: <input type="checkbox" id="primaryTextShadow" checked></label>
-            </div>
-
-            <div class="text-group">
-                <label>Secondary Text Icon:
-                    <select id="secondaryTextIcon">
-                        <option value="none">None</option>
-                        <option value="agility">Agility</option>
-                        <option value="attack">Attack</option>
-                        <option value="Clue_scroll_(beginner)">Clue Scroll (Beginner)</option>
-                        <option value="Clue_scroll_(easy)">Clue Scroll (Easy)</option>
-                        <option value="Clue_scroll_(medium)">Clue Scroll (Medium)</option>
-                        <option value="Clue_scroll_(hard)">Clue Scroll (Hard)</option>
-                        <option value="Clue_scroll_(elite)">Clue Scroll (Elite)</option>
-                        <option value="Clue_scroll_(master)">Clue Scroll (Master)</option>
-                        <option value="collectionlog">Collection Log</option>
-                        <option value="construction">Construction</option>
-                        <option value="cooking">Cooking</option>
-                        <option value="crafting">Crafting</option>
-                        <option value="defence">Defence</option>
-                        <option value="farming">Farming</option>
-                        <option value="firemaking">Firemaking</option>
-                        <option value="fishing">Fishing</option>
-                        <option value="fletching">Fletching</option>
-                        <option value="herblore">Herblore</option>
-                        <option value="hitpoints">Hitpoints</option>
-                        <option value="hunter">Hunter</option>
-                        <option value="magic">Magic</option>
-                        <option value="mining">Mining</option>
-                        <option value="prayer">Prayer</option>
-                        <option value="ranged">Ranged</option>
-                        <option value="runecraft">Runecraft</option>
-                        <option value="slayer">Slayer</option>
-                        <option value="smithing">Smithing</option>
-                        <option value="spade">Spade</option>
-                        <option value="strength">Strength</option>
-                        <option value="thieving">Thieving</option>
-                        <option value="total">Total</option>
-                        <option value="woodcutting">Woodcutting</option>
-                        <option value="quest">Quest</option>
-                    </select>
-                </label>
-                <label>Icon Position:
-                    <select id="secondaryIconPosition">
-                        <option value="left">Left</option>
-                        <option value="right">Right</option>
-                        <option value="top">Top</option>
-                        <option value="bottom">Bottom</option>
-                    </select>
-                </label>
-                <label>Secondary Text: <textarea id="secondaryText" rows="2"></textarea></label>
-                <label>Font:
-                    <!-- And in the secondary text group -->
-                    <select id="secondaryFontSelect">
-                        <option value="chat">Chat</option>
-                        <option value="fancy">Fancy</option>
-                    </select>
-                </label>
-                <label>Font Size: <input type="number" id="secondaryFontSize" value="45" min="8" max="144"></label>
-                <label>Font Color: <input type="color" id="secondaryFontColor" value="#ffffff"></label>
-                <label>Text Shadow: <input type="checkbox" id="secondaryTextShadow" checked></label>
-            </div>
-        </div>
-        <label>Image URL: <input type="text" id="imageUrl" value="https://oldschool.runescape.wiki/images/Dragon_axe.png" placeholder="Enter image URL"></label>
-        <label>Upload Image: <input type="file" id="imageUpload" accept="image/*"></label>
-        <!-- Update the image position select element -->
-        <label>Image Position:</label>
-        <select id="imagePosition">
-            <option value="none">No Image</option>
-            <option value="left">Left</option>
-            <option value="right" selected>Right</option>
-            <option value="top">Top</option>
-            <option value="bottom">Bottom</option>
-        </select>
-        <label>Image Size: <input type="number" id="imageSize" value="43" min="32" max="400">px</label>
-        <label>Holder Size: <input type="number" id="holderSize" value="60" min="16" max="200">px</label>
-        <label>
-    Frame Style:
-    <select id="frameType" onchange="updateFrameType()">
-        <option value="frame1">Frame 1</option>
-        <option value="frame2">Frame 2</option>
-        <!-- Add more frame options as needed -->
-    </select>
-</label>
-</label>
+    <div class="container">
+        <h1>Skeldoor's OSRS Panel Generator</h1>
+        <ul>
+            <li><a href="/infobox/">Info Box Panel</a></li>
+            <li><a href="/bankview/">Bank View Panel</a></li>
+        </ul>
     </div>
-    <!-- Add this right after the panel-controls div, before the panel-container -->
-    <div class="save-controls">
-        <button id="saveButton" class="save-button">Save Panel as Image</button>
-    </div>
-    
-    <div class="panel-container">
-        <div class="custom-panel" id="panel">
-            <div class="corner tl"></div>
-            <div class="edge top"></div>
-            <div class="corner tr"></div>
-            <div class="edge left"></div>
-            <div class="content">
-                <div class="shadow-overlay"></div>
-                <div class="panel-image-container" >
-                    <img src="https://i.imgur.com/estwz1R.png" class="item-holder">
-                    <img id="panelImage" class="panel-image hidden">
-                </div>
-                <div class="text-container">
-                    <div class="panel-text-row primary">
-                        <img class="text-icon primary-icon" src="" alt="">
-                        <div class="panel-text primary"></div>
-                    </div>
-                    <div class="panel-text-row secondary">
-                        <img class="text-icon secondary-icon" src="" alt="">
-                        <div class="panel-text secondary"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="edge right"></div>
-            <div class="corner bl"></div>
-            <div class="edge bottom"></div>
-            <div class="corner br"></div>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.6.0/dist/dom-to-image-more.min.js"></script>
+    <footer>
+        <a href="https://skeldoor.dev/" target="_blank">Skeldoor</a> - <span id="version"></span>
+    </footer>
+    <script>
+        fetch('/package.json')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('version').textContent = `v${data.version}`;
+            });
+    </script>
 </body>
 </html>
