@@ -63,7 +63,7 @@ app.post('/api/screenshot', async (req, res) => {
             res.status(404).send('Bank panel element not found');
         }
     } catch (error) {
-        console.error('Error generating screenshot:', error);
+        console.error('Detailed error generating screenshot:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
         res.status(500).send('Error generating screenshot');
     } finally {
         if (browser) {
