@@ -160,6 +160,34 @@ function generateBank(stateToRender = null) {
 }
 
 
+async function inlineBackgroundImages(element) {
+  const elements = element.querySelectorAll('*');
+  const promises = [];
+
+  elements.forEach(el => {
+    const style = getComputedStyle(el);
+    const bg = style.getPropertyValue('background-image');
+    const match = /url\("(.*?)"\)/.exec(bg);
+    if (match && match[1] && !match[1].startsWith('data:')) {
+      const url = match[1];
+      const promise = fetch(url)
+        .then(res => res.blob())
+        .then(blob => new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            el.style.backgroundImage = `url('${reader.result}')`;
+            resolve();
+          };
+          reader.readAsDataURL(blob);
+        }))
+        .catch(err => console.warn('Could not inline background image:', url, err));
+      promises.push(promise);
+    }
+  });
+
+  await Promise.all(promises);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // Get all elements by ID
     const gridColumnsInput = document.getElementById('grid-columns');
@@ -204,38 +232,33 @@ document.addEventListener('DOMContentLoaded', () => {
         generateBank();
     });
 
-    saveImageBtn.addEventListener('click', () => {
-        // Update state from inputs before sending
-        generateBank();
+    saveImageBtn.addEventListener('click', async () => {
+        generateBank(); // Make sure the bank is up-to-date
 
+        const bankPanel = document.querySelector('.bank-panel');
+        
         saveImageBtn.disabled = true;
         saveImageBtn.textContent = 'Please wait...';
 
-        fetch('/api/screenshot', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(bankState),
-        })
-        .then(response => response.blob())
-        .then(blob => {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = 'bank-panel.png';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        })
-        .finally(() => {
+        try {
+            await inlineBackgroundImages(bankPanel);
+            const dataUrl = await domtoimage.toPng(bankPanel, {
+                cacheBust: true,
+                style: {
+                    'image-rendering': 'pixelated',
+                }
+            });
+            const link = document.createElement('a');
+            link.download = 'bank-panel.png';
+            link.href = dataUrl;
+            link.click();
+        } catch (error) {
+            console.error('Error generating image:', error);
+            alert('Error generating image. Check the console for details.');
+        } finally {
             saveImageBtn.disabled = false;
             saveImageBtn.textContent = 'Save as Image';
-        });
+        }
     });
 
 
