@@ -142,7 +142,7 @@ footer a {
     position: relative;
     width: 300px;
     height: 200px;
-    margin: 20px auto; /* Center the panel */
+    margin: 0px auto; /* Center the panel */
 }
 
 .panel-image-container {
