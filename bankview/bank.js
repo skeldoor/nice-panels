@@ -124,10 +124,10 @@ function generateBank(stateToRender = null) {
                 countEl.className = 'item-count';
                 countEl.innerHTML = formatCount(item.count);
                 
-                const baseFontSize = 36;
+                const baseFontSize = 31;
                 countEl.style.fontSize = `${baseFontSize * (scaleFactor / 2)}px`;
-                countEl.style.top = `${1 * (scaleFactor / 2)}px`;
-                countEl.style.left = `${5 * (scaleFactor / 2)}px`;
+                countEl.style.top = '7px'; //`${1 * (scaleFactor / 2)}px`;
+                countEl.style.left = '14px'; //`${5 * (scaleFactor / 2)}px`;
 
                 itemEl.appendChild(countEl);
             }
