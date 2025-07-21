@@ -11,5 +11,8 @@
     "express": "^4.17.1",
     "image-size": "^1.0.1",
     "puppeteer-core": "20.9.0"
+  },
+  "engines": {
+    "node": "^14"
   }
 }
