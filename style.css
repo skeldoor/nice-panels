@@ -45,6 +45,10 @@ body {
     padding: 20px;
 }
 
+.item-creator-body {
+    background-color: #444; /* Slightly lighter grey for item creator page */
+}
+
 h1 {
     color: #ffcc00; /* OSRS yellow for main headings */
     font-size: 48px;
@@ -136,6 +140,11 @@ footer a {
 
 #imageUrl, #itemUrl {
     width: 400px !important;
+}
+
+#item-icon-url {
+    min-width: 400px;
+    width: 100%; /* Allow it to expand within its container */
 }
 
 .custom-panel {
@@ -433,6 +442,33 @@ footer a {
 .panel-text-row.secondary-bottom .text-icon {
     margin: 5px 0;
 }
+/* Item Creator Panel Styles */
+#item-viewer-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.item-panel {
+    position: relative;
+    width: 36px; /* Standard item slot width */
+    height: 32px; /* Standard item slot height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Ensure content stays within bounds */
+}
+
+.item-slot {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 /* Bank View Panel Styles */
 #bank-viewer-container {
     display: flex;
@@ -544,8 +580,8 @@ footer a {
 
 .item-count {
     position: absolute;
-    top: 0px;
-    left: 5px;
+    top: 0px; /* Reverted to original */
+    left: 5px; /* Reverted to original */
     font-family: 'RuneScape Plain 11', sans-serif;
     font-size: 36px;
     color: #ffff00; /* OSRS yellow */
