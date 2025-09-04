@@ -104,9 +104,46 @@ document.addEventListener('DOMContentLoaded', () => {
             npcChathead.alt = `${npcName} Chathead`;
             npcChathead.style.display = 'block';
             npcNameDisplay.textContent = npcName;
+
+            // Dynamically set width or height based on aspect ratio
+            const img = new Image();
+            img.onload = () => {
+                let objectPositionOffset;
+                const naturalHeight = img.naturalHeight;
+
+                // Linear interpolation for object-position
+                const heightMin = 90;
+                const offsetMin = -15;
+                const heightMax = 130;
+                const offsetMax = -20;
+
+                if (naturalHeight <= heightMin) {
+                    objectPositionOffset = offsetMin;
+                } else if (naturalHeight >= heightMax) {
+                    objectPositionOffset = offsetMax;
+                } else {
+                    objectPositionOffset = offsetMin + (naturalHeight - heightMin) * (offsetMax - offsetMin) / (heightMax - heightMin);
+                }
+
+                npcChathead.style.objectPosition = `50% ${objectPositionOffset}px`;
+                npcChathead.style.transform = 'scale(0.95)'; // Slight shrinkage
+
+                if (img.naturalWidth > naturalHeight) {
+                    npcChathead.style.width = '130px';
+                    npcChathead.style.height = 'auto';
+                } else {
+                    npcChathead.style.height = '130px';
+                    npcChathead.style.width = 'auto';
+                }
+            };
+            img.src = chatheadUrl; // Set src after onload to ensure event fires
         } else {
             npcChathead.style.display = 'none';
             npcNameDisplay.textContent = '';
+            npcChathead.style.width = 'auto'; // Reset styles when no chathead
+            npcChathead.style.height = 'auto';
+            npcChathead.style.objectPosition = '50% 50%'; // Reset object-position
+            npcChathead.style.transform = 'none'; // Reset transform
         }
 
         dialogTextDisplay.textContent = dialogText;
