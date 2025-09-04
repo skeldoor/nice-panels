@@ -203,24 +203,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event Listeners
-    generateDialogButton.addEventListener('click', updateDialogContent);
     npcNameInput.addEventListener('input', updateDialogContent);
     dialogTextInput.addEventListener('input', updateDialogContent);
     scaleInput.addEventListener('input', updatePanel);
 
     const saveButton = document.getElementById('saveButton');
-    saveButton.addEventListener('click', () => {
+    saveButton.addEventListener('click', async () => {
+        updateDialogContent(); // Ensure latest content and styles are applied
+
         const panelToSave = document.getElementById('panel');
         const scale = parseFloat(scaleInput.value);
 
+        // Wait for the chathead image to load if it's not already complete
+        await new Promise(resolve => {
+            if (npcChathead.complete && npcChathead.naturalWidth > 0) {
+                resolve();
+            } else {
+                npcChathead.onload = () => resolve();
+                npcChathead.onerror = () => resolve(); // Resolve even on error to not block save
+            }
+        });
+
         // Temporarily reset scale for dom-to-image to capture at 1x, then scale up
-        // Or, better, calculate the target width/height based on the current scale
-        // and render at that size.
         const originalTransform = panelToSave.style.transform;
         const originalTransformOrigin = panelToSave.style.transformOrigin;
 
-        // To capture the image at its scaled size, we need to apply the scale
-        // directly to the width/height for dom-to-image, and remove the transform.
         // Get the natural dimensions (1x scale)
         const naturalWidth = 518;
         const naturalHeight = 141;
@@ -229,33 +236,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetWidth = naturalWidth * scale;
         const targetHeight = naturalHeight * scale;
 
-        // Use a temporary div to render the scaled content without CSS transform
-        // This is a workaround for dom-to-image not handling CSS transforms perfectly for output size
-        const tempDiv = document.createElement('div');
-        tempDiv.style.width = `${targetWidth}px`;
-        tempDiv.style.height = `${targetHeight}px`;
-        tempDiv.style.position = 'absolute';
-        tempDiv.style.left = '-9999px'; // Move off-screen
-        tempDiv.style.top = '-9999px';
-        document.body.appendChild(tempDiv);
+        // Apply scale directly to the panel for dom-to-image capture
+        panelToSave.style.transform = 'scale(1)'; // Reset transform for capture
+        panelToSave.style.width = `${targetWidth}px`;
+        panelToSave.style.height = `${targetHeight}px`;
+        panelToSave.style.transformOrigin = 'top left';
 
-        // Clone the panel and append to tempDiv
-        const panelClone = panelToSave.cloneNode(true);
-        panelClone.style.transform = 'none'; // Remove transform from clone
-        panelClone.style.width = `${targetWidth}px`; // Set clone to target dimensions
-        panelClone.style.height = `${targetHeight}px`;
-        panelClone.style.margin = '0'; // Remove margin to prevent extra space
-        panelClone.style.position = 'static'; // Ensure it flows normally in tempDiv
-        
-        // Adjust content within the clone if necessary, to match the scaled appearance
-        // This might involve re-calculating borderDepth and padding based on the new scale
-        // For simplicity, we'll assume the internal elements scale correctly with the parent's width/height
-        // or are handled by their own CSS rules.
-
-        tempDiv.appendChild(panelClone);
-
-
-        domtoimage.toPng(panelClone, {
+        domtoimage.toPng(panelToSave, {
             width: targetWidth,
             height: targetHeight,
             style: {
@@ -268,11 +255,16 @@ document.addEventListener('DOMContentLoaded', () => {
             link.download = 'dialog-panel.png';
             link.href = dataUrl;
             link.click();
-            tempDiv.remove(); // Clean up the temporary div
         })
         .catch(function (error) {
             console.error('oops, something went wrong!', error);
-            tempDiv.remove(); // Clean up the temporary div even on error
+        })
+        .finally(() => {
+            // Restore original styles
+            panelToSave.style.transform = originalTransform;
+            panelToSave.style.width = `${naturalWidth}px`; // Restore original 1x width
+            panelToSave.style.height = `${naturalHeight}px`; // Restore original 1x height
+            panelToSave.style.transformOrigin = originalTransformOrigin;
         });
     });
 
