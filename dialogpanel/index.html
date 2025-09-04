@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dialog Panel</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="dialogpanel.css">
+</head>
+<body>
+    <div class="panel-container">
+        <div class="dialog-panel">
+            <div class="chathead-container">
+                <img id="npc-chathead" src="" alt="NPC Chathead">
+            </div>
+            <div class="dialog-content">
+                <div id="npc-name" class="fancy-text"></div>
+                <div id="dialog-text" class="fancy-text"></div>
+                <div id="continue-text">Click here to continue</div>
+            </div>
+        </div>
+        <div class="input-section">
+            <label for="npcNameInput">NPC Name:</label>
+            <input type="text" id="npcNameInput" placeholder="Enter NPC Name">
+            <label for="dialogTextInput">Dialog Text:</label>
+            <textarea id="dialogTextInput" placeholder="Enter Dialog Text"></textarea>
+            <button id="generateDialog">Generate Dialog</button>
+        </div>
+    </div>
+    <script src="dialogpanel.js"></script>
+</body>
+</html>

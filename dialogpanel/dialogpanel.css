@@ -1,0 +1,103 @@
+.panel-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.dialog-panel {
+    display: flex;
+    width: 600px; /* Adjust as needed */
+    border: 2px solid #333; /* Example border */
+    background-color: #f0f0f0; /* Example background */
+    padding: 15px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+
+.chathead-container {
+    flex: 0 0 120px; /* Fixed width for chathead */
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#npc-chathead {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%; /* Make it round */
+    object-fit: cover;
+    display: none; /* Hidden by default */
+}
+
+.dialog-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#npc-name {
+    color: red;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+#dialog-text {
+    color: black;
+    font-size: 1.1em;
+    margin-bottom: 10px;
+}
+
+#continue-text {
+    color: blue;
+    font-size: 0.9em;
+    text-align: right;
+    cursor: pointer;
+}
+
+.input-section {
+    display: flex;
+    flex-direction: column;
+    width: 600px;
+    gap: 10px;
+}
+
+.input-section label {
+    font-weight: bold;
+}
+
+.input-section input[type="text"],
+.input-section textarea {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+}
+
+.input-section textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.input-section button {
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+.input-section button:hover {
+    background-color: #0056b3;
+}
+
+/* Fancy text style - assuming 'fancy.otf' is available and loaded via style.css */
+.fancy-text {
+    font-family: 'fancy', serif; /* This will be defined in style.css or a global font import */
+}
