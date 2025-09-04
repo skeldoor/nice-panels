@@ -66,6 +66,7 @@
     /* Removed font-weight: bold */
     text-align: center; /* Centered within dialog-content */
     margin-bottom: 18px;
+    white-space: pre-wrap; /* Allow multiple lines and preserve whitespace */
 }
 
 #continue-text {
