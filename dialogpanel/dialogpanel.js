@@ -94,52 +94,104 @@ document.addEventListener('DOMContentLoaded', () => {
         edgeRight.style.backgroundImage = `url('${framePath}r.png')`;
     }
 
+    function generateCapitalizationVariations(name) {
+        const words = name.split(' ');
+        const variations = new Set(); // Use a Set to store unique variations
+
+        // Always include the original name
+        variations.add(words.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' '));
+
+        // Generate variations by lowercasing subsequent words
+        for (let i = 1; i < words.length; i++) {
+            const tempWords = [...words];
+            tempWords[i] = tempWords[i].charAt(0).toLowerCase() + tempWords[i].slice(1).toLowerCase();
+            variations.add(tempWords.map((word, index) => index === 0 ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : word).join(' '));
+        }
+        
+        // Add a fully lowercased version (except first word)
+        const lowercasedWords = words.map((word, index) => index === 0 ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : word.toLowerCase());
+        variations.add(lowercasedWords.join(' '));
+
+        return Array.from(variations);
+    }
+
     function updateDialogContent() {
         const npcName = npcNameInput.value.trim();
         const dialogText = dialogTextInput.value.trim();
 
         if (npcName) {
-            const chatheadUrl = `https://oldschool.runescape.wiki/images/${encodeURIComponent(npcName.replace(/ /g, '_'))}_chathead.png`;
-            npcChathead.src = chatheadUrl;
-            npcChathead.alt = `${npcName} Chathead`;
-            npcChathead.style.display = 'block';
             npcNameDisplay.textContent = npcName;
+            npcChathead.style.display = 'block'; // Show chathead while trying to load
 
-            // Dynamically set width or height based on aspect ratio
-            const img = new Image();
-            img.onload = () => {
-                let objectPositionOffset;
-                const naturalHeight = img.naturalHeight;
+            const variations = generateCapitalizationVariations(npcName);
+            let imageLoaded = false;
 
-                // Linear interpolation for object-position
-                const heightMin = 90;
-                const offsetMin = -15;
-                const heightMax = 130;
-                const offsetMax = -20;
-
-                if (naturalHeight <= heightMin) {
-                    objectPositionOffset = offsetMin;
-                } else if (naturalHeight >= heightMax) {
-                    objectPositionOffset = offsetMax;
-                } else {
-                    objectPositionOffset = offsetMin + (naturalHeight - heightMin) * (offsetMax - offsetMin) / (heightMax - heightMin);
-                }
-
-                if (img.naturalWidth > naturalHeight) {
-                    npcChathead.style.width = '130px';
-                    npcChathead.style.height = 'auto';
-                    npcChathead.style.objectPosition = '50% 0px'; // Set object-position to 50% 0px for wider images
-                } else {
-                    npcChathead.style.height = '130px';
+            const tryLoadImage = (index) => {
+                if (index >= variations.length) {
+                    // All variations tried, hide chathead
+                    npcChathead.style.display = 'none';
+                    npcChathead.src = ''; // Clear src
                     npcChathead.style.width = 'auto';
-                    npcChathead.style.objectPosition = `50% ${objectPositionOffset}px`;
+                    npcChathead.style.height = 'auto';
+                    npcChathead.style.objectPosition = '50% 50%';
+                    npcChathead.style.transform = 'none';
+                    return;
                 }
-                npcChathead.style.transform = 'scale(0.95)'; // Slight shrinkage
+
+                const currentNpcName = variations[index];
+                const chatheadUrl = `https://oldschool.runescape.wiki/images/${encodeURIComponent(currentNpcName.replace(/ /g, '_'))}_chathead.png`;
+
+                const img = new Image();
+                img.onload = () => {
+                    if (imageLoaded) return; // Prevent multiple loads if a previous one was slow
+
+                    imageLoaded = true;
+                    npcChathead.src = chatheadUrl;
+                    npcChathead.alt = `${currentNpcName} Chathead`;
+
+                    let objectPositionOffset;
+                    const naturalHeight = img.naturalHeight;
+
+                    // Linear interpolation for object-position
+                    const heightMin = 90;
+                    const offsetMin = -15;
+                    const heightMax = 130;
+                    const offsetMax = -20;
+
+                    if (naturalHeight <= heightMin) {
+                        objectPositionOffset = offsetMin;
+                    } else if (naturalHeight >= heightMax) {
+                        objectPositionOffset = offsetMax;
+                    } else {
+                        objectPositionOffset = offsetMin + (naturalHeight - heightMin) * (offsetMax - offsetMin) / (heightMax - heightMin);
+                    }
+
+                    if (img.naturalWidth > naturalHeight) {
+                        npcChathead.style.width = '130px';
+                        npcChathead.style.height = 'auto';
+                        npcChathead.style.objectPosition = '50% 0px'; // Set object-position to 50% 0px for wider images
+                    } else {
+                        npcChathead.style.height = '130px';
+                        npcChathead.style.width = 'auto';
+                        npcChathead.style.objectPosition = `50% ${objectPositionOffset}px`;
+                    }
+                    npcChathead.style.transform = 'scale(0.95)'; // Slight shrinkage
+                };
+
+                img.onerror = () => {
+                    if (imageLoaded) return; // If another image already loaded, ignore this error
+                    tryLoadImage(index + 1); // Try the next variation
+                };
+
+                img.src = chatheadUrl;
             };
-            img.src = chatheadUrl; // Set src after onload to ensure event fires
+
+            tryLoadImage(0); // Start trying from the first variation
+
         } else {
             npcChathead.style.display = 'none';
             npcNameDisplay.textContent = '';
+            npcChathead.src = ''; // Clear src
             npcChathead.style.width = 'auto'; // Reset styles when no chathead
             npcChathead.style.height = 'auto';
             npcChathead.style.objectPosition = '50% 50%'; // Reset object-position
