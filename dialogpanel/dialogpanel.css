@@ -16,19 +16,20 @@
 }
 
 .chathead-container {
-    flex: 0 0 120px; /* Fixed width for chathead */
+    width: 100px; /* Set a fixed square size for the container */
+    height: 100px;
+    flex-shrink: 0; /* Prevent it from shrinking */
     margin-right: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Ensure chathead image itself is not rounded */
-    border-radius: 0;
+    border-radius: 0; /* Ensure no rounding */
 }
 
 #npc-chathead {
-    width: 100px;
-    height: 100px;
-    object-fit: cover;
+    width: 100%; /* Make image fill its container */
+    height: 100%;
+    object-fit: contain; /* Ensure the whole image is visible, no cropping */
     display: none; /* Hidden by default */
 }
 

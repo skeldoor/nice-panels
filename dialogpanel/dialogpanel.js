@@ -20,9 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update panel dimensions (these can be fixed or dynamic, for now fixed to fit content)
         // We'll let the content dictate the size, and the panel will wrap around it.
         // For a dialog box, we might want a fixed width and dynamic height.
-        const panelWidth = 600; // Example fixed width
-        panel.style.width = `${panelWidth * scale}px`;
-        // Height will be determined by content, so we won't set a fixed height on panel initially.
+        const naturalWidth = 518;
+        const naturalHeight = 141;
+        panel.style.width = `${naturalWidth * scale}px`;
+        panel.style.height = `${naturalHeight * scale}px`;
 
         // Update content size and position
         content.style.top = `${borderDepth}px`;
