@@ -12,20 +12,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const content = panel.querySelector('.content');
 
     function updatePanel() {
-        const scale = parseInt(scaleInput.value);
+        const scale = parseFloat(scaleInput.value); // Use parseFloat for scale
         const baseSize = 32; // Base size for corners and edges
-        const scaledSize = baseSize * scale;
-        const borderDepth = 6 * scale; // This is an approximation from infobox.js
+        const borderDepth = 6; // This is an approximation from infobox.js (not scaled by JS anymore)
 
-        // Update panel dimensions (these can be fixed or dynamic, for now fixed to fit content)
-        // We'll let the content dictate the size, and the panel will wrap around it.
-        // For a dialog box, we might want a fixed width and dynamic height.
         const naturalWidth = 518;
         const naturalHeight = 141;
-        panel.style.width = `${naturalWidth * scale}px`;
-        panel.style.height = `${naturalHeight * scale}px`;
 
-        // Update content size and position
+        // Set the base dimensions of the panel (1x scale)
+        panel.style.width = `${naturalWidth}px`;
+        panel.style.height = `${naturalHeight}px`;
+
+        // Apply overall scaling using CSS transform
+        panel.style.transform = `scale(${scale})`;
+        panel.style.transformOrigin = 'top left'; // Ensure scaling originates from top-left
+
+        // Update content size and position (these are now relative to the unscaled panel)
         content.style.top = `${borderDepth}px`;
         content.style.left = `${borderDepth}px`;
         content.style.right = `${borderDepth}px`;
@@ -33,29 +35,29 @@ document.addEventListener('DOMContentLoaded', () => {
         content.style.padding = `${borderDepth}px`;
         content.style.backgroundColor = '#CBBA95'; // Default background color
 
-        // Update corners
+        // Update corners (these are now based on baseSize, not scaledSize)
         const corners = panel.querySelectorAll('.corner');
         corners.forEach(corner => {
-            corner.style.width = `${scaledSize}px`;
-            corner.style.height = `${scaledSize}px`;
+            corner.style.width = `${baseSize}px`;
+            corner.style.height = `${baseSize}px`;
         });
 
         // Update horizontal edges (top and bottom)
         const topBottom = panel.querySelectorAll('.edge.top, .edge.bottom');
         topBottom.forEach(edge => {
-            edge.style.left = `${scaledSize}px`;
-            edge.style.right = `${scaledSize}px`;
-            edge.style.height = `${scaledSize}px`;
-            edge.style.backgroundSize = `${scaledSize}px ${scaledSize}px`;
+            edge.style.left = `${baseSize}px`;
+            edge.style.right = `${baseSize}px`;
+            edge.style.height = `${baseSize}px`;
+            edge.style.backgroundSize = `${baseSize}px ${baseSize}px`;
         });
 
         // Update vertical edges (left and right)
         const leftRight = panel.querySelectorAll('.edge.left, .edge.right');
         leftRight.forEach(edge => {
-            edge.style.top = `${scaledSize}px`;
-            edge.style.bottom = `${scaledSize}px`;
-            edge.style.width = `${scaledSize}px`;
-            edge.style.backgroundSize = `${scaledSize}px ${scaledSize}px`;
+            edge.style.top = `${baseSize}px`;
+            edge.style.bottom = `${baseSize}px`;
+            edge.style.width = `${baseSize}px`;
+            edge.style.backgroundSize = `${baseSize}px ${baseSize}px`;
             if (edge.classList.contains('left')) {
                 edge.style.left = `${0}px`; // Left edge starts at 0
             } else if (edge.classList.contains('right')) {
