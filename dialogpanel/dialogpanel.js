@@ -1,13 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
     const npcNameInput = document.getElementById('npcNameInput');
     const dialogTextInput = document.getElementById('dialogTextInput');
-    const generateDialogButton = document.getElementById('generateDialog');
     const npcChathead = document.getElementById('npc-chathead');
     const npcNameDisplay = document.getElementById('npc-name');
     const dialogTextDisplay = document.getElementById('dialog-text');
     const continueText = document.getElementById('continue-text');
 
     const scaleInput = document.getElementById('scale');
+    const chatheadXInput = document.getElementById('chatheadX');
+    const chatheadYInput = document.getElementById('chatheadY');
+    const chatheadScaleInput = document.getElementById('chatheadScale');
     const panel = document.getElementById('panel');
     const content = panel.querySelector('.content');
 
@@ -166,16 +168,38 @@ document.addEventListener('DOMContentLoaded', () => {
                         objectPositionOffset = offsetMin + (naturalHeight - heightMin) * (offsetMax - offsetMin) / (heightMax - heightMin);
                     }
 
+                    // Initial Sizing (before custom scale) and object-position
                     if (img.naturalWidth > naturalHeight) {
                         npcChathead.style.width = '130px';
                         npcChathead.style.height = 'auto';
-                        npcChathead.style.objectPosition = '50% 0px'; // Set object-position to 50% 0px for wider images
-                    } else {
-                        npcChathead.style.height = '130px';
-                        npcChathead.style.width = 'auto';
-                        npcChathead.style.objectPosition = `50% ${objectPositionOffset}px`;
+                        // For wider images, object-position Y is 0
+                        npcChathead.style.objectPosition = '50% 0px';
+                    } else { // Taller or square images
+                        if (naturalHeight <= 90) { // Smallish square/tall, e.g., 85x89
+                            npcChathead.style.height = '110px';
+                            npcChathead.style.width = 'auto';
+                            npcChathead.style.objectPosition = '50% 0px';
+                        } else { // Taller, >90px
+                            npcChathead.style.height = '130px';
+                            npcChathead.style.width = 'auto';
+                            // Linear interpolation for object-position (vertical)
+                            const heightMin = 90;
+                            const offsetMin = -15;
+                            const heightMax = 130;
+                            const offsetMax = -20;
+
+                            let objectPositionOffset;
+                            if (naturalHeight <= heightMin) {
+                                objectPositionOffset = offsetMin;
+                            } else if (naturalHeight >= heightMax) {
+                                objectPositionOffset = offsetMax;
+                            } else {
+                                objectPositionOffset = offsetMin + (naturalHeight - heightMin) * (offsetMax - offsetMin) / (heightMax - heightMin);
+                            }
+                            npcChathead.style.objectPosition = `50% ${objectPositionOffset}px`;
+                        }
                     }
-                    npcChathead.style.transform = 'scale(0.95)'; // Slight shrinkage
+                    applyChatheadTweaks(); // Apply tweakers after initial sizing/positioning
                 };
 
                 img.onerror = () => {
@@ -202,10 +226,29 @@ document.addEventListener('DOMContentLoaded', () => {
         continueText.style.display = 'block';
     }
 
+    function applyChatheadTweaks() {
+        const chatheadX = parseFloat(chatheadXInput.value);
+        const chatheadY = parseFloat(chatheadYInput.value);
+        const chatheadScale = parseFloat(chatheadScaleInput.value);
+
+        // Get current object-position to apply X/Y tweakers
+        const currentObjectPosition = npcChathead.style.objectPosition || '50% 50%';
+        const currentX = parseFloat(currentObjectPosition.split(' ')[0].replace('calc(50% + ', '').replace('px)', '')) || 0;
+        const currentY = parseFloat(currentObjectPosition.split(' ')[1].replace('px', '')) || 0;
+
+        // Apply tweakers
+        npcChathead.style.objectPosition = `calc(50% + ${currentX + chatheadX}px) ${currentY + chatheadY}px`;
+        npcChathead.style.transform = `scale(${chatheadScale})`;
+    }
+
     // Event Listeners
     npcNameInput.addEventListener('input', updateDialogContent);
     dialogTextInput.addEventListener('input', updateDialogContent);
     scaleInput.addEventListener('input', updatePanel);
+    chatheadXInput.addEventListener('input', () => applyChatheadTweaks(npcChathead.naturalWidth, npcChathead.naturalHeight));
+    chatheadYInput.addEventListener('input', () => applyChatheadTweaks(npcChathead.naturalWidth, npcChathead.naturalHeight));
+    chatheadScaleInput.addEventListener('input', () => applyChatheadTweaks(npcChathead.naturalWidth, npcChathead.naturalHeight));
+
 
     const saveButton = document.getElementById('saveButton');
     saveButton.addEventListener('click', async () => {

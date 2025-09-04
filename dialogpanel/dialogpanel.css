@@ -40,7 +40,7 @@
 #npc-chathead {
     /* height: 130px; Set height to 130px for 1x scale, now handled by JS */
     object-fit: cover; /* Cover the box, allowing cropping */
-    object-position: 50% -20px; /* Move image up by 20px */
+    /* object-position handled by JS */
     display: none; /* Hidden by default */
     /* Centering handled by flexbox on .chathead-box */
 }
