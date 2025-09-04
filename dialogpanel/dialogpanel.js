@@ -143,16 +143,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 const currentNpcName = variations[index];
                 const chatheadUrl = `https://oldschool.runescape.wiki/images/${encodeURIComponent(currentNpcName.replace(/ /g, '_'))}_chathead.png`;
 
-                const img = new Image();
-                img.onload = () => {
+                // Use a new Image object for loading to reliably trigger onload/onerror
+                const tempImg = new Image();
+                tempImg.onload = () => {
                     if (imageLoaded) return; // Prevent multiple loads if a previous one was slow
 
                     imageLoaded = true;
-                    npcChathead.src = chatheadUrl;
+                    npcChathead.src = chatheadUrl; // Set the actual chathead src
                     npcChathead.alt = `${currentNpcName} Chathead`;
+                    npcChathead.style.display = 'block'; // Ensure it's visible
 
+                    // Apply initial sizing and positioning based on natural dimensions
                     let objectPositionOffset;
-                    const naturalHeight = img.naturalHeight;
+                    const naturalHeight = tempImg.naturalHeight; // Use tempImg's naturalHeight
+                    const naturalWidth = tempImg.naturalWidth; // Use tempImg's naturalWidth
 
                     // Linear interpolation for object-position
                     const heightMin = 90;
@@ -168,12 +172,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         objectPositionOffset = offsetMin + (naturalHeight - heightMin) * (offsetMax - offsetMin) / (heightMax - heightMin);
                     }
 
-                    // Initial Sizing (before custom scale) and object-position
-                    if (img.naturalWidth > naturalHeight) {
+                    if (naturalWidth > naturalHeight) {
                         npcChathead.style.width = '130px';
                         npcChathead.style.height = 'auto';
-                        // For wider images, object-position Y is 0
-                        npcChathead.style.objectPosition = '50% 0px';
+                        npcChathead.style.objectPosition = '50% 0px'; // Set object-position to 50% 0px for wider images
                     } else { // Taller or square images
                         if (naturalHeight <= 90) { // Smallish square/tall, e.g., 85x89
                             npcChathead.style.height = '110px';
@@ -182,35 +184,22 @@ document.addEventListener('DOMContentLoaded', () => {
                         } else { // Taller, >90px
                             npcChathead.style.height = '130px';
                             npcChathead.style.width = 'auto';
-                            // Linear interpolation for object-position (vertical)
-                            const heightMin = 90;
-                            const offsetMin = -15;
-                            const heightMax = 130;
-                            const offsetMax = -20;
-
-                            let objectPositionOffset;
-                            if (naturalHeight <= heightMin) {
-                                objectPositionOffset = offsetMin;
-                            } else if (naturalHeight >= heightMax) {
-                                objectPositionOffset = offsetMax;
-                            } else {
-                                objectPositionOffset = offsetMin + (naturalHeight - heightMin) * (offsetMax - offsetMin) / (heightMax - heightMin);
-                            }
                             npcChathead.style.objectPosition = `50% ${objectPositionOffset}px`;
                         }
                     }
                     applyChatheadTweaks(); // Apply tweakers after initial sizing/positioning
                 };
 
-                img.onerror = () => {
+                tempImg.onerror = () => {
                     if (imageLoaded) return; // If another image already loaded, ignore this error
                     tryLoadImage(index + 1); // Try the next variation
                 };
 
-                img.src = chatheadUrl;
+                tempImg.src = chatheadUrl;
             };
 
-            tryLoadImage(0); // Start trying from the first variation
+            // Start trying from the first variation
+            tryLoadImage(0);
 
         } else {
             npcChathead.style.display = 'none';
@@ -231,13 +220,38 @@ document.addEventListener('DOMContentLoaded', () => {
         const chatheadY = parseFloat(chatheadYInput.value);
         const chatheadScale = parseFloat(chatheadScaleInput.value);
 
-        // Get current object-position to apply X/Y tweakers
-        const currentObjectPosition = npcChathead.style.objectPosition || '50% 50%';
-        const currentX = parseFloat(currentObjectPosition.split(' ')[0].replace('calc(50% + ', '').replace('px)', '')) || 0;
-        const currentY = parseFloat(currentObjectPosition.split(' ')[1].replace('px', '')) || 0;
+        // If image is not loaded yet, return. Tweaks will be applied on image.onload
+        if (!npcChathead.complete || npcChathead.naturalWidth === 0) {
+            return;
+        }
 
-        // Apply tweakers
-        npcChathead.style.objectPosition = `calc(50% + ${currentX + chatheadX}px) ${currentY + chatheadY}px`;
+        const naturalWidth = npcChathead.naturalWidth;
+        const naturalHeight = npcChathead.naturalHeight;
+
+        let objectPositionOffset;
+
+        // Linear interpolation for object-position (vertical)
+        const heightMin = 90;
+        const offsetMin = -15;
+        const heightMax = 130;
+        const offsetMax = -20;
+
+        if (naturalHeight <= heightMin) {
+            objectPositionOffset = offsetMin;
+        } else if (naturalHeight >= heightMax) {
+            objectPositionOffset = offsetMax;
+        } else {
+            objectPositionOffset = offsetMin + (naturalHeight - heightMin) * (offsetMax - offsetMin) / (heightMax - heightMin);
+        }
+
+        let finalObjectPositionY = 0; // Default for wider images or smallish square/tall
+        if (naturalWidth <= naturalHeight) { // Taller or square images
+            if (naturalHeight > 90) { // Only interpolate for taller images > 90px
+                finalObjectPositionY = objectPositionOffset;
+            }
+        }
+        
+        npcChathead.style.objectPosition = `calc(50% + ${chatheadX}px) ${finalObjectPositionY + chatheadY}px`;
         npcChathead.style.transform = `scale(${chatheadScale})`;
     }
 
@@ -245,9 +259,9 @@ document.addEventListener('DOMContentLoaded', () => {
     npcNameInput.addEventListener('input', updateDialogContent);
     dialogTextInput.addEventListener('input', updateDialogContent);
     scaleInput.addEventListener('input', updatePanel);
-    chatheadXInput.addEventListener('input', () => applyChatheadTweaks(npcChathead.naturalWidth, npcChathead.naturalHeight));
-    chatheadYInput.addEventListener('input', () => applyChatheadTweaks(npcChathead.naturalWidth, npcChathead.naturalHeight));
-    chatheadScaleInput.addEventListener('input', () => applyChatheadTweaks(npcChathead.naturalWidth, npcChathead.naturalHeight));
+    chatheadXInput.addEventListener('input', applyChatheadTweaks);
+    chatheadYInput.addEventListener('input', applyChatheadTweaks);
+    chatheadScaleInput.addEventListener('input', applyChatheadTweaks);
 
 
     const saveButton = document.getElementById('saveButton');
