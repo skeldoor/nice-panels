@@ -30,15 +30,14 @@
     height: 100px;
     overflow: hidden; /* Cut off chathead */
     position: relative; /* For positioning the image inside */
-    margin-left: 20px; /* Move 20px to the right */
+    margin-left: 35px; /* Move 35px to the right (original 20px + 15px) */
     display: flex; /* To center the image inside */
     align-items: center;
     justify-content: center;
 }
 
 #npc-chathead {
-    width: 125px; /* 1.25x larger than 100px */
-    height: 125px;
+    height: 130px; /* Set height to 130px for 1x scale */
     object-fit: cover; /* Cover the box, allowing cropping */
     display: none; /* Hidden by default */
     /* Centering handled by flexbox on .chathead-box */
@@ -56,12 +55,13 @@
     font-size: 1em;
     font-weight: bold;
     text-align: center; /* Centered within dialog-content */
-    margin-bottom: 5px; /* Move up */
+    margin-bottom: 32px; /* Set to 32px for 1x scale */
 }
 
 #dialog-text {
     color: black;
     font-size: 1em;
+    /* Removed font-weight: bold */
     text-align: center; /* Centered within dialog-content */
     margin-bottom: 10px;
 }
