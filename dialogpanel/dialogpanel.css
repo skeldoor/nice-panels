@@ -18,7 +18,7 @@
 .chathead-container {
     /* This container now holds the chathead-box, so its flex properties are still relevant */
     flex-shrink: 0; /* Prevent it from shrinking */
-    margin-right: 15px;
+    /* Removed margin-right */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -30,7 +30,7 @@
     height: 100px;
     overflow: hidden; /* Cut off chathead */
     position: relative; /* For positioning the image inside */
-    margin-left: 25px; /* Move 25px to the right (original 20px + 15px - 10px) */
+    margin-left: 10px;
     display: flex; /* To center the image inside */
     align-items: center;
     justify-content: center;
@@ -56,7 +56,7 @@
     font-size: 1em;
     /* Removed font-weight: bold; */
     text-align: center; /* Centered within dialog-content */
-    margin-bottom: 32px; /* Set to 32px for 1x scale */
+    margin-bottom: 13px; /* Set to 13px for 1x scale */
 }
 
 #dialog-text {
