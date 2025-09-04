@@ -16,8 +16,7 @@
 }
 
 .chathead-container {
-    width: 100px; /* Set a fixed square size for the container */
-    height: 100px;
+    /* This container now holds the chathead-box, so its flex properties are still relevant */
     flex-shrink: 0; /* Prevent it from shrinking */
     margin-right: 15px;
     display: flex;
@@ -26,11 +25,23 @@
     border-radius: 0; /* Ensure no rounding */
 }
 
+.chathead-box {
+    width: 110px; /* Invisible box size */
+    height: 110px;
+    overflow: hidden; /* Cut off chathead */
+    position: relative; /* For positioning the image inside */
+    margin-left: 20px; /* Move 20px to the right */
+    display: flex; /* To center the image inside */
+    align-items: center;
+    justify-content: center;
+}
+
 #npc-chathead {
-    width: 100%; /* Make image fill its container */
-    height: 100%;
-    object-fit: contain; /* Ensure the whole image is visible, no cropping */
+    width: 150px; /* 1.5x larger than 100px */
+    height: 150px;
+    object-fit: cover; /* Cover the box, allowing cropping */
     display: none; /* Hidden by default */
+    /* Centering handled by flexbox on .chathead-box */
 }
 
 .dialog-content {
@@ -42,7 +53,7 @@
 
 #npc-name {
     color: #800000;
-    font-size: 1.2em;
+    font-size: 1em;
     font-weight: bold;
     text-align: center; /* Centered within dialog-content */
     margin-bottom: 10px;
@@ -50,14 +61,14 @@
 
 #dialog-text {
     color: black;
-    font-size: 1.1em;
+    font-size: 1em;
     text-align: center; /* Centered within dialog-content */
     margin-bottom: 10px;
 }
 
 #continue-text {
     color: #0000ff;
-    font-size: 0.9em;
+    font-size: 1em;
     text-align: center; /* Centered within dialog-content */
     cursor: pointer;
 }
