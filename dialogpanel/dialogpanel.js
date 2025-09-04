@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const continueText = document.getElementById('continue-text');
 
     const scaleInput = document.getElementById('scale');
-    const frameTypeSelect = document.getElementById('frameType');
     const panel = document.getElementById('panel');
     const content = panel.querySelector('.content');
 
@@ -54,9 +53,13 @@ document.addEventListener('DOMContentLoaded', () => {
         leftRight.forEach(edge => {
             edge.style.top = `${scaledSize}px`;
             edge.style.bottom = `${scaledSize}px`;
-            edge.style.left = `${scaledSize}px`; // Corrected for left edge
             edge.style.width = `${scaledSize}px`;
             edge.style.backgroundSize = `${scaledSize}px ${scaledSize}px`;
+            if (edge.classList.contains('left')) {
+                edge.style.left = `${0}px`; // Left edge starts at 0
+            } else if (edge.classList.contains('right')) {
+                edge.style.right = `${0}px`; // Right edge starts at 0
+            }
         });
 
         updateFrameType();
@@ -64,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateFrameType() {
-        const frameType = frameTypeSelect.value;
+        const frameType = 'frame1'; // Always use frame1
         let framePath = `../../resources/frames/${frameType}/`; // Path relative to dialogpanel/
 
         const cornerTL = panel.querySelector('.corner.tl');
@@ -112,7 +115,6 @@ document.addEventListener('DOMContentLoaded', () => {
     npcNameInput.addEventListener('input', updateDialogContent);
     dialogTextInput.addEventListener('input', updateDialogContent);
     scaleInput.addEventListener('input', updatePanel);
-    frameTypeSelect.addEventListener('change', updatePanel);
 
     // Initial update
     updatePanel();

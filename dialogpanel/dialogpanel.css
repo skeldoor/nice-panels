@@ -40,7 +40,7 @@
 }
 
 #npc-name {
-    color: red;
+    color: #800000;
     font-size: 1.2em;
     font-weight: bold;
     text-align: center; /* Centered within dialog-content */
@@ -55,7 +55,7 @@
 }
 
 #continue-text {
-    color: blue;
+    color: #0000ff;
     font-size: 0.9em;
     text-align: center; /* Centered within dialog-content */
     cursor: pointer;
