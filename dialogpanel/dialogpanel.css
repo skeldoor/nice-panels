@@ -57,7 +57,7 @@
     font-size: 1em;
     /* Removed font-weight: bold; */
     text-align: center; /* Centered within dialog-content */
-    margin-bottom: 18px; /* Set to 13px for 1x scale */
+    /* margin-bottom handled by JS */
 }
 
 #dialog-text {
@@ -65,7 +65,7 @@
     font-size: 1em;
     /* Removed font-weight: bold */
     text-align: center; /* Centered within dialog-content */
-    margin-bottom: 18px;
+    /* margin-bottom handled by JS */
     white-space: pre-wrap; /* Allow multiple lines and preserve whitespace */
 }
 

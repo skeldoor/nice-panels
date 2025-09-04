@@ -97,22 +97,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function generateCapitalizationVariations(name) {
+        const variations = new Set();
+        variations.add(name); // Add the name exactly as typed by the user first
+
         const words = name.split(' ');
-        const variations = new Set(); // Use a Set to store unique variations
 
-        // Always include the original name
-        variations.add(words.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' '));
+        // Generate variations by lowercasing the first letter of subsequent words (after the first space)
+        if (words.length > 1) {
+            const firstWord = words[0];
+            // For subsequent words, lowercase only the first letter, keep rest as is
+            const restOfWordsLowercasedFirstLetter = words.slice(1).map(word => {
+                // If a word contains a hyphen, treat it as a single unit for initial casing
+                if (word.includes('-')) {
+                    return word; // Preserve original casing for hyphenated words
+                }
+                return word.charAt(0).toLowerCase() + word.slice(1);
+            });
+            variations.add([firstWord, ...restOfWordsLowercasedFirstLetter].join(' '));
+        }
 
-        // Generate variations by lowercasing subsequent words
-        for (let i = 1; i < words.length; i++) {
-            const tempWords = [...words];
-            tempWords[i] = tempWords[i].charAt(0).toLowerCase() + tempWords[i].slice(1).toLowerCase();
-            variations.add(tempWords.map((word, index) => index === 0 ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : word).join(' '));
+        // Generate variations by lowercasing all subsequent words entirely
+        if (words.length > 1) {
+            const firstWord = words[0];
+            const restOfWordsFullyLowercased = words.slice(1).map(word => word.toLowerCase());
+            variations.add([firstWord, ...restOfWordsFullyLowercased].join(' '));
         }
         
-        // Add a fully lowercased version (except first word)
-        const lowercasedWords = words.map((word, index) => index === 0 ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : word.toLowerCase());
-        variations.add(lowercasedWords.join(' '));
+        // Generate variations where the first word is also lowercased (except first letter)
+        // This covers "The baby mole" from "The Baby Mole"
+        if (words.length > 0) {
+            const firstWordLower = words[0].charAt(0).toLowerCase() + words[0].slice(1);
+            const restOfWords = words.slice(1).map(word => word.toLowerCase());
+            variations.add([firstWordLower, ...restOfWords].join(' '));
+        }
 
         return Array.from(variations);
     }
@@ -213,6 +230,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         dialogTextDisplay.textContent = dialogText;
         continueText.style.display = 'block';
+
+        // Calculate margin-bottom based on number of lines
+        const numberOfLines = dialogText.split('\n').length;
+        const baseMarginBottom = 18; // Base margin for 1 line
+        const calculatedMarginBottom = baseMarginBottom / numberOfLines;
+        
+        npcNameDisplay.style.marginBottom = `${calculatedMarginBottom}px`;
+        dialogTextDisplay.style.marginBottom = `${calculatedMarginBottom}px`;
     }
 
     function applyChatheadTweaks() {
