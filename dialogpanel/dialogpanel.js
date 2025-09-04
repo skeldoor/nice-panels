@@ -13,6 +13,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const panel = document.getElementById('panel');
     const content = panel.querySelector('.content');
 
+    // Store base object-position and transform values
+    let baseObjectPositionX = 50; // Default center
+    let baseObjectPositionY = 50; // Default center
+    let baseTransformScale = 0.95; // Default slight shrinkage
+
     function updatePanel() {
         const scale = parseFloat(scaleInput.value); // Use parseFloat for scale
         const baseSize = 32; // Base size for corners and edges
@@ -192,18 +197,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (naturalWidth > naturalHeight) {
                         npcChathead.style.width = '130px';
                         npcChathead.style.height = 'auto';
-                        npcChathead.style.objectPosition = '50% 0px'; // Set object-position to 50% 0px for wider images
+                        baseObjectPositionX = 50;
+                        baseObjectPositionY = 0;
                     } else { // Taller or square images
                         if (naturalHeight <= 90) { // Smallish square/tall, e.g., 85x89
                             npcChathead.style.height = '110px';
                             npcChathead.style.width = 'auto';
-                            npcChathead.style.objectPosition = '50% 0px';
+                            baseObjectPositionX = 50;
+                            baseObjectPositionY = 0;
                         } else { // Taller, >90px
                             npcChathead.style.height = '130px';
                             npcChathead.style.width = 'auto';
-                            npcChathead.style.objectPosition = `50% ${objectPositionOffset}px`;
+                            baseObjectPositionX = 50;
+                            baseObjectPositionY = objectPositionOffset;
                         }
                     }
+                    baseTransformScale = 0.95; // Set base scale
                     applyChatheadTweaks(); // Apply tweakers after initial sizing/positioning
                 };
 
@@ -249,13 +258,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!npcChathead.complete || npcChathead.naturalWidth === 0) {
             return;
         }
-
-        const naturalWidth = npcChathead.naturalWidth;
-        const naturalHeight = npcChathead.naturalHeight;
-
+        
+        // Recalculate base sizing and positioning based on npcChathead's current dimensions
         let objectPositionOffset;
+        const naturalHeight = npcChathead.naturalHeight;
+        const naturalWidth = npcChathead.naturalWidth;
 
-        // Linear interpolation for object-position (vertical)
         const heightMin = 90;
         const offsetMin = -15;
         const heightMax = 130;
@@ -269,15 +277,29 @@ document.addEventListener('DOMContentLoaded', () => {
             objectPositionOffset = offsetMin + (naturalHeight - heightMin) * (offsetMax - offsetMin) / (heightMax - heightMin);
         }
 
-        let finalObjectPositionY = 0; // Default for wider images or smallish square/tall
-        if (naturalWidth <= naturalHeight) { // Taller or square images
-            if (naturalHeight > 90) { // Only interpolate for taller images > 90px
-                finalObjectPositionY = objectPositionOffset;
+        if (naturalWidth > naturalHeight) {
+            npcChathead.style.width = '130px';
+            npcChathead.style.height = 'auto';
+            baseObjectPositionX = 50;
+            baseObjectPositionY = 0;
+        } else { // Taller or square images
+            if (naturalHeight <= 90) { // Smallish square/tall, e.g., 85x89
+                npcChathead.style.height = '110px';
+                npcChathead.style.width = 'auto';
+                baseObjectPositionX = 50;
+                baseObjectPositionY = 0;
+            } else { // Taller, >90px
+                npcChathead.style.height = '130px';
+                npcChathead.style.width = 'auto';
+                baseObjectPositionX = 50;
+                baseObjectPositionY = objectPositionOffset;
             }
         }
-        
-        npcChathead.style.objectPosition = `calc(50% + ${chatheadX}px) ${finalObjectPositionY + chatheadY}px`;
-        npcChathead.style.transform = `scale(${chatheadScale})`;
+        baseTransformScale = 0.95; // Set base scale
+
+        // Apply user tweaks as offsets/multipliers to these base values
+        npcChathead.style.objectPosition = `calc(${baseObjectPositionX}% + ${chatheadX}px) calc(${baseObjectPositionY}px + ${chatheadY}px)`;
+        npcChathead.style.transform = `scale(${baseTransformScale * chatheadScale})`;
     }
 
     // Event Listeners
@@ -334,7 +356,10 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(function (dataUrl) {
             const link = document.createElement('a');
-            link.download = 'dialog-panel.png';
+            const npcName = npcNameInput.value.trim();
+            const dialogText = dialogTextInput.value.trim();
+            const filename = `${npcName}_${dialogText.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_')}.png`; // Take first 50 chars, replace non-alphanumeric with underscore
+            link.download = filename;
             link.href = dataUrl;
             link.click();
         })
