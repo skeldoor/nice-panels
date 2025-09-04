@@ -3,27 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <title>Dialog Panel</title>
+    <link rel="icon" href="/favicon.ico">
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="dialogpanel.css">
 </head>
 <body>
+    <div class="panel-controls">
+        <label>Scale: <input type="number" id="scale" value="3" min="1" max="8"></label>
+        <label>
+            Frame Style:
+            <select id="frameType">
+                <option value="frame1">Frame 1</option>
+                <option value="frame2">Frame 2</option>
+            </select>
+        </label>
+        <label for="npcNameInput">NPC Name:</label>
+        <input type="text" id="npcNameInput" placeholder="Enter NPC Name">
+        <label for="dialogTextInput">Dialog Text:</label>
+        <textarea id="dialogTextInput" placeholder="Enter Dialog Text"></textarea>
+        <button id="generateDialog">Generate Dialog</button>
+    </div>
+
     <div class="panel-container">
-        <div class="dialog-panel">
-            <div class="chathead-container">
-                <img id="npc-chathead" src="" alt="NPC Chathead">
+        <div class="custom-panel" id="panel">
+            <div class="corner tl"></div>
+            <div class="edge top"></div>
+            <div class="corner tr"></div>
+            <div class="edge left"></div>
+            <div class="content dialog-panel">
+                <div class="shadow-overlay"></div>
+                <div class="chathead-container">
+                    <img id="npc-chathead" src="" alt="NPC Chathead">
+                </div>
+                <div class="dialog-content">
+                    <div id="npc-name" class="fancy-text"></div>
+                    <div id="dialog-text" class="fancy-text"></div>
+                    <div id="continue-text" class="fancy-text">Click here to continue</div>
+                </div>
             </div>
-            <div class="dialog-content">
-                <div id="npc-name" class="fancy-text"></div>
-                <div id="dialog-text" class="fancy-text"></div>
-                <div id="continue-text">Click here to continue</div>
-            </div>
-        </div>
-        <div class="input-section">
-            <label for="npcNameInput">NPC Name:</label>
-            <input type="text" id="npcNameInput" placeholder="Enter NPC Name">
-            <label for="dialogTextInput">Dialog Text:</label>
-            <textarea id="dialogTextInput" placeholder="Enter Dialog Text"></textarea>
-            <button id="generateDialog">Generate Dialog</button>
+            <div class="edge right"></div>
+            <div class="corner bl"></div>
+            <div class="edge bottom"></div>
+            <div class="corner br"></div>
         </div>
     </div>
     <script src="dialogpanel.js"></script>
