@@ -31,7 +31,7 @@
     height: 100px;
     overflow: hidden; /* Cut off chathead */
     position: relative; /* For positioning the image inside */
-    margin-left: 10px;
+    margin-left: 18px;
     display: flex; /* To center the image inside */
     align-items: center;
     justify-content: center;

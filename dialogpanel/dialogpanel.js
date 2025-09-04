@@ -125,16 +125,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     objectPositionOffset = offsetMin + (naturalHeight - heightMin) * (offsetMax - offsetMin) / (heightMax - heightMin);
                 }
 
-                npcChathead.style.objectPosition = `50% ${objectPositionOffset}px`;
-                npcChathead.style.transform = 'scale(0.95)'; // Slight shrinkage
-
                 if (img.naturalWidth > naturalHeight) {
                     npcChathead.style.width = '130px';
                     npcChathead.style.height = 'auto';
+                    npcChathead.style.objectPosition = '50% 0px'; // Set object-position to 50% 0px for wider images
                 } else {
                     npcChathead.style.height = '130px';
                     npcChathead.style.width = 'auto';
+                    npcChathead.style.objectPosition = `50% ${objectPositionOffset}px`;
                 }
+                npcChathead.style.transform = 'scale(0.95)'; // Slight shrinkage
             };
             img.src = chatheadUrl; // Set src after onload to ensure event fires
         } else {
