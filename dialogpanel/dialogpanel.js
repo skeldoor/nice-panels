@@ -31,15 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
         panel.style.height = `${naturalHeight}px`;
 
         // Apply overall scaling using CSS transform
-        // To keep the panel centered, we scale from the center and then translate
-        // to counteract the shift caused by scaling from the center.
-        const scaledWidth = naturalWidth * scale;
-        const scaledHeight = naturalHeight * scale;
-        const translateX = (scaledWidth - naturalWidth) / 2;
-        const translateY = (scaledHeight - naturalHeight) / 2;
-
-        panel.style.transform = `scale(${scale}) translateX(-${translateX}px) translateY(-${translateY}px)`;
-        panel.style.transformOrigin = 'center'; // Scale from the center
+        panel.style.transform = `scale(${scale})`;
+        panel.style.transformOrigin = 'top left'; // Ensure scaling originates from top-left
 
         // Update content size and position (these are now relative to the unscaled panel)
         content.style.top = `${borderDepth}px`;
@@ -348,12 +341,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetHeight = naturalHeight * scale;
 
         // Apply scale directly to the panel for dom-to-image capture
-        // For dom-to-image, we want to capture the content at the target dimensions
-        // without the centering transforms, as dom-to-image handles the size.
         panelToSave.style.transform = 'scale(1)'; // Reset transform for capture
         panelToSave.style.width = `${targetWidth}px`;
         panelToSave.style.height = `${targetHeight}px`;
-        panelToSave.style.transformOrigin = 'top left'; // Reset for capture
+        panelToSave.style.transformOrigin = 'top left';
 
         domtoimage.toPng(panelToSave, {
             width: targetWidth,
@@ -380,7 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
             panelToSave.style.transform = originalTransform;
             panelToSave.style.width = `${naturalWidth}px`; // Restore original 1x width
             panelToSave.style.height = `${naturalHeight}px`; // Restore original 1x height
-            panelToSave.style.transformOrigin = originalTransformOrigin; // Restore original transform-origin
+            panelToSave.style.transformOrigin = originalTransformOrigin;
         });
     });
 
