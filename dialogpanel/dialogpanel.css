@@ -123,7 +123,9 @@
 .panel-container {
     display: flex;
     justify-content: center;
+    align-items: center; /* Center vertically as well */
     margin-top: 20px;
+    /* Removed flex-direction: column; as it's not needed here and can interfere with centering */
 }
 
 /* Styles for the custom-panel and its border/background elements */
@@ -131,8 +133,27 @@
     position: relative;
     width: 600px; /* Default width, will be adjusted by JS */
     height: 200px; /* Default height, will be adjusted by JS */
-    margin: 0px auto; /* Center the panel */
+    /* margin: 0px auto; Removed, centering handled by panel-container */
     transform-origin: top left; /* For scaling */
+}
+
+.save-controls {
+    margin-top: 20px;
+    text-align: center; /* Center the button */
+}
+
+.save-button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+.save-button:hover {
+    background-color: #0056b3;
 }
 
 .content {
