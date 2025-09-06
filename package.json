@@ -1,6 +1,6 @@
 {
   "name": "nice-panels",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Bank view panel generator",
   "main": "server.js",
   "scripts": {
