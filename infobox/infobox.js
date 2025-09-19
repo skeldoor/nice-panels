@@ -328,22 +328,45 @@ function generateFileName() {
 
 async function savePanelAsImage() {
     const node = document.getElementById('panel');
+    const imagePositionSelect = document.getElementById('imagePosition');
+    const imageContainer = document.querySelector('.panel-image-container');
+    const content = document.querySelector('.content');
 
-      await inlineBackgroundImages(node); // 👈 inline the CSS background images first
+    let originalImageContainerDisplay = '';
+    let originalContentFlexDirection = '';
 
-      domtoimage.toPng(node, {
+    // Check if image position is 'none'
+    const isNoImage = imagePositionSelect.value === 'none';
+
+    if (isNoImage) {
+        // Temporarily show the image container and set flex direction for capture
+        originalImageContainerDisplay = imageContainer.style.display;
+        originalContentFlexDirection = content.style.flexDirection;
+        imageContainer.style.display = 'block'; // Or 'flex' depending on its default
+        content.style.flexDirection = 'column';
+    }
+
+    await inlineBackgroundImages(node); // 👈 inline the CSS background images first
+
+    domtoimage.toPng(node, {
         cacheBust: true,
         style: {
-          'image-rendering': 'pixelated',
+            'image-rendering': 'pixelated',
         }
-      }).then(function(dataUrl) {
+    }).then(function(dataUrl) {
         const link = document.createElement('a');
         link.download = generateFileName();
         link.href = dataUrl;
         link.click();
-      }).catch(function(error) {
+    }).catch(function(error) {
         console.error('Error capturing panel:', error);
-      });
+    }).finally(() => {
+        // Restore original styles after capture
+        if (isNoImage) {
+            imageContainer.style.display = originalImageContainerDisplay;
+            content.style.flexDirection = originalContentFlexDirection;
+        }
+    });
 }
 
 
