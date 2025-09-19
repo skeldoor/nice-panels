@@ -345,8 +345,11 @@ async function savePanelAsImage() {
         const clonedImageContainer = clonedNode.querySelector('.panel-image-container');
         const clonedContent = clonedNode.querySelector('.content');
 
-        // Temporarily show the image container and set flex direction for capture
-        clonedImageContainer.classList.remove('hidden');
+        // If 'no image' is selected, remove the image container from the clone
+        if (clonedImageContainer) {
+            clonedImageContainer.remove();
+        }
+        // Ensure content flex direction is column when no image is present
         clonedContent.style.flexDirection = 'column';
 
         nodeToCapture = clonedNode;
