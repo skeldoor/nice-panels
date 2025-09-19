@@ -329,26 +329,35 @@ function generateFileName() {
 async function savePanelAsImage() {
     const node = document.getElementById('panel');
     const imagePositionSelect = document.getElementById('imagePosition');
-    const imageContainer = document.querySelector('.panel-image-container');
-    const content = document.querySelector('.content');
-
-    let originalImageContainerDisplay = '';
-    let originalContentFlexDirection = '';
-
-    // Check if image position is 'none'
     const isNoImage = imagePositionSelect.value === 'none';
 
+    let nodeToCapture = node;
+    let cleanup = () => {};
+
     if (isNoImage) {
+        // Create a clone of the panel to manipulate without affecting the visible one
+        const clonedNode = node.cloneNode(true);
+        clonedNode.style.position = 'absolute';
+        clonedNode.style.left = '-9999px'; // Move off-screen
+        clonedNode.style.top = '-9999px';
+        document.body.appendChild(clonedNode);
+
+        const clonedImageContainer = clonedNode.querySelector('.panel-image-container');
+        const clonedContent = clonedNode.querySelector('.content');
+
         // Temporarily show the image container and set flex direction for capture
-        originalImageContainerDisplay = imageContainer.style.display;
-        originalContentFlexDirection = content.style.flexDirection;
-        imageContainer.style.display = 'block'; // Or 'flex' depending on its default
-        content.style.flexDirection = 'column';
+        clonedImageContainer.classList.remove('hidden');
+        clonedContent.style.flexDirection = 'column';
+
+        nodeToCapture = clonedNode;
+        cleanup = () => {
+            document.body.removeChild(clonedNode);
+        };
     }
 
-    await inlineBackgroundImages(node); // 👈 inline the CSS background images first
+    await inlineBackgroundImages(nodeToCapture); // 👈 inline the CSS background images first
 
-    domtoimage.toPng(node, {
+    domtoimage.toPng(nodeToCapture, {
         cacheBust: true,
         style: {
             'image-rendering': 'pixelated',
@@ -361,11 +370,7 @@ async function savePanelAsImage() {
     }).catch(function(error) {
         console.error('Error capturing panel:', error);
     }).finally(() => {
-        // Restore original styles after capture
-        if (isNoImage) {
-            imageContainer.style.display = originalImageContainerDisplay;
-            content.style.flexDirection = originalContentFlexDirection;
-        }
+        cleanup();
     });
 }
 
