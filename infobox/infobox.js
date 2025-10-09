@@ -377,6 +377,9 @@ async function savePanelAsImage() {
     });
 }
 
+const itemHolderImg = new Image();
+itemHolderImg.src = '../resources/itemholder.png';
+
 
 
 
