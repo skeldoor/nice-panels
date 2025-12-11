@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
             //itemName = itemName.replace(/_/g, '-'); // Replace underscores with hyphens for cleaner filename
 
             let formattedCount = formatCount(itemCount);
-            formattedCount = formattedCount.replace(/<[^>]*>?/gm, ''); // Remove HTML tags from formatted count
+            formattedCount = formattedCount.toString().replace(/<[^>]*>?/gm, ''); // Remove HTML tags from formatted count
 
             link.download = `${itemName}-${formattedCount}-${itemScale}x.png`;
             link.href = dataUrl;
