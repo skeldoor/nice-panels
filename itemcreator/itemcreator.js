@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const urlParts = itemIconUrl.split('/');
             let itemName = urlParts[urlParts.length - 1];
             itemName = itemName.split('.')[0]; // Remove file extension
-            itemName = itemName.replace(/_/g, '-'); // Replace underscores with hyphens for cleaner filename
+            //itemName = itemName.replace(/_/g, '-'); // Replace underscores with hyphens for cleaner filename
 
             const formattedCount = formatCount(itemCount).replace(/<[^>]*>?/gm, ''); // Remove HTML tags from formatted count
 
