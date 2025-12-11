@@ -109,13 +109,15 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await inlineBackgroundImages(itemPanel);
 
-            await new Promise(r => requestAnimationFrame(r));
+            await document.fonts.ready;
             await new Promise(r => requestAnimationFrame(r));
 
             const dataUrl = await domtoimage.toPng(itemPanel, {
                 cacheBust: true,
+                bgcolor: 'transparent',
                 style: {
-                    style: { all: 'unset' }
+                    'background-color': 'transparent',
+                    'image-rendering': 'pixelated'
                 }
             });
 
