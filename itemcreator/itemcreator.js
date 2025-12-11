@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     itemScaleInput.addEventListener('input', renderItem);
 
     saveImageBtn.addEventListener('click', async () => {
-        renderItem(); // Ensure up-to-date
+        //renderItem(); // Ensure up-to-date
 
         saveImageBtn.disabled = true;
         saveImageBtn.textContent = 'Please wait...';
