@@ -109,6 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await inlineBackgroundImages(itemPanel);
 
+            await new Promise(r => requestAnimationFrame(r));
+            await new Promise(r => requestAnimationFrame(r));
+
             const dataUrl = await domtoimage.toPng(itemPanel, {
                 cacheBust: true,
                 style: {
@@ -118,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // !important removed from background transparent above
-            
+
             const link = document.createElement('a');
             
             const itemIconUrl = itemIconUrlInput.value;
