@@ -115,8 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const dataUrl = await domtoimage.toPng(itemPanel, {
                 cacheBust: true,
                 style: {
-                    'image-rendering': 'pixelated',
-                    'background': 'transparent',
+                    style: { all: 'unset' }
                 }
             });
 
