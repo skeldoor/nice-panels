@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
             await new Promise(r => requestAnimationFrame(r));
 
             const dataUrl = await domtoimage.toPng(itemPanel, {
-                cacheBust: true,
+                
                 bgcolor: 'transparent',
                 style: {
                     'background-color': 'transparent',
