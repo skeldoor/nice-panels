@@ -113,9 +113,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 cacheBust: true,
                 style: {
                     'image-rendering': 'pixelated',
-                    'background': 'transparent !important',
+                    'background': 'transparent',
                 }
             });
+
+            // !important removed from background transparent above
+            
             const link = document.createElement('a');
             
             const itemIconUrl = itemIconUrlInput.value;
