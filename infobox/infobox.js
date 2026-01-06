@@ -257,7 +257,16 @@ function calculateColorFilter(rgb) {
     let filter = 'grayscale(100%) sepia(100%) ';
 
     // Add strong colorization
-    if (rgb.r > rgb.g && rgb.r > rgb.b) {
+    if (rgb.r == 143 && rgb.g == 87 && rgb.b == 87) {
+        // Agile Red tint
+        filter += 'hue-rotate(-48deg) saturate(260%) brightness(92%)';
+    } else if (rgb.b == 87) {
+        // Agile Green tint
+        filter += 'hue-rotate(85deg) saturate(300%) brightness(90%)';
+    } else if (rgb.b == 1) {
+        // Josh Isn't Green tint
+        filter += 'hue-rotate(90deg) saturate(1250%) brightness(100%)';
+    } else if (rgb.r > rgb.g && rgb.r > rgb.b) {
         // Red tint
         filter += 'hue-rotate(-30deg) saturate(300%) brightness(100%)';
     } else if (rgb.g > rgb.r && rgb.g > rgb.b) {
