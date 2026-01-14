@@ -115,7 +115,7 @@ footer a {
 
 .panel-controls {
     margin-bottom: 20px;
-    line-height: 2;
+    line-height: 1;
     background-color: #444; /* A slightly lighter container for controls */
     padding: 15px;
     border-radius: 5px;
@@ -125,7 +125,7 @@ footer a {
 .panel-controls textarea {
     width: 250px;
     resize: vertical;
-    min-height: 60px;
+    min-height: 20px;
     vertical-align: top;
 }
 

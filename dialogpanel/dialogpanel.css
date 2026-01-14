@@ -106,7 +106,7 @@
 
 .panel-controls textarea {
     resize: vertical;
-    min-height: 80px;
+    min-height: 20px;
 }
 
 .panel-controls button {

@@ -88,12 +88,13 @@
 </div>
     <div class="container">
         <h1>Skeldoor's OSRS Panel Generator</h1>
-        <h2>This works best on chrome/edge desktop. I'm not a webdev so cba with mobile view resizing.</h2>
+        <h2 id="patchnotes"></h2>
         <ul>
             <li><a href="/infobox/">Info Box Panel</a></li>
             <li><a href="/bankview/">Bank View Panel</a></li>
             <li><a href="/itemcreator/">Item Icon Creator</a></li>
             <li><a href="/dialogpanel/">Dialog Panel</a></li>
+            <li><a href="/optionpanel/">Option Panel</a></li>
         </ul>
     </div>
     <footer>
@@ -105,6 +106,13 @@
             .then(response => response.json())
             .then(data => {
                 document.getElementById('version').textContent = `v${data.version}`;
+            });
+    </script>
+        <script>
+        fetch('/package.json')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('patchnotes').textContent = `Patch notes: ${data.patchnotes}`;
             });
     </script>
 </body>
