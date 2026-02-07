@@ -1,7 +1,7 @@
 {
   "name": "nice-panels",
-  "version": "1.4.0",
-  "patchnotes": "Today introduces the \"Option Panel\" for right click menu popups",
+  "version": "1.4.1",
+  "patchnotes": "Added new weapon slot icons to the primary/secondary text",
   "description": "Bank view panel generator",
   "main": "server.js",
   "scripts": {
