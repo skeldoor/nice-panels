@@ -464,6 +464,17 @@ footer a {
     overflow: hidden; /* Ensure content stays within bounds */
 }
 
+.item-panel .item-creator-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+    z-index: 1;
+}
+
 .item-slot {
     position: relative;
     width: 100%;
@@ -471,6 +482,7 @@ footer a {
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 2;
 }
 
 /* Bank View Panel Styles */

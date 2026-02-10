@@ -1,6 +1,6 @@
 {
   "name": "nice-panels",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "patchnotes": "Added new weapon slot icons to the primary/secondary text",
   "description": "Bank view panel generator",
   "main": "server.js",
