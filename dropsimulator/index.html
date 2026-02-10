@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Skeldoor's Loot Calculator</title>
+    <link rel="icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/dropsimulator/dropsimulator.css">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-M5J3QJKJPC"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-M5J3QJKJPC');
+    </script>
+</head>
+<body class="loot-calculator-body">
+
+<style>
+/* customizable snowflake styling */
+.snowflake {
+  color: #fff;
+  font-size: 1em;
+  font-family: Arial, sans-serif;
+  text-shadow: 0 0 5px #000;
+}
+
+.snowflake,.snowflake .inner{animation-iteration-count:infinite;animation-play-state:running}@keyframes snowflakes-fall{0%{transform:translateY(0)}100%{transform:translateY(110vh)}}@keyframes snowflakes-shake{0%,100%{transform:translateX(0)}50%{transform:translateX(80px)}}.snowflake{position:fixed;top:-10%;z-index:9999;-webkit-user-select:none;user-select:none;cursor:default;pointer-events:none;animation-name:snowflakes-shake;animation-duration:3s;animation-timing-function:ease-in-out}.snowflake .inner{animation-duration:10s;animation-name:snowflakes-fall;animation-timing-function:linear}.snowflake:nth-of-type(0){left:1%;animation-delay:0s}.snowflake:nth-of-type(0) .inner{animation-delay:0s}.snowflake:first-of-type{left:10%;animation-delay:1s}.snowflake:first-of-type .inner,.snowflake:nth-of-type(8) .inner{animation-delay:1s}.snowflake:nth-of-type(2){left:20%;animation-delay:.5s}.snowflake:nth-of-type(2) .inner,.snowflake:nth-of-type(6) .inner{animation-delay:6s}.snowflake:nth-of-type(3){left:30%;animation-delay:2s}.snowflake:nth-of-type(11) .inner,.snowflake:nth-of-type(3) .inner{animation-delay:4s}.snowflake:nth-of-type(4){left:40%;animation-delay:2s}.snowflake:nth-of-type(10) .inner,.snowflake:nth-of-type(4) .inner{animation-delay:2s}.snowflake:nth-of-type(5){left:50%;animation-delay:3s}.snowflake:nth-of-type(5) .inner{animation-delay:8s}.snowflake:nth-of-type(6){left:60%;animation-delay:2s}.snowflake:nth-of-type(7){left:70%;animation-delay:1s}.snowflake:nth-of-type(7) .inner{animation-delay:2.5s}.snowflake:nth-of-type(8){left:80%;animation-delay:0s}.snowflake:nth-of-type(9){left:90%;animation-delay:1.5s}.snowflake:nth-of-type(9) .inner{animation-delay:3s}.snowflake:nth-of-type(10){left:25%;animation-delay:0s}.snowflake:nth-of-type(11){left:65%;animation-delay:2.5s}.snowflake:nth-of-type(12){left:5%;animation-delay:1s}.snowflake:nth-of-type(12) .inner{animation-delay:7s}.snowflake:nth-of-type(13){left:35%;animation-delay:2.5s}.snowflake:nth-of-type(13) .inner{animation-delay:9s}.snowflake:nth-of-type(14){left:55%;animation-delay:0.5s}.snowflake:nth-of-type(14) .inner{animation-delay:4s}.snowflake:nth-of-type(15){left:75%;animation-delay:3s}.snowflake:nth-of-type(15) .inner{animation-delay:6s}.snowflake:nth-of-type(16){left:85%;animation-delay:1.5s}.snowflake:nth-of-type(16) .inner{animation-delay:8s}.snowflake:nth-of-type(17){left:45%;animation-delay:2s}.snowflake:nth-of-type(17) .inner{animation-delay:3s}.snowflake:nth-of-type(18){left:95%;animation-delay:0s}.snowflake:nth-of-type(18) .inner{animation-delay:5s}.snowflake:nth-of-type(19){left:15%;animation-delay:2.5s}.snowflake:nth-of-type(19) .inner{animation-delay:7s}
+</style>
+<div class="snowflakes" aria-hidden="true">
+  <div class="snowflake"><div class="inner">&#10053;</div></div>
+  <div class="snowflake"><div class="inner">&#10053;</div></div>
+  <div class="snowflake"><div class="inner">&#10053;</div></div>
+  <div class="snowflake"><div class="inner">&#10053;</div></div>
+  <div class="snowflake"><div class="inner">&#10053;</div></div>
+  <div class="snowflake"><div class="inner">&#10053;</div></div>
+  <div class="snowflake"><div class="inner">&#10053;</div></div>
+  <div class="snowflake"><div class="inner">&#10053;</div></div>
+  <div class="snowflake"><div class="inner">&#10053;</div></div>
+  <div class="snowflake"><div class="inner">&#10053;</div></div>
+  <div class="snowflake"><div class="inner">&#10053;</div></div>
+  <div class="snowflake"><div class="inner">&#10053;</div></div>
+  <div class="snowflake"><div class="inner">&#10053;</div></div>
+  <div class="snowflake"><div class="inner">&#10053;</div></div>
+  <div class="snowflake"><div class="inner">&#10053;</div></div>
+  <div class="snowflake"><div class="inner">&#10053;</div></div>
+  <div class="snowflake"><div class="inner">&#10053;</div></div>
+  <div class="snowflake"><div class="inner">&#10053;</div></div>
+  <div class="snowflake"><div class="inner">&#10053;</div></div>
+</div>
+
+    <div class="container">
+        <a href="/" class="back-link">< Back to Home</a>
+        <h1>Skeldoor's Loot Calculator</h1>
+
+        <div class="loot-controls">
+            <div class="control-row">
+                <label>Monster:</label>
+                <input type="text" id="monsterInput" placeholder="Monster name or wiki URL (e.g. Black dragon)" value="Shellbane gryphon">
+                <button id="fetchBtn">Fetch Drops</button>
+            </div>
+            <div id="statusMessage" class="status-message"></div>
+            <div class="control-row">
+                <label>Drop Table:</label>
+                <select id="dropVersion">
+                    <option value="">-- Fetch a monster first --</option>
+                </select>
+            </div>
+            <div class="control-row">
+                <label>Kill Count:</label>
+                <input type="number" id="killCount" value="256" min="0" max="10000000">
+            </div>
+            <div class="control-row">
+                <label>Width:</label>
+                <input type="number" id="panelWidth" value="400" min="200" max="600" step="10">
+                <label>Scale:</label>
+                <input type="number" id="scale" value="2" min="1" max="3">
+                <label>Frame:</label>
+                <select id="frameType">
+                    <option value="frame1">Frame 1</option>
+                    <option value="frame2">Frame 2</option>
+                    <option value="frame3">Frame 3</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="save-controls">
+            <button id="saveButton" class="save-button">Save Panel as Image</button>
+        </div>
+
+        <div class="panel-container">
+            <div class="custom-panel" id="panel">
+                <div class="corner tl"></div>
+                <div class="edge top"></div>
+                <div class="corner tr"></div>
+                <div class="edge left"></div>
+                <div id="panelContent" class="content">
+                    <div class="shadow-overlay"></div>
+                    <div class="loot-header">
+                        <div class="monster-title">Loot Calculator</div>
+                        <div class="kill-subtitle">Enter a monster name to begin</div>
+                    </div>
+                </div>
+                <div class="edge right"></div>
+                <div class="corner bl"></div>
+                <div class="edge bottom"></div>
+                <div class="corner br"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/dropsimulator/dropsimulator.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.6.0/dist/dom-to-image-more.min.js"></script>
+</body>
+</html>
