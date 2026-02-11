@@ -1,7 +1,7 @@
 {
   "name": "nice-panels",
-  "version": "1.4.1",
-  "patchnotes": "Added new weapon slot icons to the primary/secondary text",
+  "version": "1.4.2",
+  "patchnotes": "Added a new panel that allows you to see the exact statistical average loot you'd get from X kills of a monster. Also added a new background tickbox to the Item Icon creator. Also the snow is gone because it's not snowed near my house in a while.",
   "description": "Bank view panel generator",
   "main": "server.js",
   "scripts": {
