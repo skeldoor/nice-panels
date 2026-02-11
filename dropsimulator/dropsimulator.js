@@ -17,6 +17,7 @@ function init() {
     document.getElementById('killCount').addEventListener('input', updatePanel);
     document.getElementById('scale').addEventListener('input', updatePanel);
     document.getElementById('panelWidth').addEventListener('input', updatePanel);
+    document.getElementById('panelPadding').addEventListener('input', updatePanel);
     document.getElementById('frameType').addEventListener('change', updatePanel);
     document.getElementById('saveButton').addEventListener('click', savePanelAsImage);
 
@@ -354,6 +355,11 @@ function updatePanel() {
 
     const borderSize = 32;
     const naturalWidth = parseInt(document.getElementById('panelWidth').value) || 400;
+    const padding = parseInt(document.getElementById('panelPadding').value);
+    const pad = isNaN(padding) ? 26 : padding;
+
+    // Apply padding dynamically
+    content.style.padding = `${pad}px ${pad}px`;
 
     // If no drops loaded, show placeholder
     if (Object.keys(dropTables).length === 0 || !version || !dropTables[version]) {
@@ -409,9 +415,9 @@ function updatePanel() {
     const headerHeight = 64;
     const dividerHeight = 6;
     const rowHeight = 24;
-    const paddingY = 16;
-    const contentHeight = paddingY + headerHeight + dividerHeight + (loot.length * rowHeight) + 4;
-    const naturalHeight = contentHeight + borderSize * 2;
+    const inset = 6; // content is positioned 6px from each panel edge
+    const contentHeight = (pad * 2) + headerHeight + dividerHeight + (loot.length * rowHeight);
+    const naturalHeight = contentHeight + (inset * 2);
 
     applyPanelDimensions(panel, content, naturalWidth, naturalHeight, borderSize, scale);
 }
