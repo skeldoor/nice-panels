@@ -1,7 +1,7 @@
 {
   "name": "nice-panels",
   "version": "1.5.0",
-  "patchnotes": "Added a new panel that allows you to see the exact statistical average loot you'd get from X kills of a monster. Also added a new background tickbox to the Item Icon creator. Also the snow is gone because it's not snowed near my house in a while.",
+  "patchnotes": "Standardised the layout of all the panels and adjusted download button functionality to work better across a wider range of browsers.",
   "description": "Bank view panel generator",
   "main": "server.js",
   "scripts": {
