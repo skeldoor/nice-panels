@@ -71,7 +71,7 @@ function generateBank(stateToRender = null) {
         if (tabCount === 0) {
             const emptyTab = document.createElement('div');
             emptyTab.className = 'bank-tab';
-            emptyTab.innerHTML = `<img src="emptytab.png" alt="Empty Tab">`;
+            emptyTab.innerHTML = `<img src="/bankview/emptytab.png" alt="Empty Tab">`;
             bankTabsContainer.appendChild(emptyTab);
         } else {
             for (let i = 0; i < tabCount; i++) {
@@ -79,16 +79,16 @@ function generateBank(stateToRender = null) {
                 tab.className = 'bank-tab';
                 const item = tabItems[i];
                 if (item && item.iconUrl) {
-                    tab.innerHTML = `<img src="itemtab.png" class="tab-background"><img src="${item.iconUrl}" class="tab-item">`;
+                    tab.innerHTML = `<img src="/bankview/itemtab.png" class="tab-background"><img src="${item.iconUrl}" class="tab-item">`;
                 } else {
-                    tab.innerHTML = `<img src="itemtab.png" class="tab-background">`;
+                    tab.innerHTML = `<img src="/bankview/itemtab.png" class="tab-background">`;
                 }
                 bankTabsContainer.appendChild(tab);
             }
             if (tabCount < 9) {
                 const emptyTab = document.createElement('div');
                 emptyTab.className = 'bank-tab';
-                emptyTab.innerHTML = `<img src="emptytab.png" alt="Empty Tab">`;
+                emptyTab.innerHTML = `<img src="/bankview/emptytab.png" alt="Empty Tab">`;
                 bankTabsContainer.appendChild(emptyTab);
             }
         }
