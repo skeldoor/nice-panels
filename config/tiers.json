@@ -1,7 +1,7 @@
 {
-  "adminIds": ["185596755"],
+  "adminIds": [],
   "manualLimited": [],
-  "manualPremium": [],
+  "manualPremium": ["185596755"],
   "tierOrder": ["fan", "limited", "premium"],
   "tiers": {
     "fan": {

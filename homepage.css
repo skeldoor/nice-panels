@@ -1,0 +1,424 @@
+/* ========================================================
+   HOMEPAGE-SPECIFIC STYLES
+   Scoped to .homepage-body to avoid breaking tool pages
+   ======================================================== */
+
+/* --- Responsive visibility --- */
+.mobile-only {
+    display: none;
+}
+
+.desktop-only {
+    display: block;
+}
+
+@media (max-width: 899px) {
+    .mobile-only {
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+    }
+
+    .desktop-only {
+        display: none !important;
+    }
+}
+
+/* ========================================================
+   MOBILE VIEW
+   ======================================================== */
+.mobile-container {
+    text-align: center;
+    padding: 40px 24px;
+    max-width: 400px;
+}
+
+.mobile-title {
+    font-family: 'RuneScape UF', sans-serif;
+    color: #ffcc00;
+    font-size: 42px;
+    text-shadow: 2px 2px #000;
+    margin: 0 0 30px 0;
+}
+
+.mobile-message p {
+    font-family: 'RuneScape UF', sans-serif;
+    color: #ffcc00;
+    font-size: 20px;
+    text-shadow: 1px 1px #000;
+    line-height: 1.5;
+    margin: 0 0 10px 0;
+}
+
+.mobile-submessage {
+    color: #ccc !important;
+    font-size: 16px !important;
+}
+
+.mobile-links {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+
+#mobile-auth-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 40px;
+}
+
+#mobile-auth-logged-in {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.mobile-patreon-btn {
+    font-size: 18px !important;
+    padding: 12px 28px !important;
+}
+
+.mobile-patreon-cta {
+    margin-top: 10px;
+}
+
+.mobile-patreon-cta p {
+    color: #aaa;
+    font-size: 14px;
+    margin: 0 0 12px 0;
+}
+
+.mobile-socials {
+    display: flex;
+    gap: 20px;
+}
+
+.mobile-socials a {
+    color: #ffcc00;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.mobile-socials a:hover {
+    text-decoration: underline;
+}
+
+
+/* ========================================================
+   DESKTOP VIEW
+   ======================================================== */
+.homepage-body {
+    padding: 20px 40px;
+}
+
+.homepage-container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* --- Hero Section --- */
+.hero-section {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.hero-title {
+    font-family: 'RuneScape UF', sans-serif;
+    color: #ffcc00;
+    font-size: 52px;
+    text-shadow: 2px 2px #000;
+    margin: 0 0 16px 0;
+}
+
+.hero-subtitle {
+    color: #ccc;
+    font-size: 17px;
+    line-height: 1.6;
+    max-width: 720px;
+    margin: 0 auto;
+    font-family: 'RuneScape UF', sans-serif;
+}
+
+
+/* ========================================================
+   TOOL CARDS GRID
+   ======================================================== */
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px;
+    margin-bottom: 50px;
+}
+
+@media (max-width: 1050px) and (min-width: 900px) {
+    .tools-grid {
+        grid-template-columns: 1fr;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* --- NEW badge --- */
+.new-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background-color: #26e37d;
+    color: #fff;
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    border-radius: 4px;
+    line-height: 1.4;
+    vertical-align: middle;
+    text-shadow: none;
+}
+
+/* --- Individual Card --- */
+.tool-card {
+    background-color: #3a3a3a;
+    border: 2px solid #555;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.2s, transform 0.15s;
+}
+
+.tool-card:hover {
+    border-color: #ffcc00;
+    transform: translateY(-2px);
+}
+
+.tool-card-locked {
+    opacity: 0.75;
+}
+
+.tool-card-locked:hover {
+    opacity: 0.9;
+}
+
+/* --- Card Image Area --- */
+.tool-card-image-wrap {
+    width: 100%;
+    height: 220px;
+    background-color: #2a2a2a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-bottom: 2px solid #555;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.tool-card-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+}
+
+/* --- Card Body --- */
+.tool-card-body {
+    padding: 20px 22px 22px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.tool-card-title {
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 24px;
+    color: #ffcc00;
+    text-shadow: 1px 1px #000;
+    margin: 0 0 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.tool-card-title a {
+    color: #ffcc00;
+    text-decoration: none;
+    font-size: inherit;
+}
+
+.tool-card-title a:hover {
+    text-decoration: underline;
+}
+
+.tool-card-desc {
+    color: #ccc;
+    font-size: 14px;
+    line-height: 1.6;
+    font-family: 'RuneScape UF', sans-serif;
+    margin: 0 0 18px 0;
+    flex: 1;
+}
+
+/* --- Card Button --- */
+.tool-card-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #ffcc00;
+    color: #333 !important;
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 16px !important;
+    font-weight: bold;
+    text-decoration: none !important;
+    border-radius: 5px;
+    text-align: center;
+    transition: background-color 0.2s;
+    align-self: flex-start;
+}
+
+.tool-card-btn:hover {
+    background-color: #e6b800;
+    text-decoration: none !important;
+}
+
+.tool-card-btn-locked {
+    background-color: #ff424d;
+    color: #fff !important;
+}
+
+.tool-card-btn-locked:hover {
+    background-color: #e0333d;
+}
+
+
+/* ========================================================
+   PATREON CTA SECTION
+   ======================================================== */
+.patreon-section {
+    margin-bottom: 50px;
+}
+
+.patreon-section-inner {
+    background-color: #3a3a3a;
+    border: 2px solid #ffcc00;
+    border-radius: 10px;
+    padding: 40px;
+    text-align: center;
+}
+
+.patreon-heading {
+    font-family: 'RuneScape UF', sans-serif;
+    color: #ffcc00;
+    font-size: 36px;
+    text-shadow: 2px 2px #000;
+    margin: 0 0 16px 0;
+}
+
+.patreon-pitch {
+    color: #ccc;
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 700px;
+    margin: 0 auto 30px;
+    font-family: 'RuneScape UF', sans-serif;
+}
+
+/* --- Tier Cards --- */
+.patreon-tiers-row {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.patreon-tier-card {
+    background-color: #444;
+    border-radius: 8px;
+    padding: 24px 28px;
+    flex: 1;
+    max-width: 320px;
+    min-width: 240px;
+    text-align: left;
+}
+
+.patreon-tier-card h3 {
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 22px;
+    margin: 0 0 10px 0;
+    text-shadow: 1px 1px #000;
+}
+
+.patreon-tier-card p {
+    color: #ccc;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+    font-family: 'RuneScape UF', sans-serif;
+}
+
+.tier-card-limited h3 {
+    color: #5865F2;
+}
+
+.tier-card-limited {
+    border: 1px solid #5865F2;
+}
+
+.tier-card-premium h3 {
+    color: #ffcc00;
+}
+
+.tier-card-premium {
+    border: 1px solid #ffcc00;
+}
+
+
+/* --- Patreon CTA Button --- */
+.patreon-cta-btn {
+    display: inline-block;
+    padding: 14px 36px;
+    background-color: #ff424d;
+    color: #fff !important;
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 20px !important;
+    font-weight: bold;
+    text-decoration: none !important;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.patreon-cta-btn:hover {
+    background-color: #e0333d;
+    text-decoration: none !important;
+}
+
+
+/* ========================================================
+   HOMEPAGE FOOTER OVERRIDES
+   ======================================================== */
+.homepage-body footer {
+    text-align: center;
+    margin-top: 20px;
+    padding-bottom: 30px;
+    color: #aaa;
+}
+
+.homepage-body footer a {
+    color: #ffcc00;
+    font-size: 16px;
+}
+
+.homepage-body footer p {
+    font-size: 14px;
+    margin-top: 8px;
+    color: #888;
+    font-family: 'RuneScape UF', sans-serif;
+}
