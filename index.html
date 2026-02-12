@@ -80,24 +80,10 @@
                 <!-- Cards are populated dynamically -->
             </div>
 
-            <!-- Patreon CTA Section -->
-            <div class="patreon-section">
-                <div class="patreon-section-inner">
-                    <h2 class="patreon-heading">Unlock the full toolkit</h2>
-                    <p class="patreon-pitch">Every panel type, every feature, zero fuss. A Patreon sub gives you instant access to all the generators above so you can spend your time making content instead of wrestling with image editors. It also keeps the site alive and the tools improving.</p>
-                    <div class="patreon-tiers-row">
-                        <div class="patreon-tier-card tier-card-limited">
-                            <h3>Limited Access</h3>
-                            <p>Get started with the Info Box Panel &mdash; the most popular tool for thumbnails and social posts.</p>
-                        </div>
-                        <div class="patreon-tier-card tier-card-premium">
-                            <h3>Full Access</h3>
-                            <p>Unlock every tool: Info Boxes, Bank Views, Item Icons, Dialog Panels, Option Menus, and the Loot Calculator. The whole lot.</p>
-                        </div>
-                    </div>
-                    <a href="https://www.patreon.com/Skeldoor" target="_blank" class="patreon-cta-btn">
-                        Become a Patron
-                    </a>
+            <!-- Patreon CTA Section (dynamically populated based on tier) -->
+            <div class="patreon-section" id="patreon-section">
+                <div class="patreon-section-inner" id="patreon-section-inner">
+                    <!-- Content injected by updatePatreonSection() -->
                 </div>
             </div>
 
@@ -110,6 +96,8 @@
     </div>
 
     <script>
+        const PATREON_URL = 'https://www.patreon.com/Skeldoor';
+
         // Tool definitions with descriptions and example images
         const toolCards = [
             {
@@ -156,7 +144,10 @@
             },
         ];
 
-        // Fetch version and patch notes
+        // Track global auth state so handlers can use it
+        let currentAuth = { authenticated: false, tier: null };
+
+        // Fetch version
         fetch('/package.json')
             .then(response => response.json())
             .then(data => {
@@ -167,6 +158,12 @@
         fetch('/api/auth/user')
             .then(res => res.json())
             .then(data => {
+                // Store auth state globally
+                currentAuth = {
+                    authenticated: data.authenticated,
+                    tier: data.authenticated && data.user ? data.user.tier : null,
+                };
+
                 // === Desktop auth bar ===
                 document.getElementById('auth-loading').style.display = 'none';
                 if (data.authenticated) {
@@ -193,8 +190,9 @@
                     document.getElementById('mobile-auth-logged-out').style.display = 'flex';
                 }
 
-                // === Render tool cards ===
+                // === Render tool cards & patreon section ===
                 renderToolCards(data);
+                updatePatreonSection(currentAuth.tier, currentAuth.authenticated);
             })
             .catch(err => {
                 console.error('Auth check failed:', err);
@@ -203,13 +201,14 @@
                 document.getElementById('mobile-auth-loading').style.display = 'none';
                 document.getElementById('mobile-auth-logged-out').style.display = 'flex';
 
-                // Render cards as all locked
                 renderToolCards({ authenticated: false, tools: {} });
+                updatePatreonSection(null, false);
             });
 
         function renderToolCards(authData) {
             const grid = document.getElementById('tools-grid');
             grid.innerHTML = '';
+            const isLoggedIn = authData.authenticated;
 
             for (const tool of toolCards) {
                 const toolAccess = authData.tools ? authData.tools[tool.key] : null;
@@ -219,26 +218,136 @@
                 const card = document.createElement('div');
                 card.className = 'tool-card' + (isLocked ? ' tool-card-locked' : '');
 
-                card.innerHTML = `
-                    <div class="tool-card-image-wrap">
-                        <img src="${tool.image}" alt="${tool.label} example" class="tool-card-image" loading="lazy">
-                    </div>
-                    <div class="tool-card-body">
-                        <h3 class="tool-card-title">
-                            <a href="${tool.path}" ${isLocked ? `onclick="return handleLockedClick(event, '${minTierName}')"` : ''}>
-                                ${tool.label}
+                // If locked and user is logged in, link straight to Patreon sub page.
+                // If locked and not logged in, prompt them to log in first.
+                let lockedHref, lockedOnclick, lockedBtnText;
+                if (isLocked && isLoggedIn) {
+                    lockedHref = PATREON_URL;
+                    lockedOnclick = '';
+                    lockedBtnText = 'Subscribe on Patreon';
+                } else if (isLocked) {
+                    lockedHref = tool.path;
+                    lockedOnclick = `onclick="return handleLockedClick(event, '${minTierName}')"`;
+                    lockedBtnText = 'Unlock with Patreon';
+                }
+
+                if (isLocked) {
+                    card.innerHTML = `
+                        <div class="tool-card-image-wrap">
+                            <img src="${tool.image}" alt="${tool.label} example" class="tool-card-image" loading="lazy">
+                        </div>
+                        <div class="tool-card-body">
+                            <h3 class="tool-card-title">
+                                <a href="${lockedHref}" ${lockedOnclick} ${isLoggedIn ? 'target="_blank"' : ''}>
+                                    ${tool.label}
+                                </a>
+                                <span class="lock-badge">${minTierName}</span>
+                            </h3>
+                            <p class="tool-card-desc">${tool.description}</p>
+                            <a href="${lockedHref}" class="tool-card-btn tool-card-btn-locked" ${lockedOnclick} ${isLoggedIn ? 'target="_blank"' : ''}>
+                                ${lockedBtnText}
                             </a>
-                            ${isLocked ? `<span class="lock-badge">${minTierName}</span>` : ''}
-                        </h3>
-                        <p class="tool-card-desc">${tool.description}</p>
-                        <a href="${tool.path}" class="tool-card-btn ${isLocked ? 'tool-card-btn-locked' : ''}" ${isLocked ? `onclick="return handleLockedClick(event, '${minTierName}')"` : ''}>
-                            ${isLocked ? 'Unlock with Patreon' : 'Open Tool'}
-                        </a>
-                    </div>
-                `;
+                        </div>
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <div class="tool-card-image-wrap">
+                            <img src="${tool.image}" alt="${tool.label} example" class="tool-card-image" loading="lazy">
+                        </div>
+                        <div class="tool-card-body">
+                            <h3 class="tool-card-title">
+                                <a href="${tool.path}">
+                                    ${tool.label}
+                                </a>
+                            </h3>
+                            <p class="tool-card-desc">${tool.description}</p>
+                            <a href="${tool.path}" class="tool-card-btn">
+                                Open Tool
+                            </a>
+                        </div>
+                    `;
+                }
 
                 grid.appendChild(card);
             }
+        }
+
+        /**
+         * Update the Patreon CTA section based on the user's current tier.
+         * - Not logged in:       Generic pitch with both tier cards
+         * - Logged in, no tier:  "You're in — now grab a subscription" with both tier cards
+         * - Fan tier:            Same as no tier (Fan doesn't unlock tools)
+         * - Limited tier:        "Ready for more?" pitch focused on Full Access upgrade
+         * - Premium tier:        "You've got the lot" thank-you message, no upsell
+         */
+        function updatePatreonSection(tier, isLoggedIn) {
+            const container = document.getElementById('patreon-section-inner');
+
+            if (tier === 'premium') {
+                container.innerHTML = `
+                    <h2 class="patreon-heading">You've got the full toolkit</h2>
+                    <p class="patreon-pitch">Every tool, every feature, all yours. Cheers for the support &mdash; it genuinely keeps this whole thing running and improving. Now go make some panels.</p>
+                `;
+                return;
+            }
+
+            if (tier === 'limited') {
+                container.innerHTML = `
+                    <h2 class="patreon-heading">Ready for the rest?</h2>
+                    <p class="patreon-pitch">You've already got the Info Box Panel sorted. Upgrade to Full Access and unlock Bank Views, Item Icons, Dialog Panels, Option Menus, and the Loot Calculator &mdash; the full set of tools so you never have to open an image editor again.</p>
+                    <div class="patreon-tiers-row">
+                        <div class="patreon-tier-card tier-card-premium">
+                            <h3>Full Access</h3>
+                            <p>Unlock every remaining tool. Bank Views, Item Icons, Dialog Panels, Option Menus, and the Loot Calculator. One sub, the whole lot.</p>
+                        </div>
+                    </div>
+                    <a href="${PATREON_URL}" target="_blank" class="patreon-cta-btn">
+                        Upgrade on Patreon
+                    </a>
+                `;
+                return;
+            }
+
+            if (isLoggedIn && (!tier || tier === 'fan')) {
+                // Logged in but no tool-granting tier
+                container.innerHTML = `
+                    <h2 class="patreon-heading">You're signed in &mdash; now unlock the tools</h2>
+                    <p class="patreon-pitch">You've got a Patreon account linked, which is a grand start. Pick a tier below to actually get your hands on the panel generators. It takes seconds and you'll save hours of messing about in image editors.</p>
+                    <div class="patreon-tiers-row">
+                        <div class="patreon-tier-card tier-card-limited">
+                            <h3>Limited Access</h3>
+                            <p>Get started with the Info Box Panel &mdash; the most popular tool for thumbnails and social posts.</p>
+                        </div>
+                        <div class="patreon-tier-card tier-card-premium">
+                            <h3>Full Access</h3>
+                            <p>Unlock every tool: Info Boxes, Bank Views, Item Icons, Dialog Panels, Option Menus, and the Loot Calculator. The whole lot.</p>
+                        </div>
+                    </div>
+                    <a href="${PATREON_URL}" target="_blank" class="patreon-cta-btn">
+                        Subscribe on Patreon
+                    </a>
+                `;
+                return;
+            }
+
+            // Not logged in — generic pitch
+            container.innerHTML = `
+                <h2 class="patreon-heading">Unlock the full toolkit</h2>
+                <p class="patreon-pitch">Every panel type, every feature, zero fuss. A Patreon sub gives you instant access to all the generators above so you can spend your time making content instead of wrestling with image editors. It also keeps the site alive and the tools improving.</p>
+                <div class="patreon-tiers-row">
+                    <div class="patreon-tier-card tier-card-limited">
+                        <h3>Limited Access</h3>
+                        <p>Get started with the Info Box Panel &mdash; the most popular tool for thumbnails and social posts.</p>
+                    </div>
+                    <div class="patreon-tier-card tier-card-premium">
+                        <h3>Full Access</h3>
+                        <p>Unlock every tool: Info Boxes, Bank Views, Item Icons, Dialog Panels, Option Menus, and the Loot Calculator. The whole lot.</p>
+                    </div>
+                </div>
+                <a href="${PATREON_URL}" target="_blank" class="patreon-cta-btn">
+                    Become a Patron
+                </a>
+            `;
         }
 
         function handleLockedClick(event, tierName) {
