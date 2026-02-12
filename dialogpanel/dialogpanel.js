@@ -387,18 +387,19 @@ document.addEventListener('DOMContentLoaded', () => {
         panelToSave.style.transform = 'scale(1)';
         panelToSave.style.transformOrigin = 'top left';
 
-        const naturalWidth = 518;
-        const naturalHeight = 141;
-
         try {
             await inlineBackgroundImages(panelToSave);
             await inlineImgElements(panelToSave);
             await document.fonts.ready;
 
+            // Read actual rendered dimensions at 1x scale
+            const captureWidth = panelToSave.offsetWidth;
+            const captureHeight = panelToSave.offsetHeight;
+
             // Capture at 1x natural size
             const dataUrl = await domtoimage.toPng(panelToSave, {
-                width: naturalWidth,
-                height: naturalHeight,
+                width: captureWidth,
+                height: captureHeight,
                 style: {
                     'transform': 'scale(1)',
                     'transform-origin': 'top left',
@@ -407,8 +408,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // Scale up via canvas for crisp pixel scaling
-            const targetWidth = naturalWidth * scale;
-            const targetHeight = naturalHeight * scale;
+            const targetWidth = captureWidth * scale;
+            const targetHeight = captureHeight * scale;
 
             const img = new Image();
             img.onload = () => {
