@@ -2,69 +2,173 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skeldoor's OSRS Panel Generator</title>
     <link rel="icon" href="/favicon.ico">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="homepage.css">
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-M5J3QJKJPC"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-M5J3QJKJPC');
     </script>
 </head>
-<body>
-    <div class="container">
-        <div id="auth-bar">
-            <div id="auth-loading">Loading...</div>
-            <div id="auth-logged-out" style="display:none;">
-                <a href="/api/auth/login" class="patreon-login-btn">Login with Patreon</a>
+<body class="homepage-body">
+
+    <!-- ===================== MOBILE VIEW ===================== -->
+    <div class="mobile-only">
+        <div class="mobile-container">
+            <h1 class="mobile-title">SkelsPanels</h1>
+            <div class="mobile-message">
+                <p>SkelsPanels is best enjoyed on desktop-sized screens.</p>
+                <p class="mobile-submessage">The panel tools need a bit more room to breathe &mdash; grab a laptop or desktop and come back to create some proper OSRS panels.</p>
             </div>
-            <div id="auth-logged-in" style="display:none;">
-                <span id="auth-user-info"></span>
-                <a href="/api/auth/logout" class="auth-logout-btn">Logout</a>
+
+            <div class="mobile-links">
+                <div id="mobile-auth-bar">
+                    <div id="mobile-auth-loading">Loading...</div>
+                    <div id="mobile-auth-logged-out" style="display:none;">
+                        <a href="/api/auth/login" class="patreon-login-btn mobile-patreon-btn">Login with Patreon</a>
+                    </div>
+                    <div id="mobile-auth-logged-in" style="display:none;">
+                        <span id="mobile-auth-user-info"></span>
+                        <a href="/api/auth/logout" class="auth-logout-btn">Logout</a>
+                    </div>
+                </div>
+
+                <div class="mobile-patreon-cta">
+                    <p>Support the project and unlock all the tools:</p>
+                    <a href="https://www.patreon.com/Skeldoor" target="_blank" class="patreon-cta-btn">
+                        Become a Patron
+                    </a>
+                </div>
+
+                <div class="mobile-socials">
+                    <a href="https://skeldoor.dev/" target="_blank">Skeldoor.dev</a>
+                    <a href="https://www.youtube.com/@Skeldoor" target="_blank">YouTube</a>
+                </div>
             </div>
         </div>
-
-        <h1>Skeldoor's OSRS Panel Generator</h1>
-        <h2 id="patchnotes"></h2>
-        <ul id="tool-list">
-            <!-- Tool links are populated dynamically based on auth state -->
-        </ul>
     </div>
-    <footer>
-        <a href="https://skeldoor.dev/" target="_blank">Skeldoor</a> - <span id="version"></span>
-        <p>If you use this site and you're not <a href="https://www.youtube.com/@Skeldoor" target="_blank">subbed to me</a> I'll be genuinely furious. I'm <span style="color: #5865F2;">Skeldoor on Discord</span> if you wanna msg me.</p>
-    </footer>
+
+    <!-- ===================== DESKTOP VIEW ===================== -->
+    <div class="desktop-only">
+        <div class="homepage-container">
+            <!-- Auth Bar -->
+            <div id="auth-bar">
+                <div id="auth-loading">Loading...</div>
+                <div id="auth-logged-out" style="display:none;">
+                    <a href="/api/auth/login" class="patreon-login-btn">Login with Patreon</a>
+                </div>
+                <div id="auth-logged-in" style="display:none;">
+                    <span id="auth-user-info"></span>
+                    <a href="/api/auth/logout" class="auth-logout-btn">Logout</a>
+                </div>
+            </div>
+
+            <!-- Hero Section -->
+            <div class="hero-section">
+                <h1 class="hero-title">Skeldoor's OSRS Panel Generator</h1>
+                <p class="hero-subtitle">Create authentic Old School RuneScape UI panels in seconds. No Photoshop, no pixel-pushing, no pain &mdash; just the tools you need to make your content look properly RuneScape.</p>
+            </div>
+
+            <!-- Tool Cards Grid -->
+            <div class="tools-grid" id="tools-grid">
+                <!-- Cards are populated dynamically -->
+            </div>
+
+            <!-- Patreon CTA Section -->
+            <div class="patreon-section">
+                <div class="patreon-section-inner">
+                    <h2 class="patreon-heading">Unlock the full toolkit</h2>
+                    <p class="patreon-pitch">Every panel type, every feature, zero fuss. A Patreon sub gives you instant access to all the generators above so you can spend your time making content instead of wrestling with image editors. It also keeps the site alive and the tools improving.</p>
+                    <div class="patreon-tiers-row">
+                        <div class="patreon-tier-card tier-card-limited">
+                            <h3>Limited Access</h3>
+                            <p>Get started with the Info Box Panel &mdash; the most popular tool for thumbnails and social posts.</p>
+                        </div>
+                        <div class="patreon-tier-card tier-card-premium">
+                            <h3>Full Access</h3>
+                            <p>Unlock every tool: Info Boxes, Bank Views, Item Icons, Dialog Panels, Option Menus, and the Loot Calculator. The whole lot.</p>
+                        </div>
+                    </div>
+                    <a href="https://www.patreon.com/Skeldoor" target="_blank" class="patreon-cta-btn">
+                        Become a Patron
+                    </a>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer>
+                <a href="https://skeldoor.dev/" target="_blank">Skeldoor</a> - <span id="version"></span>
+                <p>If you use this site and you're not <a href="https://www.youtube.com/@Skeldoor" target="_blank">subbed to me</a> I'll be genuinely furious. I'm <span style="color: #5865F2;">Skeldoor on Discord</span> if you wanna msg me.</p>
+            </footer>
+        </div>
+    </div>
 
     <script>
+        // Tool definitions with descriptions and example images
+        const toolCards = [
+            {
+                key: 'infobox',
+                label: 'Info Box Panel',
+                path: '/infobox/',
+                image: '/examplepanels/infoboxpanelexample.png',
+                description: 'The classic OSRS info box, ready in seconds. Type your text, pick your icon, and download a pixel-perfect panel. Ideal for YouTube thumbnails, social posts, or anywhere you need that authentic RuneScape look without opening an image editor.'
+            },
+            {
+                key: 'bankview',
+                label: 'Bank View Panel',
+                path: '/bankview/',
+                image: '/examplepanels/bankpanelexample.png',
+                description: 'Build a realistic bank screenshot with whatever items you like. Perfect for "finally got the drop" posts, progress videos, or flexing a bank tab that may or may not actually exist. Your secret is safe.'
+            },
+            {
+                key: 'itemcreator',
+                label: 'Item Icon Panel',
+                path: '/itemcreator/',
+                image: '/examplepanels/iconpanelexample.png',
+                description: 'Generate clean, crisp item icons with that proper OSRS pixelated look. Great for wiki contributions, overlay graphics, or any time you need a standalone item image without screenshotting and cropping for ages.'
+            },
+            {
+                key: 'dialogpanel',
+                label: 'Dialog Panel',
+                path: '/dialogpanel/',
+                image: '/examplepanels/dialogpanelexample.png',
+                description: 'Make any NPC say whatever you want. Craft those iconic OSRS dialog boxes for memes, video intros, or social content that looks like it came straight out of Gielinor. Hans has never been so quotable.'
+            },
+            {
+                key: 'optionpanel',
+                label: 'Option Panel',
+                path: '/optionpanel/',
+                image: '/examplepanels/optionpanelexample.png',
+                description: 'The right-click menu, but you\'re in charge. Build custom context menus for memes, thumbnails, or content that needs that unmistakable OSRS right-click feel. "Examine" has never looked so good.'
+            },
+            {
+                key: 'dropsimulator',
+                label: 'Loot Calculator Panel',
+                path: '/dropsimulator/',
+                image: '/examplepanels/lootcalcpanelexample.png',
+                description: 'Visualise loot tables and simulate drops with proper OSRS styling. Create those satisfying loot-tab screenshots or show off potential drops for your guides and videos. RNG not included.'
+            },
+        ];
+
         // Fetch version and patch notes
         fetch('/package.json')
             .then(response => response.json())
             .then(data => {
                 document.getElementById('version').textContent = `v${data.version}`;
-                document.getElementById('patchnotes').textContent = `Patch notes: ${data.patchnotes}`;
             });
 
-        // Tool definitions (labels and paths, in display order)
-        const toolDisplayOrder = [
-            { key: 'infobox', label: 'Info Box Panel', path: '/infobox/' },
-            { key: 'bankview', label: 'Bank View Panel', path: '/bankview/' },
-            { key: 'itemcreator', label: 'Item Icon Panel', path: '/itemcreator/' },
-            { key: 'dialogpanel', label: 'Dialog Panel', path: '/dialogpanel/' },
-            { key: 'optionpanel', label: 'Option Panel', path: '/optionpanel/' },
-            { key: 'dropsimulator', label: 'Loot Calculator Panel', path: '/dropsimulator/' },
-        ];
-
-        // Fetch auth state and render tool list
+        // Fetch auth state and render everything
         fetch('/api/auth/user')
             .then(res => res.json())
             .then(data => {
-                // Update auth bar
+                // === Desktop auth bar ===
                 document.getElementById('auth-loading').style.display = 'none';
-
                 if (data.authenticated) {
                     document.getElementById('auth-logged-in').style.display = 'flex';
                     const tierLabel = data.user.tierName
@@ -76,45 +180,66 @@
                     document.getElementById('auth-logged-out').style.display = 'flex';
                 }
 
-                // Render tool list
-                const toolList = document.getElementById('tool-list');
-                toolList.innerHTML = '';
-
-                for (const tool of toolDisplayOrder) {
-                    const toolAccess = data.tools[tool.key];
-                    const li = document.createElement('li');
-
-                    if (toolAccess && toolAccess.locked) {
-                        li.innerHTML = `
-                            <a href="${tool.path}" class="tool-link locked" onclick="return handleLockedClick(event, '${toolAccess.minTierName}')">
-                                ${tool.label}
-                                <span class="lock-badge">${toolAccess.minTierName}</span>
-                            </a>`;
-                    } else {
-                        li.innerHTML = `<a href="${tool.path}" class="tool-link">${tool.label}</a>`;
-                    }
-
-                    toolList.appendChild(li);
+                // === Mobile auth bar ===
+                document.getElementById('mobile-auth-loading').style.display = 'none';
+                if (data.authenticated) {
+                    document.getElementById('mobile-auth-logged-in').style.display = 'flex';
+                    const mobileTierLabel = data.user.tierName
+                        ? `<span class="tier-badge tier-${data.user.tier}">${data.user.tierName}</span>`
+                        : '<span class="tier-badge tier-none">No active tier</span>';
+                    document.getElementById('mobile-auth-user-info').innerHTML =
+                        `${data.user.name} ${mobileTierLabel}`;
+                } else {
+                    document.getElementById('mobile-auth-logged-out').style.display = 'flex';
                 }
+
+                // === Render tool cards ===
+                renderToolCards(data);
             })
             .catch(err => {
-                // If auth endpoint fails, show tools without gating info
                 console.error('Auth check failed:', err);
                 document.getElementById('auth-loading').style.display = 'none';
                 document.getElementById('auth-logged-out').style.display = 'flex';
+                document.getElementById('mobile-auth-loading').style.display = 'none';
+                document.getElementById('mobile-auth-logged-out').style.display = 'flex';
 
-                const toolList = document.getElementById('tool-list');
-                toolList.innerHTML = '';
-                for (const tool of toolDisplayOrder) {
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <a href="${tool.path}" class="tool-link locked" onclick="return handleLockedClick(event, 'Patron')">
-                            ${tool.label}
-                            <span class="lock-badge">Patron Only</span>
-                        </a>`;
-                    toolList.appendChild(li);
-                }
+                // Render cards as all locked
+                renderToolCards({ authenticated: false, tools: {} });
             });
+
+        function renderToolCards(authData) {
+            const grid = document.getElementById('tools-grid');
+            grid.innerHTML = '';
+
+            for (const tool of toolCards) {
+                const toolAccess = authData.tools ? authData.tools[tool.key] : null;
+                const isLocked = toolAccess && toolAccess.locked;
+                const minTierName = toolAccess ? toolAccess.minTierName : 'Patron';
+
+                const card = document.createElement('div');
+                card.className = 'tool-card' + (isLocked ? ' tool-card-locked' : '');
+
+                card.innerHTML = `
+                    <div class="tool-card-image-wrap">
+                        <img src="${tool.image}" alt="${tool.label} example" class="tool-card-image" loading="lazy">
+                    </div>
+                    <div class="tool-card-body">
+                        <h3 class="tool-card-title">
+                            <a href="${tool.path}" ${isLocked ? `onclick="return handleLockedClick(event, '${minTierName}')"` : ''}>
+                                ${tool.label}
+                            </a>
+                            ${isLocked ? `<span class="lock-badge">${minTierName}</span>` : ''}
+                        </h3>
+                        <p class="tool-card-desc">${tool.description}</p>
+                        <a href="${tool.path}" class="tool-card-btn ${isLocked ? 'tool-card-btn-locked' : ''}" ${isLocked ? `onclick="return handleLockedClick(event, '${minTierName}')"` : ''}>
+                            ${isLocked ? 'Unlock with Patreon' : 'Open Tool'}
+                        </a>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            }
+        }
 
         function handleLockedClick(event, tierName) {
             event.preventDefault();
