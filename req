@@ -1,0 +1,26 @@
+Project: Skeldoor's OSRS Panel Generator (skelspanels.com) — a Node.js/Express app on Vercel with 6 tools (Infobox, Bankview, Itemcreator, Dialogpanel, Optionpanel, Dropsimulator) that creators use to make OSRS-themed panels for videos.
+Goal: Add a Patreon-powered paywall with tiered access.
+Tier structure decided:
+
+Basic tier → unlocks Info Box Panel only
+Premium tier → unlocks all 6 tools
+Non-patrons see all tools on the homepage but they're locked with badges
+
+What was implemented:
+All code has been written and is in the project folder. The system uses Patreon OAuth2 → JWT stored in HTTP-only cookies (stateless, no database). New files created:
+
+config/tiers.json — maps Patreon tier IDs to tool access
+lib/patreon.js — Patreon OAuth2 helpers (auth URL, token exchange, membership fetching)
+lib/jwt.js — JWT creation/verification/cookie management
+lib/middleware.js — requireAuth and requireTier() Express middleware
+routes/auth.js — /api/auth/login, /callback, /logout, /user endpoints
+public/401.html and public/403.html — error pages
+.env.example — template for required env vars
+
+Modified files: server.js (added auth middleware + tier-gated routes), vercel.json (routes protected paths through Express), index.html (dynamic tool list with lock badges + Patreon login button), style.css (auth bar + badge styles), .gitignore (added .env exclusion), package.json (added jsonwebtoken, cookie-parser, axios).
+What still needs to be done manually:
+
+Register an OAuth client at patreon.com/portal/registration/register-clients with redirect URI https://skelspanels.com/api/auth/callback
+Get Patreon tier IDs and update them in config/tiers.json (replace YOUR_BASIC_TIER_ID and YOUR_PREMIUM_TIER_ID)
+Set Vercel environment variables: PATREON_CLIENT_ID, PATREON_CLIENT_SECRET, PATREON_REDIRECT_URI (https://skelspanels.com/api/auth/callback), and JWT_SECRET
+Deploy
