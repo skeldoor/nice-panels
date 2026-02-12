@@ -242,8 +242,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             await inlineBackgroundImages(bankPanel);
+            const captureWidth = bankPanel.offsetWidth;
+            const captureHeight = bankPanel.offsetHeight;
             const dataUrl = await domtoimage.toPng(bankPanel, {
                 cacheBust: true,
+                width: captureWidth,
+                height: captureHeight,
                 style: {
                     'image-rendering': 'pixelated',
                 }
