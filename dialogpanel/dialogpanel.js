@@ -1,3 +1,56 @@
+async function inlineImgElements(element) {
+  const imgs = element.querySelectorAll('img');
+  const promises = [];
+
+  imgs.forEach(img => {
+    const src = img.getAttribute('src');
+    if (src && !src.startsWith('data:')) {
+      const promise = fetch(src)
+        .then(res => res.blob())
+        .then(blob => new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            img.src = reader.result;
+            resolve();
+          };
+          reader.readAsDataURL(blob);
+        }))
+        .catch(err => console.warn('Could not inline img src:', src, err));
+      promises.push(promise);
+    }
+  });
+
+  await Promise.all(promises);
+}
+
+async function inlineBackgroundImages(element) {
+  const elements = element.querySelectorAll('*');
+  const promises = [];
+
+  elements.forEach(el => {
+    const style = getComputedStyle(el);
+    const bg = style.getPropertyValue('background-image');
+    const match = /url\("(.*?)"\)/.exec(bg);
+    if (match && match[1] && !match[1].startsWith('data:')) {
+      const url = match[1];
+      const promise = fetch(url)
+        .then(res => res.blob())
+        .then(blob => new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            el.style.backgroundImage = `url('${reader.result}')`;
+            resolve();
+          };
+          reader.readAsDataURL(blob);
+        }))
+        .catch(err => console.warn('Could not inline background image:', url, err));
+      promises.push(promise);
+    }
+  });
+
+  await Promise.all(promises);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const npcNameInput = document.getElementById('npcNameInput');
     const dialogTextInput = document.getElementById('dialogTextInput');
@@ -32,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Apply overall scaling using CSS transform
         panel.style.transform = `scale(${scale})`;
-        panel.style.transformOrigin = 'top left'; // Ensure scaling originates from top-left
+        panel.style.transformOrigin = 'top center'; // Scale from top center to stay centered
 
         // Update content size and position (these are now relative to the unscaled panel)
         content.style.top = `${borderDepth}px`;
@@ -324,55 +377,64 @@ document.addEventListener('DOMContentLoaded', () => {
                 resolve();
             } else {
                 npcChathead.onload = () => resolve();
-                npcChathead.onerror = () => resolve(); // Resolve even on error to not block save
+                npcChathead.onerror = () => resolve();
             }
         });
 
-        // Temporarily reset scale for dom-to-image to capture at 1x, then scale up
+        // Temporarily reset CSS transform so dom-to-image captures at 1x
         const originalTransform = panelToSave.style.transform;
         const originalTransformOrigin = panelToSave.style.transformOrigin;
+        panelToSave.style.transform = 'scale(1)';
+        panelToSave.style.transformOrigin = 'top left';
 
-        // Get the natural dimensions (1x scale)
         const naturalWidth = 518;
         const naturalHeight = 141;
 
-        // Calculate the scaled dimensions
-        const targetWidth = naturalWidth * scale;
-        const targetHeight = naturalHeight * scale;
+        try {
+            await inlineBackgroundImages(panelToSave);
+            await inlineImgElements(panelToSave);
+            await document.fonts.ready;
 
-        // Apply scale directly to the panel for dom-to-image capture
-        panelToSave.style.transform = 'scale(1)'; // Reset transform for capture
-        panelToSave.style.width = `${targetWidth}px`;
-        panelToSave.style.height = `${targetHeight}px`;
-        panelToSave.style.transformOrigin = 'top left';
+            // Capture at 1x natural size
+            const dataUrl = await domtoimage.toPng(panelToSave, {
+                width: naturalWidth,
+                height: naturalHeight,
+                style: {
+                    'transform': 'scale(1)',
+                    'transform-origin': 'top left',
+                    'image-rendering': 'pixelated'
+                }
+            });
 
-        domtoimage.toPng(panelToSave, {
-            width: targetWidth,
-            height: targetHeight,
-            style: {
-                'transform': 'scale(1)', // Ensure dom-to-image renders at 1x of its given dimensions
-                'transform-origin': 'top left'
-            }
-        })
-        .then(function (dataUrl) {
-            const link = document.createElement('a');
-            const npcName = npcNameInput.value.trim();
-            const dialogText = dialogTextInput.value.trim();
-            const filename = `${npcName}_${dialogText.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_')}.png`; // Take first 50 chars, replace non-alphanumeric with underscore
-            link.download = filename;
-            link.href = dataUrl;
-            link.click();
-        })
-        .catch(function (error) {
-            console.error('oops, something went wrong!', error);
-        })
-        .finally(() => {
+            // Scale up via canvas for crisp pixel scaling
+            const targetWidth = naturalWidth * scale;
+            const targetHeight = naturalHeight * scale;
+
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = targetWidth;
+                canvas.height = targetHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+                const link = document.createElement('a');
+                const npcName = npcNameInput.value.trim();
+                const dialogText = dialogTextInput.value.trim();
+                const filename = `${npcName}_${dialogText.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_')}.png`;
+                link.download = filename;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            };
+            img.src = dataUrl;
+        } catch (error) {
+            console.error('Error saving dialog panel:', error);
+        } finally {
             // Restore original styles
             panelToSave.style.transform = originalTransform;
-            panelToSave.style.width = `${naturalWidth}px`; // Restore original 1x width
-            panelToSave.style.height = `${naturalHeight}px`; // Restore original 1x height
             panelToSave.style.transformOrigin = originalTransformOrigin;
-        });
+        }
     });
 
     // Initial update
