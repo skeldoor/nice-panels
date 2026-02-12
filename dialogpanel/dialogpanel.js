@@ -381,31 +381,49 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Temporarily reset CSS transform so dom-to-image captures at 1x
-        const originalTransform = panelToSave.style.transform;
-        const originalTransformOrigin = panelToSave.style.transformOrigin;
-        panelToSave.style.transform = 'scale(1)';
-        panelToSave.style.transformOrigin = 'top left';
-
         try {
-            await inlineBackgroundImages(panelToSave);
-            await inlineImgElements(panelToSave);
-            await document.fonts.ready;
+            // Clone the panel so we don't modify the live DOM
+            const clone = panelToSave.cloneNode(true);
+            clone.style.position = 'absolute';
+            clone.style.left = '-9999px';
+            clone.style.top = '0px';
+            clone.style.transform = 'none';
+            clone.style.transformOrigin = 'top left';
+            clone.style.width = panelToSave.style.width;
+            clone.style.height = panelToSave.style.height;
+            document.body.appendChild(clone);
 
-            // Read actual rendered dimensions at 1x scale
-            const captureWidth = panelToSave.offsetWidth;
-            const captureHeight = panelToSave.offsetHeight;
+            // Ensure the shadow-overlay doesn't take flex space in the clone
+            // (dom-to-image can mishandle position:absolute inside flex containers)
+            const cloneShadow = clone.querySelector('.shadow-overlay');
+            if (cloneShadow) {
+                cloneShadow.style.position = 'absolute';
+                cloneShadow.style.top = '0';
+                cloneShadow.style.left = '0';
+                cloneShadow.style.right = '0';
+                cloneShadow.style.bottom = '0';
+                cloneShadow.style.width = '100%';
+                cloneShadow.style.height = '100%';
+            }
+
+            await inlineBackgroundImages(clone);
+            await inlineImgElements(clone);
+            await document.fonts.ready;
+            await new Promise(r => requestAnimationFrame(r));
+
+            const captureWidth = clone.offsetWidth;
+            const captureHeight = clone.offsetHeight;
 
             // Capture at 1x natural size
-            const dataUrl = await domtoimage.toPng(panelToSave, {
+            const dataUrl = await domtoimage.toPng(clone, {
                 width: captureWidth,
                 height: captureHeight,
                 style: {
-                    'transform': 'scale(1)',
-                    'transform-origin': 'top left',
                     'image-rendering': 'pixelated'
                 }
             });
+
+            document.body.removeChild(clone);
 
             // Scale up via canvas for crisp pixel scaling
             const targetWidth = captureWidth * scale;
@@ -431,10 +449,6 @@ document.addEventListener('DOMContentLoaded', () => {
             img.src = dataUrl;
         } catch (error) {
             console.error('Error saving dialog panel:', error);
-        } finally {
-            // Restore original styles
-            panelToSave.style.transform = originalTransform;
-            panelToSave.style.transformOrigin = originalTransformOrigin;
         }
     });
 
