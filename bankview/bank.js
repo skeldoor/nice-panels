@@ -71,7 +71,7 @@ function generateBank(stateToRender = null) {
         if (tabCount === 0) {
             const emptyTab = document.createElement('div');
             emptyTab.className = 'bank-tab';
-            emptyTab.innerHTML = `<img src="emptytab.png" alt="Empty Tab">`;
+            emptyTab.innerHTML = `<img src="/bankview/emptytab.png" alt="Empty Tab">`;
             bankTabsContainer.appendChild(emptyTab);
         } else {
             for (let i = 0; i < tabCount; i++) {
@@ -79,16 +79,16 @@ function generateBank(stateToRender = null) {
                 tab.className = 'bank-tab';
                 const item = tabItems[i];
                 if (item && item.iconUrl) {
-                    tab.innerHTML = `<img src="itemtab.png" class="tab-background"><img src="${item.iconUrl}" class="tab-item">`;
+                    tab.innerHTML = `<img src="/bankview/itemtab.png" class="tab-background"><img src="${item.iconUrl}" class="tab-item">`;
                 } else {
-                    tab.innerHTML = `<img src="itemtab.png" class="tab-background">`;
+                    tab.innerHTML = `<img src="/bankview/itemtab.png" class="tab-background">`;
                 }
                 bankTabsContainer.appendChild(tab);
             }
             if (tabCount < 9) {
                 const emptyTab = document.createElement('div');
                 emptyTab.className = 'bank-tab';
-                emptyTab.innerHTML = `<img src="emptytab.png" alt="Empty Tab">`;
+                emptyTab.innerHTML = `<img src="/bankview/emptytab.png" alt="Empty Tab">`;
                 bankTabsContainer.appendChild(emptyTab);
             }
         }
@@ -159,6 +159,31 @@ function generateBank(stateToRender = null) {
     }
 }
 
+
+async function inlineImgElements(element) {
+  const imgs = element.querySelectorAll('img');
+  const promises = [];
+
+  imgs.forEach(img => {
+    const src = img.getAttribute('src');
+    if (src && !src.startsWith('data:')) {
+      const promise = fetch(src)
+        .then(res => res.blob())
+        .then(blob => new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            img.src = reader.result;
+            resolve();
+          };
+          reader.readAsDataURL(blob);
+        }))
+        .catch(err => console.warn('Could not inline img src:', src, err));
+      promises.push(promise);
+    }
+  });
+
+  await Promise.all(promises);
+}
 
 async function inlineBackgroundImages(element) {
   const elements = element.querySelectorAll('*');
@@ -242,8 +267,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             await inlineBackgroundImages(bankPanel);
+            await inlineImgElements(bankPanel);
+            const captureWidth = bankPanel.offsetWidth;
+            const captureHeight = bankPanel.offsetHeight;
             const dataUrl = await domtoimage.toPng(bankPanel, {
                 cacheBust: true,
+                width: captureWidth,
+                height: captureHeight,
                 style: {
                     'image-rendering': 'pixelated',
                 }

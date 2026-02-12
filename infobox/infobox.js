@@ -369,8 +369,16 @@ async function savePanelAsImage() {
 
     await inlineBackgroundImages(nodeToCapture); // 👈 inline the CSS background images first
 
+    // Explicitly pass dimensions to avoid dom-to-image miscalculating
+    // the size of the panel (absolute-positioned children can cause
+    // scrollWidth/scrollHeight to undercount, leading to clipped exports)
+    const captureWidth = nodeToCapture.offsetWidth;
+    const captureHeight = nodeToCapture.offsetHeight;
+
     domtoimage.toPng(nodeToCapture, {
         cacheBust: true,
+        width: captureWidth,
+        height: captureHeight,
         style: {
             'image-rendering': 'pixelated',
         }

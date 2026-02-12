@@ -142,20 +142,6 @@
     text-align: center; /* Center the button */
 }
 
-.save-button {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-}
-
-.save-button:hover {
-    background-color: #0056b3;
-}
-
 .content {
     position: absolute;
     background-color: #CBBA95; /* Default background color, will be adjusted by JS */

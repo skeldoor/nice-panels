@@ -1,0 +1,15 @@
+What you need to do to activate it:
+
+Register a Patreon OAuth client at patreon.com/portal/registration/register-clients. Set the redirect URI to https://your-domain.vercel.app/api/auth/callback.
+Get your Patreon tier IDs — you can find these in your creator dashboard or via the Patreon API. Then update them in config/tiers.json (replace YOUR_BASIC_TIER_ID and YOUR_PREMIUM_TIER_ID).
+Set environment variables on Vercel (Settings → Environment Variables):
+
+PATREON_CLIENT_ID
+PATREON_CLIENT_SECRET
+PATREON_REDIRECT_URI
+JWT_SECRET (generate with node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+
+
+Deploy — push to your repo and Vercel will pick it up.
+
+The .env.example file in your project documents all the required variables for reference.

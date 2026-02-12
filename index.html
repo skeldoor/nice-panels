@@ -2,49 +2,370 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skeldoor's OSRS Panel Generator</title>
     <link rel="icon" href="/favicon.ico">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="homepage.css">
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-M5J3QJKJPC"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-M5J3QJKJPC');
     </script>
 </head>
-<body>
-    <div class="container">
-        <h1>Skeldoor's OSRS Panel Generator</h1>
-        <h2 id="patchnotes"></h2>
-        <ul>
-            <li><a href="/infobox/">Info Box Panel</a></li>
-            <li><a href="/bankview/">Bank View Panel</a></li>
-            <li><a href="/itemcreator/">Item Icon Creator</a></li>
-            <li><a href="/dialogpanel/">Dialog Panel</a></li>
-            <li><a href="/optionpanel/">Option Panel</a></li>
-            <li><a href="/dropsimulator/">Loot Calculator</a></li>
-        </ul>
+<body class="homepage-body">
+
+    <!-- ===================== MOBILE VIEW ===================== -->
+    <div class="mobile-only">
+        <div class="mobile-container">
+            <h1 class="mobile-title">SkelsPanels</h1>
+            <div class="mobile-message">
+                <p>SkelsPanels is best enjoyed on desktop-sized screens.</p>
+                <p class="mobile-submessage">The panel tools need a bit more room to breathe! Grab a laptop or desktop and come back to create some proper OSRS panels.</p>
+            </div>
+
+            <div class="mobile-links">
+                <div id="mobile-auth-bar">
+                    <div id="mobile-auth-loading">Loading...</div>
+                    <div id="mobile-auth-logged-out" style="display:none;">
+                        <a href="/api/auth/login" class="patreon-login-btn mobile-patreon-btn">Login with Patreon</a>
+                    </div>
+                    <div id="mobile-auth-logged-in" style="display:none;">
+                        <span id="mobile-auth-user-info"></span>
+                        <a href="/api/auth/logout" class="auth-logout-btn">Logout</a>
+                    </div>
+                </div>
+
+                <div class="mobile-patreon-cta">
+                    <p>Support the project and unlock all the tools:</p>
+                    <a href="https://www.patreon.com/Skeldoor" target="_blank" class="patreon-cta-btn">
+                        Become a Patron
+                    </a>
+                </div>
+
+                <div class="mobile-socials">
+                    <a href="https://skeldoor.dev/" target="_blank">Skeldoor.dev</a>
+                    <a href="https://www.youtube.com/@Skeldoor" target="_blank">YouTube</a>
+                </div>
+            </div>
+        </div>
     </div>
-    <footer>
-        <a href="https://skeldoor.dev/" target="_blank">Skeldoor</a> - <span id="version"></span>
-        <p>If you use this site and you're not <a href="https://www.youtube.com/@Skeldoor" target="_blank">subbed to me</a> I'll be genuinely furious. I'm <span style="color: #5865F2;">Skeldoor on Discord</span> if you wanna msg me.</p>
-    </footer>
+
+    <!-- ===================== DESKTOP VIEW ===================== -->
+    <div class="desktop-only">
+        <div class="homepage-container">
+            <!-- Auth Bar -->
+            <div id="auth-bar">
+                <div id="auth-loading">Loading...</div>
+                <div id="auth-logged-out" style="display:none;">
+                    <a href="/api/auth/login" class="patreon-login-btn">Login with Patreon</a>
+                </div>
+                <div id="auth-logged-in" style="display:none;">
+                    <span id="auth-user-info"></span>
+                    <a href="/api/auth/logout" class="auth-logout-btn">Logout</a>
+                </div>
+            </div>
+
+            <!-- Hero Section -->
+            <div class="hero-section">
+                <h1 class="hero-title">Skeldoor's OSRS Panel Generator</h1>
+                <p class="hero-subtitle">Create authentic looking Old School RuneScape UI panels in seconds. No Photoshop, no fiddling around, just the tools you need to make your content look properly RuneScape.</p>
+            </div>
+
+            <!-- Tool Cards Grid -->
+            <div class="tools-grid" id="tools-grid">
+                <!-- Cards are populated dynamically -->
+            </div>
+
+            <!-- Patreon CTA Section (dynamically populated based on tier) -->
+            <div class="patreon-section" id="patreon-section">
+                <div class="patreon-section-inner" id="patreon-section-inner">
+                    <!-- Content injected by updatePatreonSection() -->
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer>
+                <a href="https://skeldoor.dev/" target="_blank">Skeldoor</a> - <span id="version"></span>
+                <p>If you use this site and you're not <a href="https://www.youtube.com/@Skeldoor" target="_blank">subbed to me</a> I'll be genuinely furious. I'm <span style="color: #5865F2;">Skeldoor on Discord</span> if you wanna msg me.</p>
+            </footer>
+        </div>
+    </div>
+
     <script>
+        const PATREON_URL = 'https://www.patreon.com/Skeldoor';
+
+        // Tool definitions with descriptions and example images
+        const toolCards = [
+            {
+                key: 'infobox',
+                label: 'Info Box Panel',
+                path: '/infobox/',
+                image: '/examplepanels/infoboxpanelexample.png',
+                description: 'The classic OSRS info box, you\'ve already seen your favourite creators using it. Type your text, pick your icons, and download a pixel-perfect panel. Good for YouTube thumbnails, informational popups, or anywhere you need that authentic RuneScape look without faffing with an image editor.'
+            },
+            {
+                key: 'bankview',
+                label: 'Bank View Panel',
+                path: '/bankview/',
+                image: '/examplepanels/bankpanelexample.png',
+                description: 'Build a realistic bank screenshot with whatever items you like. Perfect for "finally got the drop" posts, progress video thumbnails, or flexing a bank tab that may or may not actually exist. Your secret is safe with me.'
+            },
+            {
+                key: 'itemcreator',
+                label: 'Item Icon Panel',
+                path: '/itemcreator/',
+                image: '/examplepanels/iconpanelexample.png',
+                description: 'Generate clean, crisp item icons with that proper OSRS pixelated look. Great for tidy overlay graphics, just any time you need a standalone item image without screenshotting and cropping for ages.'
+            },
+            {
+                key: 'dialogpanel',
+                label: 'Dialog Panel',
+                path: '/dialogpanel/',
+                image: '/examplepanels/dialogpanelexample.png',
+                description: 'Make any NPC say whatever you want. (Use with decorum... or don\'t I\'m just a website!) Craft those iconic OSRS dialog boxes for memes, video intros, or social content that looks like it came straight out of Gielinor.'
+            },
+            {
+                key: 'optionpanel',
+                label: 'Option Panel',
+                path: '/optionpanel/',
+                image: '/examplepanels/optionpanelexample.png',
+                description: 'Craft the ideal right-click menu. Build custom context menus for memes, thumbnails, or snazzy edits that catch the eye.'
+            },
+            {
+                key: 'dropsimulator',
+                label: 'Loot Calculator Panel',
+                badge: 'NEW',
+                path: '/dropsimulator/',
+                image: '/examplepanels/lootcalcpanelexample.png',
+                description: 'Visualise loot tables and calculate statistically average drops summarised in a nicely laid out panel. Estimate the loot you\'re going to get from killing men/women (in runescape) for 6000 hours. Good RNG sold separately.'
+            },
+        ];
+
+        // Track global auth state so handlers can use it
+        let currentAuth = { authenticated: false, tier: null };
+
+        // Fetch version
         fetch('/package.json')
             .then(response => response.json())
             .then(data => {
                 document.getElementById('version').textContent = `v${data.version}`;
             });
-    </script>
-        <script>
-        fetch('/package.json')
-            .then(response => response.json())
+
+        // Fetch auth state and render everything
+        fetch('/api/auth/user')
+            .then(res => res.json())
             .then(data => {
-                document.getElementById('patchnotes').textContent = `Patch notes: ${data.patchnotes}`;
+                // Store auth state globally
+                currentAuth = {
+                    authenticated: data.authenticated,
+                    tier: data.authenticated && data.user ? data.user.tier : null,
+                };
+
+                // === Desktop auth bar ===
+                document.getElementById('auth-loading').style.display = 'none';
+                if (data.authenticated) {
+                    document.getElementById('auth-logged-in').style.display = 'flex';
+                    const tierLabel = data.user.tierName
+                        ? `<span class="tier-badge tier-${data.user.tier}">${data.user.tierName}</span>`
+                        : '<span class="tier-badge tier-none">No active tier</span>';
+                    document.getElementById('auth-user-info').innerHTML =
+                        `${data.user.name} ${tierLabel} <span class="patreon-id" title="Your Patreon ID">ID: ${data.user.patreonId}</span>`;
+                } else {
+                    document.getElementById('auth-logged-out').style.display = 'flex';
+                }
+
+                // === Mobile auth bar ===
+                document.getElementById('mobile-auth-loading').style.display = 'none';
+                if (data.authenticated) {
+                    document.getElementById('mobile-auth-logged-in').style.display = 'flex';
+                    const mobileTierLabel = data.user.tierName
+                        ? `<span class="tier-badge tier-${data.user.tier}">${data.user.tierName}</span>`
+                        : '<span class="tier-badge tier-none">No active tier</span>';
+                    document.getElementById('mobile-auth-user-info').innerHTML =
+                        `${data.user.name} ${mobileTierLabel}`;
+                } else {
+                    document.getElementById('mobile-auth-logged-out').style.display = 'flex';
+                }
+
+                // === Render tool cards & patreon section ===
+                renderToolCards(data);
+                updatePatreonSection(currentAuth.tier, currentAuth.authenticated);
+            })
+            .catch(err => {
+                console.error('Auth check failed:', err);
+                document.getElementById('auth-loading').style.display = 'none';
+                document.getElementById('auth-logged-out').style.display = 'flex';
+                document.getElementById('mobile-auth-loading').style.display = 'none';
+                document.getElementById('mobile-auth-logged-out').style.display = 'flex';
+
+                renderToolCards({ authenticated: false, tools: {} });
+                updatePatreonSection(null, false);
             });
+
+        function renderToolCards(authData) {
+            const grid = document.getElementById('tools-grid');
+            grid.innerHTML = '';
+            const isLoggedIn = authData.authenticated;
+
+            for (const tool of toolCards) {
+                const toolAccess = authData.tools ? authData.tools[tool.key] : null;
+                const isLocked = toolAccess && toolAccess.locked;
+                const minTier = toolAccess ? toolAccess.minTier : '';
+                const minTierName = toolAccess ? toolAccess.minTierName : 'Patron';
+
+                const card = document.createElement('div');
+                card.className = 'tool-card' + (isLocked ? ' tool-card-locked' : '');
+
+                // If locked and user is logged in, link straight to Patreon sub page.
+                // If locked and not logged in, prompt them to log in first.
+                let lockedHref, lockedOnclick, lockedBtnText;
+                if (isLocked && isLoggedIn) {
+                    lockedHref = PATREON_URL;
+                    lockedOnclick = '';
+                    lockedBtnText = 'Subscribe on Patreon';
+                } else if (isLocked) {
+                    lockedHref = tool.path;
+                    lockedOnclick = `onclick="return handleLockedClick(event, '${minTierName}')"`;
+                    lockedBtnText = 'Unlock with Patreon';
+                }
+
+                const badgeHtml = tool.badge ? `<span class="new-badge">${tool.badge}</span>` : '';
+
+                if (isLocked) {
+                    card.innerHTML = `
+                        <div class="tool-card-image-wrap">
+                            <img src="${tool.image}" alt="${tool.label} example" class="tool-card-image" loading="lazy">
+                        </div>
+                        <div class="tool-card-body">
+                            <h3 class="tool-card-title">
+                                <a href="${lockedHref}" ${lockedOnclick} ${isLoggedIn ? 'target="_blank"' : ''}>
+                                    ${tool.label}
+                                </a>
+                                ${badgeHtml}
+                                <span class="lock-badge${minTier === 'limited' ? ' lock-badge-limited' : ''}">${minTierName}</span>
+                            </h3>
+                            <p class="tool-card-desc">${tool.description}</p>
+                            <a href="${lockedHref}" class="tool-card-btn tool-card-btn-locked" ${lockedOnclick} ${isLoggedIn ? 'target="_blank"' : ''}>
+                                ${lockedBtnText}
+                            </a>
+                        </div>
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <div class="tool-card-image-wrap">
+                            <img src="${tool.image}" alt="${tool.label} example" class="tool-card-image" loading="lazy">
+                        </div>
+                        <div class="tool-card-body">
+                            <h3 class="tool-card-title">
+                                <a href="${tool.path}">
+                                    ${tool.label}
+                                </a>
+                                ${badgeHtml}
+                            </h3>
+                            <p class="tool-card-desc">${tool.description}</p>
+                            <a href="${tool.path}" class="tool-card-btn">
+                                Open Tool
+                            </a>
+                        </div>
+                    `;
+                }
+
+                grid.appendChild(card);
+            }
+        }
+
+        /**
+         * Update the Patreon CTA section based on the user's current tier.
+         * - Not logged in:       Generic pitch with both tier cards
+         * - Logged in, no tier:  "You're in — now grab a subscription" with both tier cards
+         * - Fan tier:            Same as no tier (Fan doesn't unlock tools)
+         * - Limited tier:        "Ready for more?" pitch focused on Full Access upgrade
+         * - Premium tier:        "You've got the lot" thank-you message, no upsell
+         */
+        function updatePatreonSection(tier, isLoggedIn) {
+            const container = document.getElementById('patreon-section-inner');
+
+            if (tier === 'premium') {
+                container.innerHTML = `
+                    <h2 class="patreon-heading">You've got the full toolkit</h2>
+                    <p class="patreon-pitch">Every tool, every feature, all yours. Cheers for the support, it genuinely keeps this whole thing running and improving and I appreciate it muchly. Now go make some panels!</p>
+                `;
+                return;
+            }
+
+            if (tier === 'limited') {
+                container.innerHTML = `
+                    <h2 class="patreon-heading">Ready for the rest?</h2>
+                    <p class="patreon-pitch">You've already got the Info Box Panel sorted. Upgrade to Full Access and unlock Bank Views, Item Icons, Dialog Panels, Option Menus, and the Loot Calculator (and anything new I create) the full set of tools so you never have to open an image editor again.</p>
+                    <div class="patreon-tiers-row">
+                        <div class="patreon-tier-card tier-card-premium">
+                            <h3>Full Access</h3>
+                            <p>Unlock every remaining tool. Bank Views, Item Icons, Dialog Panels, Option Menus, and the Loot Calculator. One sub, the whole lot.</p>
+                        </div>
+                    </div>
+                    <a href="${PATREON_URL}" target="_blank" class="patreon-cta-btn">
+                        Upgrade on Patreon
+                    </a>
+                `;
+                return;
+            }
+
+            if (isLoggedIn && (!tier || tier === 'fan')) {
+                // Logged in but no tool-granting tier
+                container.innerHTML = `
+                    <h2 class="patreon-heading">You're signed in, now unlock the tools</h2>
+                    <p class="patreon-pitch">You've got a Patreon account linked, which is a grand start. Pick a tier below to actually get your hands on the panel generators. It takes seconds and you'll save hours of messing about in image editors.</p>
+                    <div class="patreon-tiers-row">
+                        <div class="patreon-tier-card tier-card-limited">
+                            <h3>Limited Access</h3>
+                            <p>Get started with the Info Box Panel, the most popular tool for thumbnails and video popups.</p>
+                        </div>
+                        <div class="patreon-tier-card tier-card-premium">
+                            <h3>Full Access</h3>
+                            <p>Unlock every tool: Info Boxes, Bank Views, Item Icons, Dialog Panels, Option Menus, and the Loot Calculator. The whole lot.</p>
+                        </div>
+                    </div>
+                    <a href="${PATREON_URL}" target="_blank" class="patreon-cta-btn">
+                        Subscribe on Patreon
+                    </a>
+                `;
+                return;
+            }
+
+            // Not logged in — generic pitch
+            container.innerHTML = `
+                <h2 class="patreon-heading">Unlock the full toolkit</h2>
+                <p class="patreon-pitch">Every panel type, every feature, zero fuss. A Patreon sub gives you instant access to all the generators above so you can spend your time making content instead of wrestling with image editors. It also keeps the site alive and the tools improving.</p>
+                <div class="patreon-tiers-row">
+                    <div class="patreon-tier-card tier-card-limited">
+                        <h3>Limited Access</h3>
+                        <p>Get started with the Info Box Panel, the most popular tool for thumbnails and social posts.</p>
+                    </div>
+                    <div class="patreon-tier-card tier-card-premium">
+                        <h3>Full Access</h3>
+                        <p>Unlock every tool: Info Boxes, Bank Views, Item Icons, Dialog Panels, Option Menus, and the Loot Calculator. The whole lot.</p>
+                    </div>
+                </div>
+                <a href="${PATREON_URL}" target="_blank" class="patreon-cta-btn">
+                    Become a Patron
+                </a>
+            `;
+        }
+
+        function handleLockedClick(event, tierName) {
+            event.preventDefault();
+            const proceed = confirm(
+                `This tool requires a ${tierName} tier Patreon subscription.\n\nWould you like to log in with Patreon?`
+            );
+            if (proceed) {
+                window.location.href = '/api/auth/login';
+            }
+            return false;
+        }
     </script>
 </body>
 </html>

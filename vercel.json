@@ -4,16 +4,24 @@
     {
       "src": "server.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "/**",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
+      "src": "/api/(.*)",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/(infobox|bankview|itemcreator|dialogpanel|optionpanel|dropsimulator)(/?.*)",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/",
+      "dest": "/server.js"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/$1"
+      "dest": "/server.js"
     }
   ]
 }

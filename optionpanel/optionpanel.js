@@ -349,60 +349,55 @@ function generateFileName() {
 async function savePanelAsImage() {
     const panel = document.getElementById('panel');
     const scale = parseInt(document.getElementById('scale').value);
-    
-    // Get the actual unscaled dimensions of the panel
-    const unscaledRect = panel.getBoundingClientRect();
-    const unscaledWidth = unscaledRect.width;
-    const unscaledHeight = unscaledRect.height;
-    
-    // Create a temporary container positioned on screen but off-viewport
-    const tempContainer = document.createElement('div');
-    tempContainer.style.position = 'absolute';
-    tempContainer.style.left = window.innerWidth + 'px';
-    tempContainer.style.top = '0';
-    tempContainer.style.width = unscaledWidth + 'px';
-    tempContainer.style.height = unscaledHeight + 'px';
-    tempContainer.style.overflow = 'hidden';
-    tempContainer.style.backgroundColor = 'transparent';
-    tempContainer.style.margin = '0';
-    tempContainer.style.padding = '0';
-    document.body.appendChild(tempContainer);
-    
-    // Clone the panel
+
+    // Clone the panel offscreen without transform to measure natural size
     const clone = panel.cloneNode(true);
-    clone.style.transform = `scale(${scale})`;
-    clone.style.transformOrigin = 'top left';
+    clone.style.position = 'absolute';
+    clone.style.left = '-9999px';
+    clone.style.top = '0px';
+    clone.style.transform = 'none';
     clone.style.margin = '0';
-    clone.style.padding = '0';
-    tempContainer.appendChild(clone);
-    
-    // Force layout
-    tempContainer.offsetHeight;
-    
-    // Inline background images
-    await inlineBackgroundImages(clone);
-    
-    // Wait for rendering
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    // Capture with dom-to-image using higher pixel ratio for crisper text
-    // Use pixelRatio of scale to get proper resolution
-    domtoimage.toPng(tempContainer, {
-        cacheBust: true,
-        pixelRatio: scale,
-        style: {
-            'image-rendering': 'crisp-edges'
-        }
-    }).then(function(dataUrl) {
+    document.body.appendChild(clone);
+
+    try {
+        await inlineBackgroundImages(clone);
+        await document.fonts.ready;
+        await new Promise(r => requestAnimationFrame(r));
+
+        // Get natural 1x dimensions
+        const naturalWidth = clone.offsetWidth;
+        const naturalHeight = clone.offsetHeight;
+
+        // Target dimensions at full scale
+        const targetWidth = naturalWidth * scale;
+        const targetHeight = naturalHeight * scale;
+
+        // Apply CSS transform so the browser renders text at full resolution
+        clone.style.transform = `scale(${scale})`;
+        clone.style.transformOrigin = 'top left';
+
+        // Capture at scaled dimensions — text renders natively at full res
+        const dataUrl = await domtoimage.toPng(clone, {
+            cacheBust: true,
+            width: targetWidth,
+            height: targetHeight,
+            style: {
+                'transform': `scale(${scale})`,
+                'transform-origin': 'top left',
+                'image-rendering': 'pixelated'
+            }
+        });
+
+        document.body.removeChild(clone);
+
         const link = document.createElement('a');
         link.download = generateFileName();
         link.href = dataUrl;
         link.click();
-        document.body.removeChild(tempContainer);
-    }).catch(function(error) {
+    } catch (error) {
         console.error('Error capturing panel:', error);
-        document.body.removeChild(tempContainer);
-    });
+        if (clone.parentNode) document.body.removeChild(clone);
+    }
 }
 
 // Add pixelated rendering styles

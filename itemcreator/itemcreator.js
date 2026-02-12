@@ -7,6 +7,31 @@ function formatCount(count) {
     return count;
 }
 
+async function inlineImgElements(element) {
+  const imgs = element.querySelectorAll('img');
+  const promises = [];
+
+  imgs.forEach(img => {
+    const src = img.getAttribute('src');
+    if (src && !src.startsWith('data:')) {
+      const promise = fetch(src)
+        .then(res => res.blob())
+        .then(blob => new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            img.src = reader.result;
+            resolve();
+          };
+          reader.readAsDataURL(blob);
+        }))
+        .catch(err => console.warn('Could not inline img src:', src, err));
+      promises.push(promise);
+    }
+  });
+
+  await Promise.all(promises);
+}
+
 async function inlineBackgroundImages(element) {
   const elements = element.querySelectorAll('*');
   const promises = [];
@@ -137,12 +162,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             await inlineBackgroundImages(itemPanel);
+            await inlineImgElements(itemPanel);
 
             await document.fonts.ready;
             await new Promise(r => requestAnimationFrame(r));
 
+            const captureWidth = itemPanel.offsetWidth;
+            const captureHeight = itemPanel.offsetHeight;
+
             const dataUrl = await domtoimage.toPng(itemPanel, {
-                
+                width: captureWidth,
+                height: captureHeight,
                 bgcolor: 'transparent',
                 style: {
                     'background-color': 'transparent',

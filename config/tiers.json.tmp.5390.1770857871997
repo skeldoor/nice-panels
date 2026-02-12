@@ -1,0 +1,47 @@
+{
+  "tierOrder": ["basic", "premium"],
+  "tiers": {
+    "basic": {
+      "name": "Basic",
+      "patreonTierId": "YOUR_BASIC_TIER_ID",
+      "tools": ["infobox"]
+    },
+    "premium": {
+      "name": "Premium",
+      "patreonTierId": "YOUR_PREMIUM_TIER_ID",
+      "tools": ["infobox", "bankview", "itemcreator", "dialogpanel", "optionpanel", "dropsimulator"]
+    }
+  },
+  "tools": {
+    "infobox": {
+      "label": "Info Box Panel",
+      "path": "/infobox/",
+      "minTier": "basic"
+    },
+    "bankview": {
+      "label": "Bank View Panel",
+      "path": "/bankview/",
+      "minTier": "premium"
+    },
+    "itemcreator": {
+      "label": "Item Icon Creator",
+      "path": "/itemcreator/",
+      "minTier": "premium"
+    },
+    "dialogpanel": {
+      "label": "Dialog Panel",
+      "path": "/dialogpanel/",
+      "minTier": "premium"
+    },
+    "optionpanel": {
+      "label": "Option Panel",
+      "path": "/optionpanel/",
+      "minTier": "premium"
+    },
+    "dropsimulator": {
+      "label": "Loot Calculator",
+      "path": "/dropsimulator/",
+      "minTier": "premium"
+    }
+  }
+}
