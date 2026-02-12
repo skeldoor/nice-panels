@@ -214,6 +214,7 @@
             for (const tool of toolCards) {
                 const toolAccess = authData.tools ? authData.tools[tool.key] : null;
                 const isLocked = toolAccess && toolAccess.locked;
+                const minTier = toolAccess ? toolAccess.minTier : '';
                 const minTierName = toolAccess ? toolAccess.minTierName : 'Patron';
 
                 const card = document.createElement('div');
@@ -245,7 +246,7 @@
                                     ${tool.label}
                                 </a>
                                 ${badgeHtml}
-                                <span class="lock-badge">${minTierName}</span>
+                                <span class="lock-badge${minTier === 'limited' ? ' lock-badge-limited' : ''}">${minTierName}</span>
                             </h3>
                             <p class="tool-card-desc">${tool.description}</p>
                             <a href="${lockedHref}" class="tool-card-btn tool-card-btn-locked" ${lockedOnclick} ${isLoggedIn ? 'target="_blank"' : ''}>

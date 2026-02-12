@@ -788,3 +788,7 @@ footer a {
     vertical-align: middle;
     font-family: sans-serif;
 }
+
+.lock-badge-limited {
+    background-color: #5865F2;
+}
