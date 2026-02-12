@@ -83,6 +83,7 @@ router.get('/user', (req, res) => {
     res.json({
         authenticated: true,
         user: {
+            patreonId: decoded.patreonId,
             name: decoded.name,
             imageUrl: decoded.imageUrl,
             tier: decoded.tier,

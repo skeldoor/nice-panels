@@ -71,7 +71,7 @@
                         ? `<span class="tier-badge tier-${data.user.tier}">${data.user.tierName}</span>`
                         : '<span class="tier-badge tier-none">No active tier</span>';
                     document.getElementById('auth-user-info').innerHTML =
-                        `${data.user.name} ${tierLabel}`;
+                        `${data.user.name} ${tierLabel} <span class="patreon-id" title="Your Patreon ID">ID: ${data.user.patreonId}</span>`;
                 } else {
                     document.getElementById('auth-logged-out').style.display = 'flex';
                 }
