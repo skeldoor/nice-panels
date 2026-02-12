@@ -350,7 +350,7 @@ async function savePanelAsImage() {
     const panel = document.getElementById('panel');
     const scale = parseInt(document.getElementById('scale').value);
 
-    // Clone the panel and position offscreen at 1x (no CSS transform)
+    // Clone the panel offscreen without transform to measure natural size
     const clone = panel.cloneNode(true);
     clone.style.position = 'absolute';
     clone.style.left = '-9999px';
@@ -364,40 +364,36 @@ async function savePanelAsImage() {
         await document.fonts.ready;
         await new Promise(r => requestAnimationFrame(r));
 
-        const captureWidth = clone.offsetWidth;
-        const captureHeight = clone.offsetHeight;
+        // Get natural 1x dimensions
+        const naturalWidth = clone.offsetWidth;
+        const naturalHeight = clone.offsetHeight;
 
-        // Capture at 1x natural size
+        // Target dimensions at full scale
+        const targetWidth = naturalWidth * scale;
+        const targetHeight = naturalHeight * scale;
+
+        // Apply CSS transform so the browser renders text at full resolution
+        clone.style.transform = `scale(${scale})`;
+        clone.style.transformOrigin = 'top left';
+
+        // Capture at scaled dimensions — text renders natively at full res
         const dataUrl = await domtoimage.toPng(clone, {
             cacheBust: true,
-            width: captureWidth,
-            height: captureHeight,
+            width: targetWidth,
+            height: targetHeight,
             style: {
+                'transform': `scale(${scale})`,
+                'transform-origin': 'top left',
                 'image-rendering': 'pixelated'
             }
         });
 
         document.body.removeChild(clone);
 
-        // Scale up via canvas for crisp pixel scaling
-        const targetWidth = captureWidth * scale;
-        const targetHeight = captureHeight * scale;
-
-        const img = new Image();
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = targetWidth;
-            canvas.height = targetHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.imageSmoothingEnabled = false;
-            ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-
-            const link = document.createElement('a');
-            link.download = generateFileName();
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        };
-        img.src = dataUrl;
+        const link = document.createElement('a');
+        link.download = generateFileName();
+        link.href = dataUrl;
+        link.click();
     } catch (error) {
         console.error('Error capturing panel:', error);
         if (clone.parentNode) document.body.removeChild(clone);
