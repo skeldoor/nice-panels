@@ -138,6 +138,7 @@
             {
                 key: 'dropsimulator',
                 label: 'Loot Calculator Panel',
+                badge: 'NEW',
                 path: '/dropsimulator/',
                 image: '/examplepanels/lootcalcpanelexample.png',
                 description: 'Visualise loot tables and calculate statistically average drops summarised in a nicely laid out panel. Estimate the loot you\'re going to get from killing men/women (in runescape) for 6000 hours. Good RNG sold separately.'
@@ -231,6 +232,8 @@
                     lockedBtnText = 'Unlock with Patreon';
                 }
 
+                const badgeHtml = tool.badge ? `<span class="new-badge">${tool.badge}</span>` : '';
+
                 if (isLocked) {
                     card.innerHTML = `
                         <div class="tool-card-image-wrap">
@@ -241,6 +244,7 @@
                                 <a href="${lockedHref}" ${lockedOnclick} ${isLoggedIn ? 'target="_blank"' : ''}>
                                     ${tool.label}
                                 </a>
+                                ${badgeHtml}
                                 <span class="lock-badge">${minTierName}</span>
                             </h3>
                             <p class="tool-card-desc">${tool.description}</p>
@@ -259,6 +263,7 @@
                                 <a href="${tool.path}">
                                     ${tool.label}
                                 </a>
+                                ${badgeHtml}
                             </h3>
                             <p class="tool-card-desc">${tool.description}</p>
                             <a href="${tool.path}" class="tool-card-btn">

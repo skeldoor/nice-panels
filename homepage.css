@@ -165,6 +165,21 @@
     }
 }
 
+/* --- NEW badge --- */
+.new-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background-color: #26e37d;
+    color: #fff;
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    border-radius: 4px;
+    line-height: 1.4;
+    vertical-align: middle;
+    text-shadow: none;
+}
+
 /* --- Individual Card --- */
 .tool-card {
     background-color: #3a3a3a;
