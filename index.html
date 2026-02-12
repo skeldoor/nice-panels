@@ -17,34 +17,115 @@
 </head>
 <body>
     <div class="container">
+        <div id="auth-bar">
+            <div id="auth-loading">Loading...</div>
+            <div id="auth-logged-out" style="display:none;">
+                <a href="/api/auth/login" class="patreon-login-btn">Login with Patreon</a>
+            </div>
+            <div id="auth-logged-in" style="display:none;">
+                <span id="auth-user-info"></span>
+                <a href="/api/auth/logout" class="auth-logout-btn">Logout</a>
+            </div>
+        </div>
+
         <h1>Skeldoor's OSRS Panel Generator</h1>
         <h2 id="patchnotes"></h2>
-        <ul>
-            <li><a href="/infobox/">Info Box Panel</a></li>
-            <li><a href="/bankview/">Bank View Panel</a></li>
-            <li><a href="/itemcreator/">Item Icon Creator</a></li>
-            <li><a href="/dialogpanel/">Dialog Panel</a></li>
-            <li><a href="/optionpanel/">Option Panel</a></li>
-            <li><a href="/dropsimulator/">Loot Calculator</a></li>
+        <ul id="tool-list">
+            <!-- Tool links are populated dynamically based on auth state -->
         </ul>
     </div>
     <footer>
         <a href="https://skeldoor.dev/" target="_blank">Skeldoor</a> - <span id="version"></span>
         <p>If you use this site and you're not <a href="https://www.youtube.com/@Skeldoor" target="_blank">subbed to me</a> I'll be genuinely furious. I'm <span style="color: #5865F2;">Skeldoor on Discord</span> if you wanna msg me.</p>
     </footer>
+
     <script>
+        // Fetch version and patch notes
         fetch('/package.json')
             .then(response => response.json())
             .then(data => {
                 document.getElementById('version').textContent = `v${data.version}`;
-            });
-    </script>
-        <script>
-        fetch('/package.json')
-            .then(response => response.json())
-            .then(data => {
                 document.getElementById('patchnotes').textContent = `Patch notes: ${data.patchnotes}`;
             });
+
+        // Tool definitions (labels and paths, in display order)
+        const toolDisplayOrder = [
+            { key: 'infobox', label: 'Info Box Panel', path: '/infobox/' },
+            { key: 'bankview', label: 'Bank View Panel', path: '/bankview/' },
+            { key: 'itemcreator', label: 'Item Icon Creator', path: '/itemcreator/' },
+            { key: 'dialogpanel', label: 'Dialog Panel', path: '/dialogpanel/' },
+            { key: 'optionpanel', label: 'Option Panel', path: '/optionpanel/' },
+            { key: 'dropsimulator', label: 'Loot Calculator', path: '/dropsimulator/' },
+        ];
+
+        // Fetch auth state and render tool list
+        fetch('/api/auth/user')
+            .then(res => res.json())
+            .then(data => {
+                // Update auth bar
+                document.getElementById('auth-loading').style.display = 'none';
+
+                if (data.authenticated) {
+                    document.getElementById('auth-logged-in').style.display = 'flex';
+                    const tierLabel = data.user.tierName
+                        ? `<span class="tier-badge tier-${data.user.tier}">${data.user.tierName}</span>`
+                        : '<span class="tier-badge tier-none">No active tier</span>';
+                    document.getElementById('auth-user-info').innerHTML =
+                        `${data.user.name} ${tierLabel}`;
+                } else {
+                    document.getElementById('auth-logged-out').style.display = 'flex';
+                }
+
+                // Render tool list
+                const toolList = document.getElementById('tool-list');
+                toolList.innerHTML = '';
+
+                for (const tool of toolDisplayOrder) {
+                    const toolAccess = data.tools[tool.key];
+                    const li = document.createElement('li');
+
+                    if (toolAccess && toolAccess.locked) {
+                        li.innerHTML = `
+                            <a href="${tool.path}" class="tool-link locked" onclick="return handleLockedClick(event, '${toolAccess.minTierName}')">
+                                ${tool.label}
+                                <span class="lock-badge">${toolAccess.minTierName}</span>
+                            </a>`;
+                    } else {
+                        li.innerHTML = `<a href="${tool.path}" class="tool-link">${tool.label}</a>`;
+                    }
+
+                    toolList.appendChild(li);
+                }
+            })
+            .catch(err => {
+                // If auth endpoint fails, show tools without gating info
+                console.error('Auth check failed:', err);
+                document.getElementById('auth-loading').style.display = 'none';
+                document.getElementById('auth-logged-out').style.display = 'flex';
+
+                const toolList = document.getElementById('tool-list');
+                toolList.innerHTML = '';
+                for (const tool of toolDisplayOrder) {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <a href="${tool.path}" class="tool-link locked" onclick="return handleLockedClick(event, 'Patron')">
+                            ${tool.label}
+                            <span class="lock-badge">Patron Only</span>
+                        </a>`;
+                    toolList.appendChild(li);
+                }
+            });
+
+        function handleLockedClick(event, tierName) {
+            event.preventDefault();
+            const proceed = confirm(
+                `This tool requires a ${tierName} tier Patreon subscription.\n\nWould you like to log in with Patreon?`
+            );
+            if (proceed) {
+                window.location.href = '/api/auth/login';
+            }
+            return false;
+        }
     </script>
 </body>
 </html>

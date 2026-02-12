@@ -668,3 +668,108 @@ footer a {
 #bank-value-display {
     margin-left: 5px; /* Add some space between the title and the value */
 }
+
+/* ---- Auth Bar & Patreon Login ---- */
+#auth-bar {
+    text-align: center;
+    margin-bottom: 10px;
+    min-height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#auth-loading {
+    color: #aaa;
+    font-size: 16px;
+}
+
+#auth-logged-in {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 16px;
+}
+
+#auth-logged-out {
+    display: flex;
+    justify-content: center;
+}
+
+.patreon-login-btn {
+    display: inline-block;
+    padding: 8px 20px;
+    background-color: #ff424d;
+    color: #fff !important;
+    font-size: 16px !important;
+    border-radius: 6px;
+    text-decoration: none !important;
+    font-family: 'RuneScape UF', sans-serif;
+    transition: background-color 0.2s;
+}
+
+.patreon-login-btn:hover {
+    background-color: #e0333d;
+    text-decoration: none !important;
+}
+
+.auth-logout-btn {
+    font-size: 14px !important;
+    color: #aaa !important;
+}
+
+.auth-logout-btn:hover {
+    color: #fff !important;
+}
+
+/* Tier badges */
+.tier-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 6px;
+}
+
+.tier-badge.tier-basic {
+    background-color: #5865F2;
+    color: #fff;
+}
+
+.tier-badge.tier-premium {
+    background-color: #ffcc00;
+    color: #333;
+}
+
+.tier-badge.tier-none {
+    background-color: #666;
+    color: #ccc;
+}
+
+/* Tool link lock badges */
+.tool-link {
+    position: relative;
+    display: inline-block;
+}
+
+.tool-link.locked {
+    opacity: 0.6;
+    cursor: pointer;
+}
+
+.tool-link.locked:hover {
+    opacity: 0.85;
+}
+
+.lock-badge {
+    display: inline-block;
+    font-size: 12px;
+    padding: 1px 6px;
+    margin-left: 8px;
+    border-radius: 3px;
+    background-color: #ff424d;
+    color: #fff;
+    vertical-align: middle;
+    font-family: sans-serif;
+}
