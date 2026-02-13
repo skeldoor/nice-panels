@@ -365,19 +365,19 @@
 }
 
 .tier-card-basic h3 {
-    color: #5865F2;
+    color: #3ba0a0;
 }
 
 .tier-card-basic {
-    border: 1px solid #5865F2;
+    border: 1px solid #3ba0a0;
 }
 
 .tier-card-enhanced h3 {
-    color: #a855f7;
+    color: #bf5af2;
 }
 
 .tier-card-enhanced {
-    border: 1px solid #a855f7;
+    border: 1px solid #bf5af2;
 }
 
 .tier-card-full h3 {

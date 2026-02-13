@@ -733,12 +733,12 @@ footer a {
 }
 
 .tier-badge.tier-basic {
-    background-color: #5865F2;
+    background-color: #3ba0a0;
     color: #fff;
 }
 
 .tier-badge.tier-enhanced {
-    background-color: #a855f7;
+    background-color: #bf5af2;
     color: #fff;
 }
 
@@ -790,9 +790,9 @@ footer a {
 }
 
 .lock-badge-basic {
-    background-color: #5865F2;
+    background-color: #3ba0a0;
 }
 
 .lock-badge-enhanced {
-    background-color: #a855f7;
+    background-color: #bf5af2;
 }
