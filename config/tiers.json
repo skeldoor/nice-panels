@@ -1,20 +1,21 @@
 {
-  "adminIds": ["185596755"],
-  "manualLimited": [],
-  "manualPremium": [],
-  "tierOrder": ["fan", "limited", "premium"],
+  "adminIds": [],
+  "manualBasic": [],
+  "manualEnhanced": [],
+  "manualFull": ["91233263"],
+  "tierOrder": ["basic", "enhanced", "full"],
   "tiers": {
-    "fan": {
-      "name": "Fan",
+    "basic": {
+      "name": "SkelsPanels Basic Access",
       "patreonTierId": "27920748",
-      "tools": []
-    },
-    "limited": {
-      "name": "SkelsPanels Limited Access",
-      "patreonTierId": "27920771",
       "tools": ["infobox"]
     },
-    "premium": {
+    "enhanced": {
+      "name": "SkelsPanels Enhanced Access",
+      "patreonTierId": "27920771",
+      "tools": ["infobox", "itemcreator", "optionpanel"]
+    },
+    "full": {
       "name": "SkelsPanels Full Access",
       "patreonTierId": "27920791",
       "tools": ["infobox", "bankview", "itemcreator", "dialogpanel", "optionpanel", "dropsimulator"]
@@ -24,32 +25,32 @@
     "infobox": {
       "label": "Info Box Panel",
       "path": "/infobox/",
-      "minTier": "limited"
+      "minTier": "basic"
     },
     "bankview": {
       "label": "Bank View Panel",
       "path": "/bankview/",
-      "minTier": "premium"
+      "minTier": "full"
     },
     "itemcreator": {
       "label": "Item Icon Creator",
       "path": "/itemcreator/",
-      "minTier": "premium"
+      "minTier": "enhanced"
     },
     "dialogpanel": {
       "label": "Dialog Panel",
       "path": "/dialogpanel/",
-      "minTier": "premium"
+      "minTier": "full"
     },
     "optionpanel": {
       "label": "Option Panel",
       "path": "/optionpanel/",
-      "minTier": "premium"
+      "minTier": "enhanced"
     },
     "dropsimulator": {
       "label": "Loot Calculator",
       "path": "/dropsimulator/",
-      "minTier": "premium"
+      "minTier": "full"
     }
   }
 }

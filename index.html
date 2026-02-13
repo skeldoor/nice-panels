@@ -246,7 +246,7 @@
                                     ${tool.label}
                                 </a>
                                 ${badgeHtml}
-                                <span class="lock-badge${minTier === 'limited' ? ' lock-badge-limited' : ''}">${minTierName}</span>
+                                <span class="lock-badge${minTier === 'basic' ? ' lock-badge-basic' : minTier === 'enhanced' ? ' lock-badge-enhanced' : ''}">${minTierName}</span>
                             </h3>
                             <p class="tool-card-desc">${tool.description}</p>
                             <a href="${lockedHref}" class="tool-card-btn tool-card-btn-locked" ${lockedOnclick} ${isLoggedIn ? 'target="_blank"' : ''}>
@@ -280,16 +280,16 @@
 
         /**
          * Update the Patreon CTA section based on the user's current tier.
-         * - Not logged in:       Generic pitch with both tier cards
-         * - Logged in, no tier:  "You're in — now grab a subscription" with both tier cards
-         * - Fan tier:            Same as no tier (Fan doesn't unlock tools)
-         * - Limited tier:        "Ready for more?" pitch focused on Full Access upgrade
-         * - Premium tier:        "You've got the lot" thank-you message, no upsell
+         * - Not logged in:       Generic pitch with all 3 tier cards + free trial note
+         * - Logged in, no tier:  "Signed in, now subscribe" with all 3 tiers + free trial note
+         * - Basic tier:          Upsell Enhanced and Full Access
+         * - Enhanced tier:       Upsell Full Access
+         * - Full tier:           Thank-you, no upsell
          */
         function updatePatreonSection(tier, isLoggedIn) {
             const container = document.getElementById('patreon-section-inner');
 
-            if (tier === 'premium') {
+            if (tier === 'full') {
                 container.innerHTML = `
                     <h2 class="patreon-heading">You've got the full toolkit</h2>
                     <p class="patreon-pitch">Every tool, every feature, all yours. Cheers for the support, it genuinely keeps this whole thing running and improving and I appreciate it muchly. Now go make some panels!</p>
@@ -297,14 +297,14 @@
                 return;
             }
 
-            if (tier === 'limited') {
+            if (tier === 'enhanced') {
                 container.innerHTML = `
-                    <h2 class="patreon-heading">Ready for the rest?</h2>
-                    <p class="patreon-pitch">You've already got the Info Box Panel sorted. Upgrade to Full Access and unlock Bank Views, Item Icons, Dialog Panels, Option Menus, and the Loot Calculator (and anything new I create) the full set of tools so you never have to open an image editor again.</p>
+                    <h2 class="patreon-heading">Ready for the full set?</h2>
+                    <p class="patreon-pitch">You've got the Info Box, Item Icons, and Option Panel covered. Upgrade to Full Access and unlock Bank Views, Dialog Panels, and the Loot Calculator (plus anything new I build) so you've got the complete toolkit.</p>
                     <div class="patreon-tiers-row">
-                        <div class="patreon-tier-card tier-card-premium">
+                        <div class="patreon-tier-card tier-card-full">
                             <h3>Full Access</h3>
-                            <p>Unlock every remaining tool. Bank Views, Item Icons, Dialog Panels, Option Menus, and the Loot Calculator. One sub, the whole lot.</p>
+                            <p>Unlock every remaining tool: Bank Views, Dialog Panels, and the Loot Calculator. One sub, the whole lot.</p>
                         </div>
                     </div>
                     <a href="${PATREON_URL}" target="_blank" class="patreon-cta-btn">
@@ -314,17 +314,43 @@
                 return;
             }
 
-            if (isLoggedIn && (!tier || tier === 'fan')) {
-                // Logged in but no tool-granting tier
+            if (tier === 'basic') {
+                container.innerHTML = `
+                    <h2 class="patreon-heading">Enjoying the Info Box? There's more where that came from</h2>
+                    <p class="patreon-pitch">You've got the most popular tool sorted. Step up to Enhanced Access for Item Icons and Option Panels, or go straight to Full Access and get the complete set including Bank Views, Dialog Panels, and the Loot Calculator.</p>
+                    <div class="patreon-tiers-row">
+                        <div class="patreon-tier-card tier-card-enhanced">
+                            <h3>Enhanced Access</h3>
+                            <p>Add the Item Icon Panel and Option Panel to your toolkit. Three tools, more creative options.</p>
+                        </div>
+                        <div class="patreon-tier-card tier-card-full">
+                            <h3>Full Access</h3>
+                            <p>Unlock every tool: Info Boxes, Bank Views, Item Icons, Dialog Panels, Option Menus, and the Loot Calculator. The whole lot.</p>
+                        </div>
+                    </div>
+                    <a href="${PATREON_URL}" target="_blank" class="patreon-cta-btn">
+                        Upgrade on Patreon
+                    </a>
+                `;
+                return;
+            }
+
+            if (isLoggedIn && !tier) {
+                // Logged in but no subscription
                 container.innerHTML = `
                     <h2 class="patreon-heading">You're signed in, now unlock the tools</h2>
                     <p class="patreon-pitch">You've got a Patreon account linked, which is a grand start. Pick a tier below to actually get your hands on the panel generators. It takes seconds and you'll save hours of messing about in image editors.</p>
                     <div class="patreon-tiers-row">
-                        <div class="patreon-tier-card tier-card-limited">
-                            <h3>Limited Access</h3>
+                        <div class="patreon-tier-card tier-card-basic">
+                            <h3>Basic Access</h3>
                             <p>Get started with the Info Box Panel, the most popular tool for thumbnails and video popups.</p>
+                            <p class="free-trial-note">Includes a 7-day free trial so you can see just how sick the Info Box Panel is in action.</p>
                         </div>
-                        <div class="patreon-tier-card tier-card-premium">
+                        <div class="patreon-tier-card tier-card-enhanced">
+                            <h3>Enhanced Access</h3>
+                            <p>Info Box Panel plus the Item Icon Panel and Option Panel. Three tools, more creative options.</p>
+                        </div>
+                        <div class="patreon-tier-card tier-card-full">
                             <h3>Full Access</h3>
                             <p>Unlock every tool: Info Boxes, Bank Views, Item Icons, Dialog Panels, Option Menus, and the Loot Calculator. The whole lot.</p>
                         </div>
@@ -336,16 +362,21 @@
                 return;
             }
 
-            // Not logged in — generic pitch
+            // Not logged in — generic pitch with free trial note
             container.innerHTML = `
                 <h2 class="patreon-heading">Unlock the full toolkit</h2>
                 <p class="patreon-pitch">Every panel type, every feature, zero fuss. A Patreon sub gives you instant access to all the generators above so you can spend your time making content instead of wrestling with image editors. It also keeps the site alive and the tools improving.</p>
                 <div class="patreon-tiers-row">
-                    <div class="patreon-tier-card tier-card-limited">
-                        <h3>Limited Access</h3>
+                    <div class="patreon-tier-card tier-card-basic">
+                        <h3>Basic Access</h3>
                         <p>Get started with the Info Box Panel, the most popular tool for thumbnails and social posts.</p>
+                        <p class="free-trial-note">Includes a 7-day free trial so you can see just how sick the Info Box Panel is in action.</p>
                     </div>
-                    <div class="patreon-tier-card tier-card-premium">
+                    <div class="patreon-tier-card tier-card-enhanced">
+                        <h3>Enhanced Access</h3>
+                        <p>Info Box Panel plus the Item Icon Panel and Option Panel. Three tools, more creative options.</p>
+                    </div>
+                    <div class="patreon-tier-card tier-card-full">
                         <h3>Full Access</h3>
                         <p>Unlock every tool: Info Boxes, Bank Views, Item Icons, Dialog Panels, Option Menus, and the Loot Calculator. The whole lot.</p>
                     </div>

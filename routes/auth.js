@@ -40,7 +40,7 @@ router.get('/callback', async (req, res) => {
             name: user.name,
             email: user.email,
             imageUrl: user.imageUrl,
-            tier: tier, // null if not a patron, 'basic' or 'premium' otherwise
+            tier: tier, // null if not a patron, 'basic', 'enhanced', or 'full' otherwise
         };
 
         const token = createToken(jwtPayload);
