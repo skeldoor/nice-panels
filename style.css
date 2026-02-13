@@ -732,17 +732,17 @@ footer a {
     margin-left: 6px;
 }
 
-.tier-badge.tier-fan {
-    background-color: #666;
-    color: #fff;
-}
-
-.tier-badge.tier-limited {
+.tier-badge.tier-basic {
     background-color: #5865F2;
     color: #fff;
 }
 
-.tier-badge.tier-premium {
+.tier-badge.tier-enhanced {
+    background-color: #a855f7;
+    color: #fff;
+}
+
+.tier-badge.tier-full {
     background-color: #ffcc00;
     color: #333;
 }
@@ -789,6 +789,10 @@ footer a {
     font-family: sans-serif;
 }
 
-.lock-badge-limited {
+.lock-badge-basic {
     background-color: #5865F2;
+}
+
+.lock-badge-enhanced {
+    background-color: #a855f7;
 }

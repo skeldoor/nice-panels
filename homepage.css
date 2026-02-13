@@ -364,20 +364,36 @@
     font-family: 'RuneScape UF', sans-serif;
 }
 
-.tier-card-limited h3 {
+.tier-card-basic h3 {
     color: #5865F2;
 }
 
-.tier-card-limited {
+.tier-card-basic {
     border: 1px solid #5865F2;
 }
 
-.tier-card-premium h3 {
+.tier-card-enhanced h3 {
+    color: #a855f7;
+}
+
+.tier-card-enhanced {
+    border: 1px solid #a855f7;
+}
+
+.tier-card-full h3 {
     color: #ffcc00;
 }
 
-.tier-card-premium {
+.tier-card-full {
     border: 1px solid #ffcc00;
+}
+
+/* --- Free trial callout --- */
+.free-trial-note {
+    color: #26e37d;
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 14px;
+    margin-top: 8px;
 }
 
 
