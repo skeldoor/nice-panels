@@ -1,0 +1,90 @@
+#level-viewer-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.level-panel {
+    position: relative;
+    width: 72px;
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform-origin: top center;
+}
+
+.level-bg {
+    position: absolute;
+    top: 0;
+    width: 36px;
+    height: 36px;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+    z-index: 1;
+}
+
+.level-bg-left {
+    left: 0;
+}
+
+.level-bg-right {
+    right: 0;
+}
+
+.level-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    gap: 0;
+}
+
+.level-skill-icon {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+    width: 25px;
+    height: 25px;
+    z-index: 2;
+}
+
+.level-top-number,
+.level-bottom-number {
+    font-family: 'RuneScape Plain 11', sans-serif;
+    font-size: 16px;
+    color: #ffff00;
+    text-shadow: 1px 1px 0 #000;
+    text-align: center;
+    line-height: 1;
+    z-index: 3;
+    position: absolute;
+}
+
+.level-top-number {
+    top: 1px;
+}
+
+.level-bottom-number {
+    bottom: 1px;
+}
+
+/* Settings panel select styling */
+#skill-select {
+    width: 160px;
+    padding: 3px 5px;
+    background-color: #555;
+    color: #fff;
+    border: 1px solid #666;
+    border-radius: 3px;
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 14px;
+}

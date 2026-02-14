@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Skeldoor's Level Panel</title>
+    <link rel="icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="levelpanel.css">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-M5J3QJKJPC"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-M5J3QJKJPC');
+    </script>
+</head>
+<body class="item-creator-body">
+    <div class="container">
+        <a href="/" class="back-link">< Back to Home</a>
+        <h1>Skeldoor's Level Panel</h1>
+
+        <div id="control-interface" class="panel-controls">
+            <div class="controls-column">
+                <h2>Level Settings</h2>
+                <div class="control-group">
+                    <label for="skill-select">Skill:</label>
+                    <select id="skill-select">
+                        <option value="attack">Attack</option>
+                        <option value="strength">Strength</option>
+                        <option value="defence">Defence</option>
+                        <option value="ranged">Ranged</option>
+                        <option value="prayer">Prayer</option>
+                        <option value="magic">Magic</option>
+                        <option value="runecraft">Runecraft</option>
+                        <option value="construction">Construction</option>
+                        <option value="hitpoints">Hitpoints</option>
+                        <option value="agility">Agility</option>
+                        <option value="herblore">Herblore</option>
+                        <option value="thieving">Thieving</option>
+                        <option value="crafting">Crafting</option>
+                        <option value="fletching">Fletching</option>
+                        <option value="slayer">Slayer</option>
+                        <option value="hunter">Hunter</option>
+                        <option value="mining">Mining</option>
+                        <option value="smithing">Smithing</option>
+                        <option value="fishing">Fishing</option>
+                        <option value="cooking">Cooking</option>
+                        <option value="firemaking">Firemaking</option>
+                        <option value="woodcutting">Woodcutting</option>
+                        <option value="farming">Farming</option>
+                        <option value="sailing">Sailing</option>
+                        <option value="total">Total</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="top-number">Top Number:</label>
+                    <input type="number" id="top-number" value="99" min="1" max="9999">
+                </div>
+                <div class="control-group">
+                    <label for="bottom-number">Bottom Number:</label>
+                    <input type="number" id="bottom-number" value="99" min="1" max="9999">
+                </div>
+                <div class="control-group">
+                    <label for="level-scale">Scale (1-8):</label>
+                    <input type="number" id="level-scale" value="5" min="1" max="8">
+                </div>
+            </div>
+        </div>
+
+        <div class="save-controls">
+            <button id="save-image-btn" class="save-button">Save Panel as Image</button>
+        </div>
+
+        <div id="level-viewer-container">
+            <div id="level-panel" class="level-panel">
+                <img src="left.png" class="level-bg level-bg-left" alt="">
+                <img src="right.png" class="level-bg level-bg-right" alt="">
+                <div class="level-content">
+                    <div class="level-top-number">99</div>
+                    <img src="attack.png" class="level-skill-icon" alt="Skill icon">
+                    <div class="level-bottom-number">99</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.6.0/dist/dom-to-image-more.min.js"></script>
+    <script src="levelpanel.js"></script>
+</body>
+</html>

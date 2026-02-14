@@ -15,12 +15,12 @@
     "enhanced": {
       "name": "SkelsPanels Enhanced Access",
       "patreonTierId": "27920771",
-      "tools": ["infobox", "itemcreator", "optionpanel"]
+      "tools": ["infobox", "itemcreator", "optionpanel", "levelpanel"]
     },
     "full": {
       "name": "SkelsPanels Full Access",
       "patreonTierId": "27920791",
-      "tools": ["infobox", "bankview", "itemcreator", "dialogpanel", "optionpanel", "dropsimulator"]
+      "tools": ["infobox", "bankview", "itemcreator", "dialogpanel", "optionpanel", "dropsimulator", "levelpanel"]
     }
   },
   "tools": {
@@ -53,6 +53,11 @@
       "label": "Loot Calculator",
       "path": "/dropsimulator/",
       "minTier": "full"
+    },
+    "levelpanel": {
+      "label": "Level Panel",
+      "path": "/levelpanel/",
+      "minTier": "enhanced"
     }
   }
 }
