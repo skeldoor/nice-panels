@@ -109,6 +109,15 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.appendChild(clone);
 
             try {
+                // Resolve translateX(50%) into explicit positioning for clean export
+                // (dom-to-image can misrender text-shadow when combined with transforms)
+                clone.querySelectorAll('.level-top-number, .level-bottom-number').forEach(el => {
+                    const width = el.offsetWidth;
+                    const currentRight = parseFloat(getComputedStyle(el).right);
+                    el.style.right = (currentRight - width / 2) + 'px';
+                    el.style.transform = 'none';
+                });
+
                 await inlineBackgroundImages(clone);
                 await inlineImgElements(clone);
 
@@ -120,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const targetWidth = naturalWidth * scale;
                 const targetHeight = naturalHeight * scale;
 
+                // Capture with CSS transform scaling (renders text at target size for crisp glyphs)
                 const dataUrl = await domtoimage.toPng(clone, {
                     cacheBust: true,
                     width: targetWidth,

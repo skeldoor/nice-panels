@@ -7,19 +7,16 @@
 
 .level-panel {
     position: relative;
-    width: 72px;
-    height: 36px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 132px;
+    height: 72px;
     transform-origin: top center;
 }
 
 .level-bg {
     position: absolute;
     top: 0;
-    width: 36px;
-    height: 36px;
+    width: 72px;
+    height: 72px;
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
@@ -32,19 +29,14 @@
 }
 
 .level-bg-right {
-    right: 0;
+    left: 60px;
 }
 
 .level-content {
     position: relative;
     z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
     width: 100%;
     height: 100%;
-    gap: 0;
 }
 
 .level-skill-icon {
@@ -52,29 +44,38 @@
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
     -ms-interpolation-mode: nearest-neighbor;
-    width: 25px;
-    height: 25px;
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    transform: translateY(-50%);
     z-index: 2;
 }
 
 .level-top-number,
 .level-bottom-number {
     font-family: 'RuneScape Plain 11', sans-serif;
-    font-size: 16px;
+    font-size: 22px;
     color: #ffff00;
-    text-shadow: 1px 1px 0 #000;
+    text-shadow: 1.4px 1.34px 0 #000;
     text-align: center;
     line-height: 1;
     z-index: 3;
     position: absolute;
+    transform: translateX(50%);
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: none;
 }
 
 .level-top-number {
-    top: 1px;
+    top: 14px;
+    right: 50px;
 }
 
 .level-bottom-number {
-    bottom: 1px;
+    bottom: 8px;
+    right: 24px;
 }
 
 /* Settings panel select styling */

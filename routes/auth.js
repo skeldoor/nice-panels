@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const patreon = require('../lib/patreon');
 const { createToken, setTokenCookie, clearTokenCookie, verifyToken, getTokenFromRequest } = require('../lib/jwt');
-const { hasTierAccess } = require('../lib/middleware');
+const { hasTierAccess, isLocalhost } = require('../lib/middleware');
 const tierConfig = require('../config/tiers.json');
 const {
     getUserConfig,
@@ -129,6 +129,33 @@ router.get('/logout', (req, res) => {
  * Now includes panel config data for the frontend.
  */
 router.get('/user', async (req, res) => {
+    // On localhost, grant full access without requiring auth
+    if (isLocalhost(req)) {
+        const allPanels = Object.keys(tierConfig.tools);
+        const localhostConfig = { configured: true, selectedPanels: allPanels, tier: 'full', lockedAt: null };
+        return res.json({
+            authenticated: true,
+            user: {
+                patreonId: 'localhost',
+                name: 'Local Dev',
+                imageUrl: null,
+                tier: 'full',
+                tierName: tierConfig.tiers['full']?.name || 'Full Access',
+            },
+            tools: buildToolAccessMap('full', localhostConfig),
+            panelConfig: {
+                configured: true,
+                selectedPanels: allPanels,
+                canChange: true,
+                timeUntilChange: 0,
+                allowance: getTierAllowance('full'),
+                tier: 'full',
+                inGrace: false,
+                graceTimeRemaining: 0,
+            },
+        });
+    }
+
     const token = getTokenFromRequest(req);
 
     if (!token) {
