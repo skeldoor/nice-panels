@@ -1,8 +1,8 @@
 {
   "adminIds": [],
-  "manualBasic": ["185596755"],
+  "manualBasic": [],
   "manualEnhanced": [],
-  "manualFull": ["91233263", "171883379"], 
+  "manualFull": ["91233263", "171883379", "185596755"], 
   "tierOrder": ["basic", "enhanced", "full"],
   "allowances": {
     "basic": 1,
