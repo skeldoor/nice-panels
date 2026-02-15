@@ -190,7 +190,7 @@
                     let configBtnHtml = '';
                     if (data.user.tier) {
                         let timerHtml = '';
-                        if (currentPanelConfig && currentPanelConfig.configured && !currentPanelConfig.canChange) {
+                        if (data.user.tier !== 'full' && currentPanelConfig && currentPanelConfig.configured && !currentPanelConfig.canChange) {
                             const days = Math.ceil(currentPanelConfig.timeUntilChange / (24 * 60 * 60 * 1000));
                             timerHtml = `<span class="config-timer">Change in ${days}d</span>`;
                         }
