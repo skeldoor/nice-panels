@@ -67,6 +67,7 @@ router.get('/callback', async (req, res) => {
             } else if (existingConfig && existingConfig.tier && existingConfig.tier !== tier) {
                 // Tier changed (upgrade or downgrade) — reset config, force re-setup
                 await setUserConfig(user.id, {
+                    name: user.name,
                     tier: tier,
                     selectedPanels: [],
                     lockedAt: null,
@@ -75,6 +76,7 @@ router.get('/callback', async (req, res) => {
             } else if (!existingConfig && tier) {
                 // New user with a tier but no config yet — create placeholder
                 await setUserConfig(user.id, {
+                    name: user.name,
                     tier: tier,
                     selectedPanels: [],
                     lockedAt: null,
@@ -83,10 +85,17 @@ router.get('/callback', async (req, res) => {
             } else if (existingConfig && !existingConfig.tier && tier) {
                 // Had no tier before, now has one — reset config
                 await setUserConfig(user.id, {
+                    name: user.name,
                     tier: tier,
                     selectedPanels: [],
                     lockedAt: null,
                     configured: false,
+                });
+            } else if (existingConfig && tier) {
+                // Tier unchanged — just update the name in case it changed on Patreon
+                await setUserConfig(user.id, {
+                    ...existingConfig,
+                    name: user.name,
                 });
             }
             // If tier is the same, leave config untouched

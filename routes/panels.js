@@ -99,8 +99,10 @@ router.post('/select', requireAuth, async (req, res) => {
             });
         }
 
-        // Save the selection
+        // Save the selection (preserve name from existing config)
+        const existingName = existingConfig ? existingConfig.name : req.user.name;
         await setUserConfig(req.user.patreonId, {
+            name: existingName || req.user.name,
             tier: req.user.tier,
             selectedPanels: panels,
             lockedAt: Date.now(),
