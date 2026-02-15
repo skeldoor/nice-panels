@@ -11,6 +11,8 @@ const {
     canChangeSelection,
     getTimeUntilChange,
     getTierAllowance,
+    isInGracePeriod,
+    getGraceTimeRemaining,
     parseConfig,
 } = require('../lib/redis');
 
@@ -164,6 +166,8 @@ router.get('/user', async (req, res) => {
             timeUntilChange: getTimeUntilChange(panelConfig),
             allowance: getTierAllowance(decoded.tier),
             tier: panelConfig.tier || decoded.tier,
+            inGrace: isInGracePeriod(panelConfig),
+            graceTimeRemaining: getGraceTimeRemaining(panelConfig),
         } : {
             configured: false,
             selectedPanels: [],
@@ -171,6 +175,8 @@ router.get('/user', async (req, res) => {
             timeUntilChange: 0,
             allowance: getTierAllowance(decoded.tier),
             tier: decoded.tier,
+            inGrace: false,
+            graceTimeRemaining: 0,
         },
     });
 });

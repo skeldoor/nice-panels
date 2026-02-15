@@ -17,6 +17,9 @@ app.use('/api/auth', require('./routes/auth'));
 // --- Panel config API routes ---
 app.use('/api/panels', require('./routes/panels'));
 
+// --- Admin API routes ---
+app.use('/api/admin', require('./routes/admin'));
+
 // --- Setup page route ---
 app.get('/setup/', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'setup', 'index.html'));
@@ -24,6 +27,26 @@ app.get('/setup/', requireAuth, (req, res) => {
 app.get('/setup/*', requireAuth, (req, res) => {
     const relativePath = req.path.replace('/setup/', '');
     const filePath = path.join(__dirname, 'setup', relativePath);
+    res.sendFile(filePath, (err) => {
+        if (err) res.status(404).send('Not found');
+    });
+});
+
+// --- Admin dashboard route ---
+app.get('/admin/', requireAuth, (req, res) => {
+    const adminIds = tierConfig.adminIds || [];
+    if (!req.user || !adminIds.includes(req.user.patreonId)) {
+        return res.status(403).send('Admin access required.');
+    }
+    res.sendFile(path.join(__dirname, 'admin', 'index.html'));
+});
+app.get('/admin/*', requireAuth, (req, res) => {
+    const adminIds = tierConfig.adminIds || [];
+    if (!req.user || !adminIds.includes(req.user.patreonId)) {
+        return res.status(403).send('Admin access required.');
+    }
+    const relativePath = req.path.replace('/admin/', '');
+    const filePath = path.join(__dirname, 'admin', relativePath);
     res.sendFile(filePath, (err) => {
         if (err) res.status(404).send('Not found');
     });

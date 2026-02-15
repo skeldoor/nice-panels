@@ -8,6 +8,8 @@ const {
     canChangeSelection,
     getTimeUntilChange,
     getTierAllowance,
+    isInGracePeriod,
+    getGraceTimeRemaining,
     parseConfig,
 } = require('../lib/redis');
 
@@ -29,6 +31,8 @@ router.get('/config', requireAuth, async (req, res) => {
                 timeUntilChange: 0,
                 allowance,
                 tier: req.user.tier,
+                inGrace: false,
+                graceTimeRemaining: 0,
             });
         }
 
@@ -39,6 +43,8 @@ router.get('/config', requireAuth, async (req, res) => {
             timeUntilChange: getTimeUntilChange(config),
             allowance,
             tier: config.tier || req.user.tier,
+            inGrace: isInGracePeriod(config),
+            graceTimeRemaining: getGraceTimeRemaining(config),
         });
     } catch (err) {
         console.error('Failed to get panel config:', err);
@@ -99,20 +105,34 @@ router.post('/select', requireAuth, async (req, res) => {
             });
         }
 
-        // Save the selection (preserve name from existing config)
+        // Save the selection
         const existingName = existingConfig ? existingConfig.name : req.user.name;
+        const now = Date.now();
+        const isFirstPick = !existingConfig || !existingConfig.firstLockedAt;
+        const inGrace = !isFirstPick && isInGracePeriod(existingConfig);
+
         await setUserConfig(req.user.patreonId, {
             name: existingName || req.user.name,
             tier: req.user.tier,
             selectedPanels: panels,
-            lockedAt: Date.now(),
+            // On first pick: set both timestamps to now (starts the grace window)
+            // During grace repick: keep firstLockedAt, update lockedAt
+            // After grace/30-day unlock: treat as a fresh first pick
+            firstLockedAt: (isFirstPick || !inGrace) ? now : existingConfig.firstLockedAt,
+            lockedAt: (isFirstPick || inGrace) ? (isFirstPick ? now : existingConfig.firstLockedAt) : now,
             configured: true,
         });
+
+        const message = isFirstPick
+            ? 'Panels selected! You have 12 hours to change your mind before your choice locks in for 30 days.'
+            : inGrace
+                ? 'Panels updated! You can still change during your grace period.'
+                : 'Panels selected! Your choice is locked in for 30 days.';
 
         res.json({
             success: true,
             selectedPanels: panels,
-            message: 'Panels selected successfully! Your choice is locked in for 30 days.',
+            message,
         });
     } catch (err) {
         console.error('Failed to save panel selection:', err);

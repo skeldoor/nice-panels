@@ -254,6 +254,38 @@
             margin-top: 60px;
         }
 
+        .grace-banner {
+            background-color: #2a3a2a;
+            border: 2px solid #26e37d;
+            border-radius: 8px;
+            padding: 16px 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .grace-banner-title {
+            font-family: 'RuneScape UF', sans-serif;
+            font-size: 18px;
+            color: #26e37d;
+            font-weight: bold;
+            margin: 0 0 6px 0;
+        }
+
+        .grace-banner-text {
+            font-family: 'RuneScape UF', sans-serif;
+            font-size: 14px;
+            color: #ccc;
+            margin: 0 0 6px 0;
+        }
+
+        .grace-banner-timer {
+            font-family: 'RuneScape UF', sans-serif;
+            font-size: 16px;
+            color: #ffcc00;
+            font-weight: bold;
+            margin: 0;
+        }
+
         .warning-text {
             color: #ff9800;
             font-family: 'RuneScape UF', sans-serif;
@@ -308,8 +340,10 @@
                     renderFullTier(data);
                 } else if (panelConfig && panelConfig.configured && !panelConfig.canChange) {
                     renderLockedView(data);
+                } else if (panelConfig && panelConfig.configured && panelConfig.inGrace) {
+                    renderChooser(data, true); // in grace — show chooser with grace messaging
                 } else {
-                    renderChooser(data);
+                    renderChooser(data, false);
                 }
             })
             .catch(err => {
@@ -369,7 +403,7 @@
             `;
         }
 
-        function renderChooser(data) {
+        function renderChooser(data, isGrace) {
             const allowance = (panelConfig && panelConfig.allowance) || (userTier === 'basic' ? 1 : userTier === 'enhanced' ? 3 : 6);
             const tierName = userTier.charAt(0).toUpperCase() + userTier.slice(1);
 
@@ -393,10 +427,36 @@
                 `;
             }
 
+            // Grace period messaging
+            let graceHtml = '';
+            if (isGrace && panelConfig && panelConfig.graceTimeRemaining > 0) {
+                const graceHours = Math.floor(panelConfig.graceTimeRemaining / (60 * 60 * 1000));
+                const graceMins = Math.floor((panelConfig.graceTimeRemaining % (60 * 60 * 1000)) / (60 * 1000));
+                graceHtml = `
+                    <div class="grace-banner">
+                        <p class="grace-banner-title">Grace Period Active</p>
+                        <p class="grace-banner-text">You can still change your mind. Once the grace period ends your selection locks in for 30 days.</p>
+                        <p class="grace-banner-timer">${graceHours}h ${graceMins}m remaining</p>
+                    </div>
+                `;
+            }
+
+            const subtitleText = isGrace
+                ? `You're in your 12-hour grace period. Change your picks as many times as you like before it expires.`
+                : `Pick the ${allowance} panel${allowance !== 1 ? 's' : ''} you want access to. You'll get a 12-hour grace period to change your mind, then your choice locks in for 30 days.`;
+
+            const warningText = isGrace
+                ? 'Your grace period is ticking — once it ends, your current selection locks in for 30 days.'
+                : 'After confirming you\'ll have a 12-hour grace period to change your mind. After that, your selection is locked for 30 days.';
+
+            const btnText = isGrace ? 'Update My Panels' : 'Confirm My Panels';
+
             document.getElementById('setup-content').innerHTML = `
-                <h1 class="setup-title">Choose Your Panels</h1>
-                <p class="setup-subtitle">Pick the ${allowance} panel${allowance !== 1 ? 's' : ''} you want access to for the next 30 days.</p>
+                <h1 class="setup-title">${isGrace ? 'Change Your Panels' : 'Choose Your Panels'}</h1>
+                <p class="setup-subtitle">${subtitleText}</p>
                 <span class="setup-allowance tier-${userTier}">${tierName} — ${allowance} Panel${allowance !== 1 ? 's' : ''}</span>
+
+                ${graceHtml}
 
                 <div class="selection-counter">
                     Selected: <span class="count" id="selection-count">${selectedPanels.size}</span> / ${allowance}
@@ -406,13 +466,13 @@
                     ${cardsHtml}
                 </div>
 
-                <p class="warning-text">Once you confirm, your selection is locked for 30 days.</p>
+                <p class="warning-text">${warningText}</p>
 
                 <div class="setup-actions">
                     <button class="confirm-btn" id="confirm-btn"
                             onclick="confirmSelection()"
                             ${selectedPanels.size !== allowance ? 'disabled' : ''}>
-                        Lock In My Panels
+                        ${btnText}
                     </button>
                 </div>
 
@@ -465,7 +525,7 @@
                 const result = await res.json();
 
                 if (res.ok && result.success) {
-                    btn.textContent = 'Locked In!';
+                    btn.textContent = 'Saved!';
                     btn.style.backgroundColor = '#26e37d';
                     setTimeout(() => {
                         window.location.href = '/';
@@ -473,13 +533,13 @@
                 } else {
                     alert(result.error || 'Failed to save selection.');
                     btn.disabled = false;
-                    btn.textContent = 'Lock In My Panels';
+                    btn.textContent = 'Confirm My Panels';
                 }
             } catch (err) {
                 console.error('Selection save failed:', err);
                 alert('Something went wrong. Please try again.');
                 btn.disabled = false;
-                btn.textContent = 'Lock In My Panels';
+                btn.textContent = 'Confirm My Panels';
             }
         }
     </script>
