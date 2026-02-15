@@ -2,7 +2,7 @@
   "adminIds": ["185596755"],
   "manualBasic": [],
   "manualEnhanced": [],
-  "manualFull": ["91233263"], 
+  "manualFull": ["91233263", "171883379"], 
   "tierOrder": ["basic", "enhanced", "full"],
   "tiers": {
     "basic": {
