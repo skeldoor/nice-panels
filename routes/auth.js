@@ -4,6 +4,15 @@ const patreon = require('../lib/patreon');
 const { createToken, setTokenCookie, clearTokenCookie, verifyToken, getTokenFromRequest } = require('../lib/jwt');
 const { hasTierAccess } = require('../lib/middleware');
 const tierConfig = require('../config/tiers.json');
+const {
+    getUserConfig,
+    setUserConfig,
+    clearUserConfig,
+    canChangeSelection,
+    getTimeUntilChange,
+    getTierAllowance,
+    parseConfig,
+} = require('../lib/redis');
 
 /**
  * GET /api/auth/login
@@ -18,6 +27,7 @@ router.get('/login', (req, res) => {
  * GET /api/auth/callback
  * Patreon redirects here after the user grants consent.
  * Exchanges the code for tokens, fetches tier info, creates a JWT cookie.
+ * Also detects tier changes and resets panel config accordingly.
  */
 router.get('/callback', async (req, res) => {
     const { code } = req.query;
@@ -46,6 +56,45 @@ router.get('/callback', async (req, res) => {
         const token = createToken(jwtPayload);
         setTokenCookie(res, token);
 
+        // --- Tier change detection ---
+        try {
+            const rawConfig = await getUserConfig(user.id);
+            const existingConfig = parseConfig(rawConfig);
+
+            if (!tier) {
+                // User cancelled / no active subscription — revoke immediately
+                await clearUserConfig(user.id);
+            } else if (existingConfig && existingConfig.tier && existingConfig.tier !== tier) {
+                // Tier changed (upgrade or downgrade) — reset config, force re-setup
+                await setUserConfig(user.id, {
+                    tier: tier,
+                    selectedPanels: [],
+                    lockedAt: null,
+                    configured: false,
+                });
+            } else if (!existingConfig && tier) {
+                // New user with a tier but no config yet — create placeholder
+                await setUserConfig(user.id, {
+                    tier: tier,
+                    selectedPanels: [],
+                    lockedAt: null,
+                    configured: false,
+                });
+            } else if (existingConfig && !existingConfig.tier && tier) {
+                // Had no tier before, now has one — reset config
+                await setUserConfig(user.id, {
+                    tier: tier,
+                    selectedPanels: [],
+                    lockedAt: null,
+                    configured: false,
+                });
+            }
+            // If tier is the same, leave config untouched
+        } catch (redisErr) {
+            // Don't block login if Redis fails — just log it
+            console.error('Redis tier-change check failed:', redisErr);
+        }
+
         // Redirect to homepage
         res.redirect('/');
     } catch (err) {
@@ -66,18 +115,27 @@ router.get('/logout', (req, res) => {
 /**
  * GET /api/auth/user
  * Returns the current user's info and tool access map.
- * Used by the frontend to show locked/unlocked state.
+ * Now includes panel config data for the frontend.
  */
-router.get('/user', (req, res) => {
+router.get('/user', async (req, res) => {
     const token = getTokenFromRequest(req);
 
     if (!token) {
-        return res.json({ authenticated: false, user: null, tools: buildToolAccessMap(null) });
+        return res.json({ authenticated: false, user: null, tools: buildToolAccessMap(null, null), panelConfig: null });
     }
 
     const decoded = verifyToken(token);
     if (!decoded) {
-        return res.json({ authenticated: false, user: null, tools: buildToolAccessMap(null) });
+        return res.json({ authenticated: false, user: null, tools: buildToolAccessMap(null, null), panelConfig: null });
+    }
+
+    // Fetch panel config from Redis
+    let panelConfig = null;
+    try {
+        const rawConfig = await getUserConfig(decoded.patreonId);
+        panelConfig = parseConfig(rawConfig);
+    } catch (err) {
+        console.error('Failed to fetch panel config:', err);
     }
 
     res.json({
@@ -89,19 +147,46 @@ router.get('/user', (req, res) => {
             tier: decoded.tier,
             tierName: decoded.tier ? tierConfig.tiers[decoded.tier]?.name : null,
         },
-        tools: buildToolAccessMap(decoded.tier),
+        tools: buildToolAccessMap(decoded.tier, panelConfig),
+        panelConfig: panelConfig ? {
+            configured: panelConfig.configured || false,
+            selectedPanels: panelConfig.selectedPanels || [],
+            canChange: canChangeSelection(panelConfig),
+            timeUntilChange: getTimeUntilChange(panelConfig),
+            allowance: getTierAllowance(decoded.tier),
+            tier: panelConfig.tier || decoded.tier,
+        } : {
+            configured: false,
+            selectedPanels: [],
+            canChange: true,
+            timeUntilChange: 0,
+            allowance: getTierAllowance(decoded.tier),
+            tier: decoded.tier,
+        },
     });
 });
 
 /**
  * Build a map of tool access for the frontend.
- * Returns { toolKey: { label, path, locked, minTier, minTierName } }
+ * Now uses panel config (selected panels) instead of tier-based minTier checks.
  */
-function buildToolAccessMap(userTier) {
+function buildToolAccessMap(userTier, panelConfig) {
     const toolAccess = {};
 
     for (const [toolKey, toolDef] of Object.entries(tierConfig.tools)) {
-        const locked = !hasTierAccess(userTier, toolDef.minTier);
+        let locked;
+
+        if (!userTier) {
+            // Not authenticated or no tier
+            locked = true;
+        } else if (!panelConfig || !panelConfig.configured) {
+            // Has a tier but hasn't configured panels yet — show all as locked
+            locked = true;
+        } else {
+            // Check if this tool is in their selected panels
+            locked = !panelConfig.selectedPanels || !panelConfig.selectedPanels.includes(toolKey);
+        }
+
         toolAccess[toolKey] = {
             label: toolDef.label,
             path: toolDef.path,

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Your Panels - SkelsPanels</title>
+    <link rel="icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/homepage.css">
+    <style>
+        .setup-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .setup-title {
+            font-family: 'RuneScape UF', sans-serif;
+            color: #ffcc00;
+            font-size: 42px;
+            text-shadow: 2px 2px #000;
+            margin: 0 0 12px 0;
+        }
+
+        .setup-subtitle {
+            color: #ccc;
+            font-size: 16px;
+            font-family: 'RuneScape UF', sans-serif;
+            margin: 0 0 8px 0;
+        }
+
+        .setup-allowance {
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 6px;
+            font-family: 'RuneScape UF', sans-serif;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        .setup-allowance.tier-basic { background-color: #3ba0a0; color: #fff; }
+        .setup-allowance.tier-enhanced { background-color: #bf5af2; color: #fff; }
+        .setup-allowance.tier-full { background-color: #ffcc00; color: #333; }
+
+        .panel-chooser-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 700px) {
+            .panel-chooser-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel-choice-card {
+            background-color: #3a3a3a;
+            border: 2px solid #555;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: border-color 0.2s, transform 0.15s, opacity 0.2s;
+            text-align: left;
+            position: relative;
+        }
+
+        .panel-choice-card:hover {
+            border-color: #ffcc00;
+            transform: translateY(-2px);
+        }
+
+        .panel-choice-card.selected {
+            border-color: #26e37d;
+            background-color: #3a4a3a;
+        }
+
+        .panel-choice-card.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .panel-choice-card.disabled:hover {
+            border-color: #555;
+            transform: none;
+        }
+
+        .panel-choice-card .check-indicator {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            border: 2px solid #666;
+            background-color: #2a2a2a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .panel-choice-card.selected .check-indicator {
+            border-color: #26e37d;
+            background-color: #26e37d;
+            color: #fff;
+        }
+
+        .panel-choice-title {
+            font-family: 'RuneScape UF', sans-serif;
+            font-size: 22px;
+            color: #ffcc00;
+            text-shadow: 1px 1px #000;
+            margin: 0 0 6px 0;
+            padding-right: 36px;
+        }
+
+        .panel-choice-path {
+            font-family: sans-serif;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .setup-actions {
+            margin-top: 20px;
+        }
+
+        .confirm-btn {
+            display: inline-block;
+            padding: 14px 40px;
+            background-color: #26e37d;
+            color: #fff;
+            font-family: 'RuneScape UF', sans-serif;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .confirm-btn:hover {
+            background-color: #1fc06a;
+        }
+
+        .confirm-btn:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+            color: #999;
+        }
+
+        .selection-counter {
+            font-family: 'RuneScape UF', sans-serif;
+            font-size: 18px;
+            color: #ccc;
+            margin-bottom: 16px;
+        }
+
+        .selection-counter .count {
+            color: #26e37d;
+            font-weight: bold;
+        }
+
+        .selection-counter .count.over {
+            color: #ff424d;
+        }
+
+        .lock-info {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #3a3a3a;
+            border: 1px solid #555;
+            border-radius: 8px;
+            font-family: 'RuneScape UF', sans-serif;
+        }
+
+        .lock-info h3 {
+            color: #ffcc00;
+            font-size: 20px;
+            margin: 0 0 10px 0;
+        }
+
+        .lock-info p {
+            color: #ccc;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .lock-countdown {
+            color: #ff424d;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .current-panels {
+            margin-top: 16px;
+        }
+
+        .current-panels span {
+            display: inline-block;
+            padding: 4px 12px;
+            background-color: #26e37d;
+            color: #fff;
+            border-radius: 4px;
+            font-size: 14px;
+            margin: 4px;
+        }
+
+        .back-home-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #ffcc00;
+            font-size: 16px;
+            font-family: 'RuneScape UF', sans-serif;
+            text-decoration: none;
+        }
+
+        .back-home-link:hover {
+            text-decoration: underline;
+        }
+
+        .full-tier-message {
+            background-color: #3a4a3a;
+            border: 2px solid #26e37d;
+            border-radius: 10px;
+            padding: 40px;
+            margin: 30px 0;
+        }
+
+        .full-tier-message h2 {
+            color: #26e37d;
+            font-family: 'RuneScape UF', sans-serif;
+            font-size: 28px;
+            margin: 0 0 12px 0;
+        }
+
+        .full-tier-message p {
+            color: #ccc;
+            font-family: 'RuneScape UF', sans-serif;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .setup-loading {
+            color: #aaa;
+            font-size: 20px;
+            font-family: 'RuneScape UF', sans-serif;
+            margin-top: 60px;
+        }
+
+        .warning-text {
+            color: #ff9800;
+            font-family: 'RuneScape UF', sans-serif;
+            font-size: 14px;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <div id="setup-loading" class="setup-loading">Loading your panel config...</div>
+        <div id="setup-content" style="display:none;">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
+    <script>
+        const allPanelInfo = {
+            infobox: { label: 'Info Box Panel', description: 'The classic OSRS info box for thumbnails and popups.' },
+            bankview: { label: 'Bank View Panel', description: 'Build realistic bank screenshots with custom items.' },
+            itemcreator: { label: 'Item Icon Creator', description: 'Generate clean, crisp OSRS-style item icons.' },
+            dialogpanel: { label: 'Dialog Panel', description: 'Make any NPC say whatever you want.' },
+            optionpanel: { label: 'Option Panel', description: 'Craft custom right-click context menus.' },
+            dropsimulator: { label: 'Loot Calculator', description: 'Visualise loot tables and calculate average drops.' },
+        };
+
+        let selectedPanels = new Set();
+        let panelConfig = null;
+        let userTier = null;
+
+        // Fetch config and render
+        fetch('/api/auth/user')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('setup-loading').style.display = 'none';
+                document.getElementById('setup-content').style.display = 'block';
+
+                if (!data.authenticated || !data.user?.tier) {
+                    document.getElementById('setup-content').innerHTML = `
+                        <h1 class="setup-title">No Active Subscription</h1>
+                        <p class="setup-subtitle">You need an active Patreon subscription to choose panels.</p>
+                        <a href="https://www.patreon.com/Skeldoor" target="_blank" class="patreon-cta-btn" style="margin-top: 20px;">Subscribe on Patreon</a>
+                        <br><a href="/" class="back-home-link">Back to Home</a>
+                    `;
+                    return;
+                }
+
+                userTier = data.user.tier;
+                panelConfig = data.panelConfig;
+
+                if (userTier === 'full') {
+                    renderFullTier(data);
+                } else if (panelConfig && panelConfig.configured && !panelConfig.canChange) {
+                    renderLockedView(data);
+                } else {
+                    renderChooser(data);
+                }
+            })
+            .catch(err => {
+                console.error('Setup load failed:', err);
+                document.getElementById('setup-loading').textContent = 'Failed to load. Please try again.';
+            });
+
+        function renderFullTier(data) {
+            const allPanelKeys = Object.keys(allPanelInfo);
+
+            // Auto-save full access if not already configured
+            if (!panelConfig.configured) {
+                fetch('/api/panels/select', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ panels: allPanelKeys }),
+                }).catch(err => console.error('Auto-save full failed:', err));
+            }
+
+            const panelListHtml = allPanelKeys.map(key =>
+                `<span>${allPanelInfo[key].label}</span>`
+            ).join('');
+
+            document.getElementById('setup-content').innerHTML = `
+                <h1 class="setup-title">You're All Set!</h1>
+                <div class="full-tier-message">
+                    <h2>Full Access Enabled</h2>
+                    <p>You've got access to every panel. No need to choose — they're all yours!</p>
+                    <div class="current-panels" style="margin-top: 16px;">
+                        ${panelListHtml}
+                    </div>
+                </div>
+                <a href="/" class="back-home-link">Back to Home</a>
+            `;
+        }
+
+        function renderLockedView(data) {
+            const remaining = panelConfig.timeUntilChange;
+            const days = Math.floor(remaining / (24 * 60 * 60 * 1000));
+            const hours = Math.floor((remaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+
+            const panelListHtml = panelConfig.selectedPanels.map(key =>
+                `<span>${allPanelInfo[key]?.label || key}</span>`
+            ).join('');
+
+            document.getElementById('setup-content').innerHTML = `
+                <h1 class="setup-title">Your Panel Selection</h1>
+                <p class="setup-subtitle">Your current panels are locked in. Here's what you've got:</p>
+                <div class="lock-info">
+                    <h3>Currently Selected</h3>
+                    <div class="current-panels">
+                        ${panelListHtml}
+                    </div>
+                    <p class="lock-countdown" style="margin-top: 16px;">You can change again in ${days} day${days !== 1 ? 's' : ''} and ${hours} hour${hours !== 1 ? 's' : ''}</p>
+                </div>
+                <a href="/" class="back-home-link">Back to Home</a>
+            `;
+        }
+
+        function renderChooser(data) {
+            const allowance = (panelConfig && panelConfig.allowance) || (userTier === 'basic' ? 1 : userTier === 'enhanced' ? 3 : 6);
+            const tierName = userTier.charAt(0).toUpperCase() + userTier.slice(1);
+
+            // Pre-select any existing selections
+            if (panelConfig && panelConfig.selectedPanels) {
+                panelConfig.selectedPanels.forEach(p => selectedPanels.add(p));
+            }
+
+            let cardsHtml = '';
+            for (const [key, info] of Object.entries(allPanelInfo)) {
+                const isSelected = selectedPanels.has(key);
+                cardsHtml += `
+                    <div class="panel-choice-card ${isSelected ? 'selected' : ''}"
+                         data-panel="${key}" onclick="togglePanel('${key}')">
+                        <div class="check-indicator">${isSelected ? '✓' : ''}</div>
+                        <h3 class="panel-choice-title">${info.label}</h3>
+                        <p style="color: #ccc; font-family: 'RuneScape UF', sans-serif; font-size: 14px; margin: 0;">
+                            ${info.description}
+                        </p>
+                    </div>
+                `;
+            }
+
+            document.getElementById('setup-content').innerHTML = `
+                <h1 class="setup-title">Choose Your Panels</h1>
+                <p class="setup-subtitle">Pick the ${allowance} panel${allowance !== 1 ? 's' : ''} you want access to for the next 30 days.</p>
+                <span class="setup-allowance tier-${userTier}">${tierName} — ${allowance} Panel${allowance !== 1 ? 's' : ''}</span>
+
+                <div class="selection-counter">
+                    Selected: <span class="count" id="selection-count">${selectedPanels.size}</span> / ${allowance}
+                </div>
+
+                <div class="panel-chooser-grid" id="panel-grid">
+                    ${cardsHtml}
+                </div>
+
+                <p class="warning-text">Once you confirm, your selection is locked for 30 days.</p>
+
+                <div class="setup-actions">
+                    <button class="confirm-btn" id="confirm-btn"
+                            onclick="confirmSelection()"
+                            ${selectedPanels.size !== allowance ? 'disabled' : ''}>
+                        Lock In My Panels
+                    </button>
+                </div>
+
+                <a href="/" class="back-home-link">Back to Home</a>
+            `;
+        }
+
+        function togglePanel(key) {
+            if (!panelConfig) return;
+            const allowance = panelConfig.allowance;
+
+            if (selectedPanels.has(key)) {
+                selectedPanels.delete(key);
+            } else {
+                if (selectedPanels.size >= allowance) return; // can't select more
+                selectedPanels.add(key);
+            }
+
+            // Update UI
+            document.querySelectorAll('.panel-choice-card').forEach(card => {
+                const cardKey = card.dataset.panel;
+                const isSelected = selectedPanels.has(cardKey);
+                const isDisabled = !isSelected && selectedPanels.size >= allowance;
+
+                card.classList.toggle('selected', isSelected);
+                card.classList.toggle('disabled', isDisabled);
+                card.querySelector('.check-indicator').textContent = isSelected ? '✓' : '';
+            });
+
+            const countEl = document.getElementById('selection-count');
+            countEl.textContent = selectedPanels.size;
+            countEl.classList.toggle('over', selectedPanels.size > allowance);
+
+            const btn = document.getElementById('confirm-btn');
+            btn.disabled = selectedPanels.size !== allowance;
+        }
+
+        async function confirmSelection() {
+            const btn = document.getElementById('confirm-btn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            try {
+                const res = await fetch('/api/panels/select', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ panels: Array.from(selectedPanels) }),
+                });
+
+                const result = await res.json();
+
+                if (res.ok && result.success) {
+                    btn.textContent = 'Locked In!';
+                    btn.style.backgroundColor = '#26e37d';
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                } else {
+                    alert(result.error || 'Failed to save selection.');
+                    btn.disabled = false;
+                    btn.textContent = 'Lock In My Panels';
+                }
+            } catch (err) {
+                console.error('Selection save failed:', err);
+                alert('Something went wrong. Please try again.');
+                btn.disabled = false;
+                btn.textContent = 'Lock In My Panels';
+            }
+        }
+    </script>
+</body>
+</html>

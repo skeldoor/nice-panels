@@ -438,3 +438,118 @@
     color: #888;
     font-family: 'RuneScape UF', sans-serif;
 }
+
+
+/* ========================================================
+   CONFIG BUTTON (gear icon in auth bar)
+   ======================================================== */
+.config-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 10px;
+    padding: 4px 10px;
+    background-color: #555;
+    color: #ffcc00 !important;
+    font-size: 16px !important;
+    border-radius: 4px;
+    text-decoration: none !important;
+    transition: background-color 0.2s;
+    vertical-align: middle;
+}
+
+.config-btn:hover {
+    background-color: #666;
+    text-decoration: none !important;
+}
+
+.config-timer {
+    font-size: 11px;
+    color: #ff9800;
+    margin-left: 4px;
+    font-family: sans-serif;
+}
+
+
+/* ========================================================
+   SETUP MODAL (shown when panels not configured)
+   ======================================================== */
+.setup-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.setup-modal {
+    background-color: #3a3a3a;
+    border: 2px solid #ffcc00;
+    border-radius: 12px;
+    padding: 40px;
+    max-width: 480px;
+    width: 90%;
+    position: relative;
+    text-align: center;
+}
+
+.setup-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 28px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.setup-modal-close:hover {
+    color: #fff;
+}
+
+.setup-modal-title {
+    font-family: 'RuneScape UF', sans-serif;
+    color: #ffcc00;
+    font-size: 28px;
+    text-shadow: 1px 1px #000;
+    margin: 0 0 16px 0;
+}
+
+.setup-modal-text {
+    font-family: 'RuneScape UF', sans-serif;
+    color: #ccc;
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0 0 24px 0;
+}
+
+.setup-modal-btn {
+    display: inline-block;
+    padding: 12px 32px;
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 18px;
+    font-weight: bold;
+    text-decoration: none !important;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s;
+}
+
+.setup-modal-btn-confirm {
+    background-color: #26e37d;
+    color: #fff !important;
+}
+
+.setup-modal-btn-confirm:hover {
+    background-color: #1fc06a;
+}

@@ -1,9 +1,14 @@
 {
-  "adminIds": ["185596755"],
-  "manualBasic": [],
+  "adminIds": [],
+  "manualBasic": ["185596755"],
   "manualEnhanced": [],
   "manualFull": ["91233263", "171883379"], 
   "tierOrder": ["basic", "enhanced", "full"],
+  "allowances": {
+    "basic": 1,
+    "enhanced": 3,
+    "full": 6
+  },
   "tiers": {
     "basic": {
       "name": "SkelsPanels Basic Access",

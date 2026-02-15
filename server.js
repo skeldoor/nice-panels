@@ -2,7 +2,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const tierConfig = require('./config/tiers.json');
-const { attachUser, requireAuth, requireTier } = require('./lib/middleware');
+const { attachUser, requireAuth, requirePanelAccess } = require('./lib/middleware');
 
 const app = express();
 
@@ -14,19 +14,34 @@ app.use(attachUser); // Attach user info from JWT cookie to req.user on every re
 // --- Auth API routes ---
 app.use('/api/auth', require('./routes/auth'));
 
+// --- Panel config API routes ---
+app.use('/api/panels', require('./routes/panels'));
+
+// --- Setup page route ---
+app.get('/setup/', requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'setup', 'index.html'));
+});
+app.get('/setup/*', requireAuth, (req, res) => {
+    const relativePath = req.path.replace('/setup/', '');
+    const filePath = path.join(__dirname, 'setup', relativePath);
+    res.sendFile(filePath, (err) => {
+        if (err) res.status(404).send('Not found');
+    });
+});
+
 // --- Protected tool routes ---
-// Each tool directory is gated by its minTier from the config.
-// Requests to these paths go through auth + tier checks before serving files.
+// Each tool directory is now gated by panel selection from Redis config.
+// Requests to these paths go through auth + panel access checks before serving files.
 for (const [toolKey, toolDef] of Object.entries(tierConfig.tools)) {
     const toolDir = path.join(__dirname, toolKey);
 
     // Gate the tool's index page
-    app.get(toolDef.path, requireAuth, requireTier(toolDef.minTier), (req, res) => {
+    app.get(toolDef.path, requireAuth, requirePanelAccess(toolKey), (req, res) => {
         res.sendFile(path.join(toolDir, 'index.html'));
     });
 
     // Gate all sub-assets within the tool directory (JS, CSS, images)
-    app.get(`${toolDef.path}*`, requireAuth, requireTier(toolDef.minTier), (req, res) => {
+    app.get(`${toolDef.path}*`, requireAuth, requirePanelAccess(toolKey), (req, res) => {
         // Strip the leading tool path to get the relative file path
         const relativePath = req.path.replace(toolDef.path, '');
         const filePath = path.join(toolDir, relativePath);
