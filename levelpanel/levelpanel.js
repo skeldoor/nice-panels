@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const skillSelect = document.getElementById('skill-select');
     const topNumberInput = document.getElementById('top-number');
     const bottomNumberInput = document.getElementById('bottom-number');
-    const scaleInput = document.getElementById('level-scale');
+    const FIXED_SCALE = 5;
     const saveImageBtn = document.getElementById('save-image-btn');
     const levelPanel = document.getElementById('level-panel');
     const skillIcon = levelPanel.querySelector('.level-skill-icon');
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const skill = skillSelect.value;
         const topNum = topNumberInput.value;
         const bottomNum = bottomNumberInput.value;
-        const scale = parseInt(scaleInput.value, 10) || 5;
+        const scale = FIXED_SCALE;
 
         // Update skill icon
         skillIcon.src = skill + '.png';
@@ -88,15 +88,13 @@ document.addEventListener('DOMContentLoaded', () => {
     skillSelect.addEventListener('change', renderPanel);
     topNumberInput.addEventListener('input', renderPanel);
     bottomNumberInput.addEventListener('input', renderPanel);
-    scaleInput.addEventListener('input', renderPanel);
-
     // Save as image
     saveImageBtn.addEventListener('click', async () => {
         saveImageBtn.disabled = true;
         saveImageBtn.textContent = 'Please wait...';
 
         try {
-            const scale = parseInt(scaleInput.value, 10) || 5;
+            const scale = FIXED_SCALE;
             const skill = skillSelect.value;
             const topNum = topNumberInput.value;
             const bottomNum = bottomNumberInput.value;

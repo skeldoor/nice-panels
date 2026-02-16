@@ -56,9 +56,9 @@
 .level-top-number,
 .level-bottom-number {
     font-family: 'RuneScape Plain 11', sans-serif;
-    font-size: 22px;
+    font-size: 28px;
     color: #ffff00;
-    text-shadow: 1.4px 1.34px 0 #000;
+    text-shadow: 1.7px 1.7px 0 #000;
     text-align: center;
     line-height: 1;
     z-index: 3;
@@ -69,8 +69,8 @@
 }
 
 .level-top-number {
-    top: 14px;
-    right: 50px;
+    top: 12px;
+    right: 48px;
 }
 
 .level-bottom-number {
