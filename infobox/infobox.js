@@ -51,9 +51,13 @@ function updateImageLayout() {
     image.classList.remove('hidden');
     imageContainer.classList.remove('hidden');
 
-    // Toggle holder image visibility
+    // Toggle holder image and shadow visibility
     if (holderImg) {
         holderImg.style.display = showHolder ? 'block' : 'none';
+    }
+    const shadowOverlay = document.querySelector('.shadow-overlay');
+    if (shadowOverlay) {
+        shadowOverlay.style.display = showHolder ? 'block' : 'none';
     }
 
     if (position === 'none' || !image.src || image.src === window.location.href) {
