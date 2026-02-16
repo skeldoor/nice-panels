@@ -169,12 +169,6 @@ router.get('/user', async (req, res) => {
         return res.json({ authenticated: false, user: null, tools: buildToolAccessMap(null, null), panelConfig: null });
     }
 
-    // Migrate old tier names from stale JWTs to current equivalents
-    const LEGACY_TIER_MAP = { fan: 'basic', limited: 'enhanced', premium: 'full' };
-    if (decoded.tier && !tierConfig.tierOrder.includes(decoded.tier)) {
-        decoded.tier = LEGACY_TIER_MAP[decoded.tier] || null;
-    }
-
     // Fetch panel config from Redis
     let panelConfig = null;
     try {
