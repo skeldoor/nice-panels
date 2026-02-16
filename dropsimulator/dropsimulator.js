@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', init);
 
 // State
 let dropTables = {};  // { "version_name": [{ name, quantity, rate, imageUrl }, ...] }
+let subSections = {}; // { "version_name": { "sub_heading": [dropIndices...] } }
 let monsterName = '';
 
 function init() {
@@ -13,12 +14,20 @@ function init() {
     document.getElementById('monsterInput').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') fetchDrops();
     });
-    document.getElementById('dropVersion').addEventListener('change', updatePanel);
+    document.getElementById('dropVersion').addEventListener('change', onVersionChange);
+    document.getElementById('dropSection').addEventListener('change', updatePanel);
     document.getElementById('killCount').addEventListener('input', updatePanel);
+    document.getElementById('sortOrder').addEventListener('change', updatePanel);
+    document.getElementById('probMode').addEventListener('change', updatePanel);
     document.getElementById('scale').addEventListener('input', updatePanel);
     document.getElementById('panelWidth').addEventListener('input', updatePanel);
+    document.getElementById('panelHeight').addEventListener('input', updatePanel);
     document.getElementById('panelPadding').addEventListener('input', updatePanel);
     document.getElementById('frameType').addEventListener('change', updatePanel);
+    document.getElementById('sizePreset').addEventListener('change', applySizePreset);
+    document.getElementById('lootColumns').addEventListener('input', updatePanel);
+    document.getElementById('titleColor').addEventListener('input', updatePanel);
+    document.getElementById('bgColor').addEventListener('input', updatePanel);
     document.getElementById('saveButton').addEventListener('click', savePanelAsImage);
 
     updateFrameType();
@@ -28,6 +37,30 @@ function init() {
     if (document.getElementById('monsterInput').value.trim()) {
         fetchDrops();
     }
+}
+
+function onVersionChange() {
+    populateSectionDropdown();
+    updatePanel();
+}
+
+function applySizePreset() {
+    const preset = document.getElementById('sizePreset').value;
+    if (preset === 'custom') return;
+
+    const [w, h] = preset.split('x').map(Number);
+    document.getElementById('panelWidth').value = w;
+    document.getElementById('panelHeight').value = h;
+
+    // For full-screen presets, set scale to 1 and suggest multi-column
+    if (w >= 1280) {
+        document.getElementById('scale').value = 1;
+        if (parseInt(document.getElementById('lootColumns').value) < 2) {
+            document.getElementById('lootColumns').value = 3;
+        }
+    }
+
+    updatePanel();
 }
 
 // ──────────────────────────────────
@@ -83,7 +116,9 @@ async function fetchDrops() {
         monsterName = titleDiv.textContent.trim();
 
         const html = data.parse.text['*'];
-        dropTables = parseRenderedHtml(html);
+        const parsed = parseRenderedHtml(html);
+        dropTables = parsed.tables;
+        subSections = parsed.subSections;
 
         const versions = Object.keys(dropTables);
         if (versions.length === 0) {
@@ -102,6 +137,7 @@ async function fetchDrops() {
             select.appendChild(option);
         });
 
+        populateSectionDropdown();
         showStatus('', '');
         updatePanel();
 
@@ -127,47 +163,102 @@ function parseRenderedHtml(html) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
 
-    // Group drop tables by their parent h2 section heading.
-    // e.g. Black dragon has <h2>Drops</h2> and <h2>Wilderness Slayer Cave drops</h2>
-    const elements = doc.querySelectorAll('h2, table.item-drops');
+    // Group drop tables by their parent h2 section heading,
+    // and track h3 sub-sections within each h2 (e.g. "Weapons and armour", "Rare drop table").
+    const elements = doc.querySelectorAll('h2, h3, table.item-drops');
 
-    const sections = new Map(); // heading → drops[], preserves insertion order
-    let currentHeading = 'Drops';
+    const sections = new Map();    // h2 heading → drops[]
+    const sectionSubs = new Map(); // h2 heading → { h3 heading → [startIdx, endIdx) }
+    let currentH2 = 'Drops';
+    let currentH3 = null;
 
     for (const el of elements) {
         if (el.tagName === 'H2') {
-            // Get clean heading text (from .mw-headline span if present, to avoid [edit] link text)
             const headline = el.querySelector('.mw-headline');
-            currentHeading = (headline ? headline.textContent : el.textContent).trim();
+            currentH2 = (headline ? headline.textContent : el.textContent).trim();
+            currentH3 = null;
+        } else if (el.tagName === 'H3') {
+            const headline = el.querySelector('.mw-headline');
+            currentH3 = (headline ? headline.textContent : el.textContent).trim();
         } else if (el.classList.contains('item-drops')) {
             const drops = parseDropTable(el);
             if (drops.length > 0) {
-                if (sections.has(currentHeading)) {
-                    sections.get(currentHeading).push(...drops);
+                if (!sections.has(currentH2)) {
+                    sections.set(currentH2, []);
+                    sectionSubs.set(currentH2, new Map());
+                }
+
+                const allDrops = sections.get(currentH2);
+                const startIdx = allDrops.length;
+                allDrops.push(...drops);
+                const endIdx = allDrops.length;
+
+                // Track which indices belong to this h3 sub-section
+                const subName = currentH3 || '_default';
+                const subsMap = sectionSubs.get(currentH2);
+                if (subsMap.has(subName)) {
+                    subsMap.get(subName).push({ start: startIdx, end: endIdx });
                 } else {
-                    sections.set(currentHeading, [...drops]);
+                    subsMap.set(subName, [{ start: startIdx, end: endIdx }]);
                 }
             }
         }
     }
 
-    // Build the final tables object
+    // Build the final tables and sub-sections objects
     const tables = {};
+    const builtSubs = {};
 
     if (sections.size <= 1) {
-        // Single section — label it "Regular"
+        const key = 'Regular';
         const drops = sections.size === 1 ? [...sections.values()][0] : [];
         if (drops.length > 0) {
-            tables['Regular'] = drops;
+            tables[key] = drops;
+            // Remap sub-sections to the "Regular" key
+            const origSubs = sections.size === 1 ? [...sectionSubs.values()][0] : new Map();
+            builtSubs[key] = {};
+            for (const [subName, ranges] of origSubs.entries()) {
+                builtSubs[key][subName] = ranges;
+            }
         }
     } else {
-        // Multiple sections — use heading text as version names
         for (const [heading, drops] of sections.entries()) {
             tables[heading] = drops;
+            builtSubs[heading] = {};
+            const subsMap = sectionSubs.get(heading) || new Map();
+            for (const [subName, ranges] of subsMap.entries()) {
+                builtSubs[heading][subName] = ranges;
+            }
         }
     }
 
-    return tables;
+    return { tables, subSections: builtSubs };
+}
+
+function populateSectionDropdown() {
+    const version = document.getElementById('dropVersion').value;
+    const select = document.getElementById('dropSection');
+    select.innerHTML = '';
+
+    const allOption = document.createElement('option');
+    allOption.value = '_all';
+    allOption.textContent = 'All Sections';
+    select.appendChild(allOption);
+
+    if (version && subSections[version]) {
+        const subs = Object.keys(subSections[version]);
+        // Only show dropdown options if there are multiple sub-sections
+        // (or a named sub-section beyond just '_default')
+        const meaningful = subs.filter(s => s !== '_default');
+        if (meaningful.length > 0 || subs.length > 1) {
+            subs.forEach(s => {
+                const option = document.createElement('option');
+                option.value = s;
+                option.textContent = s === '_default' ? 'General' : s;
+                select.appendChild(option);
+            });
+        }
+    }
 }
 
 function parseDropTable(table) {
@@ -278,30 +369,87 @@ function parseRarity(str) {
 // Expected value calculation
 // ──────────────────────────────────
 
-function calculateExpectedLoot(drops, kills) {
+function getFilteredDrops(drops, version, section) {
+    if (section === '_all' || !subSections[version]) return drops;
+
+    const ranges = subSections[version][section];
+    if (!ranges) return drops;
+
+    const filtered = [];
+    for (const range of ranges) {
+        for (let i = range.start; i < range.end; i++) {
+            if (i < drops.length) filtered.push({ ...drops[i], _origIndex: i });
+        }
+    }
+    return filtered;
+}
+
+function calculateExpectedLoot(drops, kills, probMode) {
     const lootMap = new Map();
 
     drops.forEach((drop, index) => {
+        const origIndex = drop._origIndex !== undefined ? drop._origIndex : index;
         const existing = lootMap.get(drop.name);
         if (existing) {
-            existing.expectedPerKill += drop.quantity * drop.rate;
+            // For probability mode, combine rates: P(A or B) ≈ 1 - (1-pA)(1-pB) per kill
+            // For expected mode, just sum expected quantities per kill
+            if (probMode) {
+                existing.combinedProbPerKill = 1 - (1 - existing.combinedProbPerKill) * (1 - drop.rate);
+            } else {
+                existing.expectedPerKill += drop.quantity * drop.rate;
+            }
         } else {
             lootMap.set(drop.name, {
                 name: drop.name,
                 expectedPerKill: drop.quantity * drop.rate,
+                combinedProbPerKill: drop.rate,
+                rate: drop.rate,
                 imageUrl: drop.imageUrl,
-                order: index
+                order: origIndex
             });
         }
     });
 
     return Array.from(lootMap.values())
-        .sort((a, b) => a.order - b.order)
-        .map(item => ({
-            name: item.name,
-            expected: item.expectedPerKill * kills,
-            imageUrl: item.imageUrl
-        }));
+        .map(item => {
+            if (probMode) {
+                // Probability of getting at least 1 in N kills: 1 - (1-p)^n
+                const prob = 1 - Math.pow(1 - item.combinedProbPerKill, kills);
+                return {
+                    name: item.name,
+                    expected: prob,
+                    rate: item.rate,
+                    isProb: true,
+                    imageUrl: item.imageUrl,
+                    order: item.order
+                };
+            } else {
+                return {
+                    name: item.name,
+                    expected: item.expectedPerKill * kills,
+                    rate: item.rate,
+                    isProb: false,
+                    imageUrl: item.imageUrl,
+                    order: item.order
+                };
+            }
+        });
+}
+
+function sortLoot(loot, sortOrder) {
+    switch (sortOrder) {
+        case 'rate-asc':
+            return loot.slice().sort((a, b) => (b.rate || 0) - (a.rate || 0));
+        case 'rate-desc':
+            return loot.slice().sort((a, b) => (a.rate || 0) - (b.rate || 0));
+        case 'qty-desc':
+            return loot.slice().sort((a, b) => b.expected - a.expected);
+        case 'alpha':
+            return loot.slice().sort((a, b) => a.name.localeCompare(b.name));
+        case 'wiki':
+        default:
+            return loot.slice().sort((a, b) => a.order - b.order);
+    }
 }
 
 // ──────────────────────────────────
@@ -334,6 +482,25 @@ function formatQuantity(n) {
     return n.toFixed(4);
 }
 
+function formatProbability(p) {
+    if (p >= 1) return '100%';
+    if (p <= 0) return '0%';
+
+    const pct = p * 100;
+    if (pct >= 99.99) return '>99.99%';
+    if (pct >= 10) return pct.toFixed(1) + '%';
+    if (pct >= 1) return pct.toFixed(2) + '%';
+    if (pct >= 0.01) return pct.toFixed(3) + '%';
+    return '<0.01%';
+}
+
+function getProbColor(p) {
+    if (p >= 0.95) return '#00FF80';  // Green — near certain
+    if (p >= 0.50) return '#FFFFFF';  // White — likely
+    if (p >= 0.10) return '#FFFF00';  // Yellow — moderate
+    return '#FF6B6B';                  // Red — unlikely
+}
+
 function getQuantityColor(n) {
     if (n >= 10000000) return '#00FF80'; // Green for 10M+
     if (n >= 100000) return '#FFFFFF';   // White for 100K+
@@ -350,6 +517,13 @@ function updatePanel() {
     const scale = parseInt(document.getElementById('scale').value) || 3;
     const kills = parseInt(document.getElementById('killCount').value) || 0;
     const version = document.getElementById('dropVersion').value;
+    const section = document.getElementById('dropSection').value || '_all';
+    const sortOrder = document.getElementById('sortOrder').value || 'wiki';
+    const probMode = document.getElementById('probMode').checked;
+    const columns = Math.max(1, parseInt(document.getElementById('lootColumns').value) || 1);
+    const titleColor = document.getElementById('titleColor').value || '#FF981F';
+    const bgColor = document.getElementById('bgColor').value || '#494034';
+    const fixedHeight = parseInt(document.getElementById('panelHeight').value) || 0;
 
     updateFrameType();
 
@@ -357,6 +531,9 @@ function updatePanel() {
     const naturalWidth = parseInt(document.getElementById('panelWidth').value) || 400;
     const padding = parseInt(document.getElementById('panelPadding').value);
     const pad = isNaN(padding) ? 26 : padding;
+
+    // Apply custom background color
+    content.style.backgroundColor = bgColor;
 
     // Apply padding dynamically
     content.style.padding = `${pad}px ${pad}px`;
@@ -376,34 +553,50 @@ function updatePanel() {
         return;
     }
 
-    // Calculate expected loot
-    const drops = dropTables[version];
-    const loot = calculateExpectedLoot(drops, kills);
+    // Filter drops by sub-section, then calculate expected loot
+    const allDrops = dropTables[version];
+    const filtered = getFilteredDrops(allDrops, version, section);
+    const loot = sortLoot(calculateExpectedLoot(filtered, kills, probMode), sortOrder);
 
     // Build panel HTML
     const versionLabel = (version === 'Drops' || version === 'Regular') ? 'Regular Drops' : version;
+    const sectionLabel = (section !== '_all' && section !== '_default') ? ` — ${section}` : '';
+    const subtitleText = probMode
+        ? `Drop Chance - ${kills.toLocaleString()} KC`
+        : `Expected Loot - ${kills.toLocaleString()} KC`;
+
+    const colStyle = columns > 1
+        ? `style="column-count: ${columns}; column-gap: 12px; column-fill: balance;"`
+        : '';
 
     let html = `
         <div class="shadow-overlay"></div>
         <div class="loot-header">
-            <div class="monster-title">${escapeHtml(monsterName)}</div>
-            <div class="version-subtitle">${escapeHtml(versionLabel)}</div>
-            <div class="kill-subtitle">Expected Loot - ${kills.toLocaleString()} KC</div>
+            <div class="monster-title" style="color: ${titleColor}">${escapeHtml(monsterName)}</div>
+            <div class="version-subtitle">${escapeHtml(versionLabel + sectionLabel)}</div>
+            <div class="kill-subtitle">${subtitleText}</div>
         </div>
         <div class="loot-divider"></div>
-        <div class="loot-list">
+        <div class="loot-list" ${colStyle}>
     `;
 
     loot.forEach(item => {
         const imgUrl = item.imageUrl || '';
-        const qty = formatQuantity(item.expected);
-        const qtyColor = getQuantityColor(item.expected);
+        let displayVal, qtyColor;
+
+        if (item.isProb) {
+            displayVal = formatProbability(item.expected);
+            qtyColor = getProbColor(item.expected);
+        } else {
+            displayVal = 'x ' + formatQuantity(item.expected);
+            qtyColor = getQuantityColor(item.expected);
+        }
 
         html += `
             <div class="loot-row">
                 <img class="loot-icon" src="${escapeHtml(imgUrl)}" crossorigin="anonymous" onerror="this.style.visibility='hidden'" alt="${escapeHtml(item.name)}">
                 <span class="loot-name">${escapeHtml(item.name)}</span>
-                <span class="loot-qty" style="color: ${qtyColor}">x ${qty}</span>
+                <span class="loot-qty" style="color: ${qtyColor}">${displayVal}</span>
             </div>
         `;
     });
@@ -416,8 +609,15 @@ function updatePanel() {
     const dividerHeight = 6;
     const rowHeight = 24;
     const inset = 6; // content is positioned 6px from each panel edge
-    const contentHeight = (pad * 2) + headerHeight + dividerHeight + (loot.length * rowHeight);
-    const naturalHeight = contentHeight + (inset * 2);
+
+    let naturalHeight;
+    if (fixedHeight > 0) {
+        // Fixed height mode — respect the exact dimensions (e.g. 1920x1080)
+        naturalHeight = fixedHeight;
+    } else {
+        const rowsPerColumn = columns > 1 ? Math.ceil(loot.length / columns) : loot.length;
+        naturalHeight = (pad * 2) + headerHeight + dividerHeight + (rowsPerColumn * rowHeight) + (inset * 2);
+    }
 
     applyPanelDimensions(panel, content, naturalWidth, naturalHeight, borderSize, scale);
 }
@@ -427,6 +627,7 @@ function applyPanelDimensions(panel, content, naturalWidth, naturalHeight, borde
     panel.style.height = naturalHeight + 'px';
     panel.style.transform = `scale(${scale})`;
     panel.style.transformOrigin = 'top left';
+    // Reserve the full scaled size so the layout box matches the visual size
     panel.style.marginBottom = ((naturalHeight * scale) - naturalHeight) + 'px';
     panel.style.marginRight = ((naturalWidth * scale) - naturalWidth) + 'px';
 }

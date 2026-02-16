@@ -1,7 +1,7 @@
 /* Loot Calculator Panel Styles */
 
 .loot-calculator-body .container {
-    max-width: 1200px;
+    max-width: none;
 }
 
 /* Controls layout */
@@ -236,10 +236,46 @@
 }
 
 /* Panel container adjustments */
-.panel-container {
+.loot-calculator-body .panel-container {
     display: flex;
     justify-content: center;
     padding: 20px 0;
+    overflow-x: auto;
+}
+
+/* Checkbox label styling */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: auto;
+    cursor: pointer;
+}
+
+.prob-hint {
+    font-size: 11px;
+    color: #999;
+}
+
+/* Color picker styling */
+.loot-controls input[type="color"] {
+    width: 40px;
+    height: 28px;
+    padding: 1px;
+    border: 1px solid #666;
+    border-radius: 3px;
+    cursor: pointer;
+    background: transparent;
+}
+
+/* Multi-column loot rows — prevent items breaking across columns */
+.loot-row {
+    break-inside: avoid;
 }
 
 #panel {
