@@ -40,14 +40,22 @@ function updateImageLayout() {
     const content = document.querySelector('.content');
     const imageContainer = document.querySelector('.panel-image-container');
     const image = document.getElementById('panelImage');
+    const holderImg = imageContainer.querySelector('.item-holder');
     const position = document.getElementById('imagePosition').value;
     const requestedSize = parseInt(document.getElementById('imageSize').value);
     const holderSize = parseInt(document.getElementById('holderSize').value);
     const scale = parseInt(document.getElementById('scale').value);
+    const showHolder = document.getElementById('showHolder').checked;
 
     // Remove hidden class from image first
     image.classList.remove('hidden');
     imageContainer.classList.remove('hidden');
+
+    // Toggle holder image and its shadow
+    if (holderImg) {
+        holderImg.style.display = showHolder ? 'block' : 'none';
+        holderImg.style.filter = showHolder ? 'drop-shadow(5px 5px 0px rgba(0, 0, 0, 1))' : 'none';
+    }
 
     if (position === 'none' || !image.src || image.src === window.location.href) {
         imageContainer.classList.add('hidden');
@@ -233,15 +241,27 @@ function hexToRgb(hex) {
 
 function handleBorderColorPreset() {
     const preset = document.getElementById('borderColorPreset').value;
+    const customColorInput = document.getElementById('borderCustomColor');
     const panel = document.getElementById('panel');
-    
+
+    if (preset === 'custom') {
+        customColorInput.style.display = 'inline-block';
+        const rgb = hexToRgb(customColorInput.value);
+        const elements = panel.querySelectorAll('.corner, .edge');
+        elements.forEach(el => {
+            el.style.filter = calculateColorFilter(rgb);
+        });
+        return;
+    }
+
+    customColorInput.style.display = 'none';
+
     // Reset all filters first
     const elements = panel.querySelectorAll('.corner, .edge');
     elements.forEach(el => {
         if (preset === 'normal') {
             el.style.filter = 'none';
         } else {
-            // Convert the hex color to RGB to calculate the proper filter values
             const rgb = hexToRgb(preset);
             const filter = calculateColorFilter(rgb);
             el.style.filter = filter;
@@ -249,32 +269,53 @@ function handleBorderColorPreset() {
     });
 }
 
-function calculateColorFilter(rgb) {
-    // Convert RGB to HSL to better control the colorization
-    const brightness = (rgb.r + rgb.g + rgb.b) / (255 * 3);
+function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
 
+    if (max === min) {
+        h = s = 0;
+    } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+            case g: h = ((b - r) / d + 2) / 6; break;
+            case b: h = ((r - g) / d + 4) / 6; break;
+        }
+    }
+    return { h: h * 360, s, l };
+}
+
+function calculateColorFilter(rgb) {
     // Start with a strong grayscale and sepia to remove original colors
     let filter = 'grayscale(100%) sepia(100%) ';
 
-    // Add strong colorization
+    // Preset colours use hand-tuned values
     if (rgb.r == 143 && rgb.g == 87 && rgb.b == 87) {
         // Agile Red tint
         filter += 'hue-rotate(-48deg) saturate(260%) brightness(92%)';
-    } else if (rgb.b == 87) {
+    } else if (rgb.r == 89 && rgb.g == 143 && rgb.b == 87) {
         // Agile Green tint
         filter += 'hue-rotate(85deg) saturate(300%) brightness(90%)';
-    } else if (rgb.b == 1) {
+    } else if (rgb.r == 0 && rgb.g == 255 && rgb.b == 1) {
         // Josh Isn't Green tint
         filter += 'hue-rotate(90deg) saturate(1250%) brightness(100%)';
-    } else if (rgb.r > rgb.g && rgb.r > rgb.b) {
-        // Red tint
-        filter += 'hue-rotate(-30deg) saturate(300%) brightness(100%)';
-    } else if (rgb.g > rgb.r && rgb.g > rgb.b) {
-        // Green tint
+    } else if (rgb.r == 0 && rgb.g == 255 && rgb.b == 0) {
+        // Green preset
         filter += 'hue-rotate(40deg) saturate(500%) brightness(100%)';
+    } else if (rgb.r == 255 && rgb.g == 0 && rgb.b == 0) {
+        // Red preset
+        filter += 'hue-rotate(-30deg) saturate(300%) brightness(100%)';
     } else {
-        // Default/brown tint
-        filter += 'hue-rotate(0deg) saturate(100%) brightness(100%)';
+        // Custom colour - use HSL conversion
+        const sepiaBaseHue = 50;
+        const target = rgbToHsl(rgb.r, rgb.g, rgb.b);
+        const hueRotate = target.h - sepiaBaseHue;
+        const saturate = target.s / 0.6;
+        const brightness = target.l / 0.5;
+        filter += `hue-rotate(${hueRotate.toFixed(1)}deg) saturate(${(saturate * 100).toFixed(0)}%) brightness(${(brightness * 100).toFixed(0)}%)`;
     }
 
     return filter;

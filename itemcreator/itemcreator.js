@@ -104,6 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const itemCountInput = document.getElementById('item-count');
     const itemScaleInput = document.getElementById('item-scale');
     const showBackgroundCheckbox = document.getElementById('show-background');
+    const showShadowCheckbox = document.getElementById('show-shadow');
     const bgSizeInput = document.getElementById('bg-size');
     const iconSizeInput = document.getElementById('icon-size');
     const saveImageBtn = document.getElementById('save-image-btn');
@@ -116,12 +117,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const count = parseInt(itemCountInput.value, 10);
         const scale = parseInt(itemScaleInput.value, 10);
         const showBg = showBackgroundCheckbox.checked;
+        const showShadow = showShadowCheckbox.checked;
         const bgSize = parseInt(bgSizeInput.value, 10) || 36;
         const iconSizePercent = parseInt(iconSizeInput.value, 10) || 100;
 
         // Always use consistent square sizing so toggling background doesn't shift the icon
         const scaledBgSize = bgSize * scale;
-        const shadowOffset = 1 * scale; // 1px per scale to match infobox proportions
+        const shadowOffset = showShadow ? 1 * scale : 0; // 1px per scale, or 0 if shadow disabled
         itemPanel.style.width = `${scaledBgSize + shadowOffset}px`;
         itemPanel.style.height = `${scaledBgSize + shadowOffset}px`;
         itemPanel.style.overflow = 'visible';
@@ -134,7 +136,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // Size and style the background image
             itemHolderBg.style.width = `${scaledBgSize}px`;
             itemHolderBg.style.height = `${scaledBgSize}px`;
-            itemHolderBg.style.filter = `drop-shadow(${shadowOffset}px ${shadowOffset}px 0px rgba(0, 0, 0, 1))`;
+            itemHolderBg.style.filter = showShadow
+                ? `drop-shadow(${shadowOffset}px ${shadowOffset}px 0px rgba(0, 0, 0, 1))`
+                : 'none';
         }
 
         // Toggle background visibility
@@ -151,6 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
     itemCountInput.addEventListener('input', renderItem);
     itemScaleInput.addEventListener('input', renderItem);
     showBackgroundCheckbox.addEventListener('change', renderItem);
+    showShadowCheckbox.addEventListener('change', renderItem);
     bgSizeInput.addEventListener('input', renderItem);
     iconSizeInput.addEventListener('input', renderItem);
 
