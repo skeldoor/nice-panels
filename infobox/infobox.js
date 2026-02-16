@@ -27,7 +27,7 @@ function updateTextShadow(textElement, shadowCheckboxId) {
     const fontFamily = textElement.style.fontFamily;
 
     if (hasShadow) {
-        let baseOffset = fontFamily.includes('chat') ? 1.5 : 0.75; // 1.5 for chat, 2 for fancy
+        let baseOffset = 1.5;
         const shadowOffset = (fontSize / 24) * baseOffset;
         const offsetStr = shadowOffset.toFixed(1);
         textElement.style.textShadow = `${offsetStr}px ${offsetStr}px 0px #000000`;
