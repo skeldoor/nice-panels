@@ -1,0 +1,75 @@
+HOW TO ADD NEW PATCH NOTES
+==========================
+
+When you ship an update and want users to see what changed, here's the process.
+
+
+1. CREATE A PATCH FILE
+   - Go to the /patches/ folder in the project root
+   - Create a new markdown file named with the version number: e.g. 1.7.0.md
+   - The filename IS the version, no other config needed
+
+
+2. WRITE THE NOTES
+   - Use standard markdown: headers, bold, lists, links, etc.
+   - The # top-level heading is skipped by the modal renderer (the version
+     is shown in the modal header instead), but include it anyway for readability
+   - Keep it user-facing. No internal details, Redis keys, or admin stuff.
+   - Example structure:
+
+     # Short Title
+
+     Brief intro sentence.
+
+     ## Section Heading
+
+     - **Feature Name**, description of what it does
+     - **Another Feature**, more details
+
+     ## Another Section
+
+     Paragraph text explaining a change.
+
+   - The markdown renderer supports: # ## ### headers, **bold**, *italic*,
+     `inline code`, [links](url), - bullet lists, and --- horizontal rules
+
+
+3. BUMP THE VERSION IN package.json
+   - Open package.json
+   - Update the "version" field to match the patch filename
+   - e.g. if the patch file is 1.7.0.md, set "version": "1.7.0"
+   - The footer version on the homepage is pulled from the latest patch file,
+     not from package.json, but keeping them in sync is good practice
+
+
+4. DEPLOY
+   - That's it. No code changes needed.
+   - The /api/patches/latest endpoint automatically finds the highest
+     versioned .md file in /patches/ using semver sorting
+
+
+HOW IT WORKS FOR USERS
+- When a logged-in user visits the homepage, the JS fetches /api/patches/latest
+- The API compares the latest patch version against what's stored in their
+  Redis config (lastSeenPatch field)
+- If they haven't seen this version, the patch notes modal pops up
+- When they close the modal, it calls POST /api/patches/seen to mark it read
+- They won't see it again unless a newer version is added
+- If the setup modal is also showing (new user configuring panels), the
+  patch notes modal waits until the setup modal is closed first
+- Unauthenticated users don't see the modal (no Redis to track against)
+
+
+FILE STRUCTURE
+  /patches/
+    1.5.0.md    <-- older version
+    1.6.0.md    <-- current version
+    1.7.0.md    <-- next version (just add the file)
+
+
+NOTES
+- Versions are compared using semver (major.minor.patch)
+- The API reads files from disk on each request (no caching), so changes
+  are live as soon as you deploy
+- The GET /api/patches/all endpoint returns every patch file for a future
+  full changelog page if you ever want one

@@ -151,6 +151,7 @@ router.get('/available', requireAuth, (req, res) => {
             key: toolKey,
             label: toolDef.label,
             path: toolDef.path,
+            description: toolDef.description || '',
         });
     }
     res.json({ panels });

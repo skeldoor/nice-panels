@@ -221,6 +221,9 @@ function buildToolAccessMap(userTier, panelConfig) {
         if (!userTier) {
             // Not authenticated or no tier
             locked = true;
+        } else if (userTier === 'full') {
+            // Full tier always has access to every panel
+            locked = false;
         } else if (!panelConfig || !panelConfig.configured) {
             // Has a tier but hasn't configured panels yet — show all as locked
             locked = true;

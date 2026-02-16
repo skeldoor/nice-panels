@@ -303,21 +303,25 @@
     </div>
 
     <script>
-        const allPanelInfo = {
-            infobox: { label: 'Info Box Panel', description: 'The classic OSRS info box for thumbnails and popups.' },
-            bankview: { label: 'Bank View Panel', description: 'Build realistic bank screenshots with custom items.' },
-            itemcreator: { label: 'Item Icon Creator', description: 'Generate clean, crisp OSRS-style item icons.' },
-            dialogpanel: { label: 'Dialog Panel', description: 'Make any NPC say whatever you want.' },
-            optionpanel: { label: 'Option Panel', description: 'Craft custom right-click context menus.' },
-            dropsimulator: { label: 'Loot Calculator', description: 'Visualise loot tables and calculate average drops.' },
-        };
+        // Panel info loaded from API so new panels are automatically included
+        let allPanelInfo = {};
 
         let selectedPanels = new Set();
         let panelConfig = null;
         let userTier = null;
 
-        // Fetch config and render
-        fetch('/api/auth/user')
+        // Fetch available panels from API, then auth state
+        fetch('/api/panels/available')
+            .then(r => r.json())
+            .then(result => {
+                // Build allPanelInfo from API response
+                if (result.panels) {
+                    result.panels.forEach(p => {
+                        allPanelInfo[p.key] = { label: p.label, description: p.description || '' };
+                    });
+                }
+                return fetch('/api/auth/user');
+            })
             .then(r => r.json())
             .then(data => {
                 document.getElementById('setup-loading').style.display = 'none';
