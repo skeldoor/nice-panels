@@ -51,13 +51,10 @@ function updateImageLayout() {
     image.classList.remove('hidden');
     imageContainer.classList.remove('hidden');
 
-    // Toggle holder image and shadow visibility
+    // Toggle holder image and its drop-shadow
     if (holderImg) {
         holderImg.style.display = showHolder ? 'block' : 'none';
-    }
-    const shadowOverlay = document.querySelector('.shadow-overlay');
-    if (shadowOverlay) {
-        shadowOverlay.style.display = showHolder ? 'block' : 'none';
+        holderImg.style.filter = showHolder ? 'drop-shadow(5px 5px 0px rgba(0, 0, 0, 1))' : 'none';
     }
 
     if (position === 'none' || !image.src || image.src === window.location.href) {
@@ -292,18 +289,36 @@ function rgbToHsl(r, g, b) {
 }
 
 function calculateColorFilter(rgb) {
-    // grayscale(100%) sepia(100%) produces a base colour around hue 50deg
-    // We rotate from that base hue to the target hue, then adjust saturation and brightness
-    const sepiaBaseHue = 50;
-    const target = rgbToHsl(rgb.r, rgb.g, rgb.b);
+    // Start with a strong grayscale and sepia to remove original colors
+    let filter = 'grayscale(100%) sepia(100%) ';
 
-    const hueRotate = target.h - sepiaBaseHue;
-    // Sepia base saturation is roughly 0.6, scale to match target
-    const saturate = target.s / 0.6;
-    // Sepia base lightness is roughly 0.5, scale to match target
-    const brightness = target.l / 0.5;
+    // Preset colours use hand-tuned values
+    if (rgb.r == 143 && rgb.g == 87 && rgb.b == 87) {
+        // Agile Red tint
+        filter += 'hue-rotate(-48deg) saturate(260%) brightness(92%)';
+    } else if (rgb.r == 89 && rgb.g == 143 && rgb.b == 87) {
+        // Agile Green tint
+        filter += 'hue-rotate(85deg) saturate(300%) brightness(90%)';
+    } else if (rgb.r == 0 && rgb.g == 255 && rgb.b == 1) {
+        // Josh Isn't Green tint
+        filter += 'hue-rotate(90deg) saturate(1250%) brightness(100%)';
+    } else if (rgb.r == 0 && rgb.g == 255 && rgb.b == 0) {
+        // Green preset
+        filter += 'hue-rotate(40deg) saturate(500%) brightness(100%)';
+    } else if (rgb.r == 255 && rgb.g == 0 && rgb.b == 0) {
+        // Red preset
+        filter += 'hue-rotate(-30deg) saturate(300%) brightness(100%)';
+    } else {
+        // Custom colour - use HSL conversion
+        const sepiaBaseHue = 50;
+        const target = rgbToHsl(rgb.r, rgb.g, rgb.b);
+        const hueRotate = target.h - sepiaBaseHue;
+        const saturate = target.s / 0.6;
+        const brightness = target.l / 0.5;
+        filter += `hue-rotate(${hueRotate.toFixed(1)}deg) saturate(${(saturate * 100).toFixed(0)}%) brightness(${(brightness * 100).toFixed(0)}%)`;
+    }
 
-    return `grayscale(100%) sepia(100%) hue-rotate(${hueRotate.toFixed(1)}deg) saturate(${(saturate * 100).toFixed(0)}%) brightness(${(brightness * 100).toFixed(0)}%)`;
+    return filter;
 }
 
 
