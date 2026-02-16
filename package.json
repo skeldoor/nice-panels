@@ -1,7 +1,6 @@
 {
   "name": "nice-panels",
-  "version": "1.5.0",
-  "patchnotes": "Standardised the layout of all the panels and adjusted download button functionality to work better across a wider range of browsers.",
+  "version": "1.6.0",
   "description": "Bank view panel generator",
   "main": "server.js",
   "scripts": {

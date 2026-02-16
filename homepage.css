@@ -553,3 +553,145 @@
 .setup-modal-btn-confirm:hover {
     background-color: #1fc06a;
 }
+
+
+/* ========================================================
+   PATCH NOTES MODAL
+   ======================================================== */
+.patch-modal {
+    max-width: 560px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.patch-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.patch-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    background-color: #26e37d;
+    color: #fff;
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    border-radius: 4px;
+    text-shadow: none;
+    letter-spacing: 0.5px;
+}
+
+.patch-version {
+    font-family: 'RuneScape UF', sans-serif;
+    color: #ffcc00;
+    font-size: 22px;
+    text-shadow: 1px 1px #000;
+}
+
+.patch-modal-body {
+    overflow-y: auto;
+    flex: 1;
+    margin-bottom: 24px;
+    padding-right: 8px;
+    text-align: left;
+}
+
+/* Scrollbar styling for patch modal */
+.patch-modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.patch-modal-body::-webkit-scrollbar-track {
+    background: #2a2a2a;
+    border-radius: 3px;
+}
+
+.patch-modal-body::-webkit-scrollbar-thumb {
+    background: #666;
+    border-radius: 3px;
+}
+
+.patch-modal-body::-webkit-scrollbar-thumb:hover {
+    background: #888;
+}
+
+.patch-h3 {
+    font-family: 'RuneScape UF', sans-serif;
+    color: #ffcc00;
+    font-size: 20px;
+    text-shadow: 1px 1px #000;
+    margin: 20px 0 10px 0;
+}
+
+.patch-h3:first-child {
+    margin-top: 0;
+}
+
+.patch-h4 {
+    font-family: 'RuneScape UF', sans-serif;
+    color: #e6b800;
+    font-size: 17px;
+    text-shadow: 1px 1px #000;
+    margin: 16px 0 8px 0;
+}
+
+.patch-text {
+    font-family: 'RuneScape UF', sans-serif;
+    color: #ccc;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0 0 10px 0;
+}
+
+.patch-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px 0;
+}
+
+.patch-list li {
+    font-family: 'RuneScape UF', sans-serif;
+    color: #ccc;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 4px 0 4px 20px;
+    position: relative;
+}
+
+.patch-list li::before {
+    content: '\2022';
+    color: #ffcc00;
+    position: absolute;
+    left: 4px;
+    top: 4px;
+}
+
+.patch-list li strong {
+    color: #fff;
+}
+
+.patch-modal-body hr {
+    border: none;
+    border-top: 1px solid #555;
+    margin: 16px 0;
+}
+
+.patch-modal-body a {
+    color: #ffcc00;
+}
+
+.patch-modal-body a:hover {
+    text-decoration: underline;
+}
+
+.patch-modal-body code {
+    background-color: #2a2a2a;
+    color: #26e37d;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+}

@@ -20,6 +20,9 @@ app.use('/api/panels', require('./routes/panels'));
 // --- Admin API routes ---
 app.use('/api/admin', require('./routes/admin'));
 
+// --- Patch notes API routes ---
+app.use('/api/patches', require('./routes/patches'));
+
 // --- Setup page route ---
 app.get('/setup/', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'setup', 'index.html'));
