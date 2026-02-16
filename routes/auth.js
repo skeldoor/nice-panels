@@ -74,6 +74,7 @@ router.get('/callback', async (req, res) => {
                     selectedPanels: [],
                     lockedAt: null,
                     configured: false,
+                    lastSeenPatch: existingConfig.lastSeenPatch || null,
                 });
             } else if (!existingConfig && tier) {
                 // New user with a tier but no config yet — create placeholder
@@ -85,13 +86,14 @@ router.get('/callback', async (req, res) => {
                     configured: false,
                 });
             } else if (existingConfig && !existingConfig.tier && tier) {
-                // Had no tier before, now has one — reset config
+                // Had no tier before, now has one — reset config but preserve lastSeenPatch
                 await setUserConfig(user.id, {
                     name: user.name,
                     tier: tier,
                     selectedPanels: [],
                     lockedAt: null,
                     configured: false,
+                    lastSeenPatch: existingConfig.lastSeenPatch || null,
                 });
             } else if (existingConfig && tier) {
                 // Tier unchanged — just update the name in case it changed on Patreon
@@ -165,6 +167,12 @@ router.get('/user', async (req, res) => {
     const decoded = verifyToken(token);
     if (!decoded) {
         return res.json({ authenticated: false, user: null, tools: buildToolAccessMap(null, null), panelConfig: null });
+    }
+
+    // Migrate old tier names from stale JWTs to current equivalents
+    const LEGACY_TIER_MAP = { fan: 'basic', limited: 'enhanced', premium: 'full' };
+    if (decoded.tier && !tierConfig.tierOrder.includes(decoded.tier)) {
+        decoded.tier = LEGACY_TIER_MAP[decoded.tier] || null;
     }
 
     // Fetch panel config from Redis
