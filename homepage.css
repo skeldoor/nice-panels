@@ -438,3 +438,260 @@
     color: #888;
     font-family: 'RuneScape UF', sans-serif;
 }
+
+
+/* ========================================================
+   CONFIG BUTTON (gear icon in auth bar)
+   ======================================================== */
+.config-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 10px;
+    padding: 4px 10px;
+    background-color: #555;
+    color: #ffcc00 !important;
+    font-size: 16px !important;
+    border-radius: 4px;
+    text-decoration: none !important;
+    transition: background-color 0.2s;
+    vertical-align: middle;
+}
+
+.config-btn:hover {
+    background-color: #666;
+    text-decoration: none !important;
+}
+
+.config-timer {
+    font-size: 11px;
+    color: #ff9800;
+    margin-left: 4px;
+    font-family: sans-serif;
+}
+
+
+/* ========================================================
+   SETUP MODAL (shown when panels not configured)
+   ======================================================== */
+.setup-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.setup-modal {
+    background-color: #3a3a3a;
+    border: 2px solid #ffcc00;
+    border-radius: 12px;
+    padding: 40px;
+    max-width: 480px;
+    width: 90%;
+    position: relative;
+    text-align: center;
+}
+
+.setup-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 28px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.setup-modal-close:hover {
+    color: #fff;
+}
+
+.setup-modal-title {
+    font-family: 'RuneScape UF', sans-serif;
+    color: #ffcc00;
+    font-size: 28px;
+    text-shadow: 1px 1px #000;
+    margin: 0 0 16px 0;
+}
+
+.setup-modal-text {
+    font-family: 'RuneScape UF', sans-serif;
+    color: #ccc;
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0 0 24px 0;
+}
+
+.setup-modal-btn {
+    display: inline-block;
+    padding: 12px 32px;
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 18px;
+    font-weight: bold;
+    text-decoration: none !important;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s;
+}
+
+.setup-modal-btn-confirm {
+    background-color: #26e37d;
+    color: #fff !important;
+}
+
+.setup-modal-btn-confirm:hover {
+    background-color: #1fc06a;
+}
+
+
+/* ========================================================
+   PATCH NOTES MODAL
+   ======================================================== */
+.patch-modal {
+    max-width: 560px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.patch-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.patch-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    background-color: #26e37d;
+    color: #fff;
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    border-radius: 4px;
+    text-shadow: none;
+    letter-spacing: 0.5px;
+}
+
+.patch-version {
+    font-family: 'RuneScape UF', sans-serif;
+    color: #ffcc00;
+    font-size: 22px;
+    text-shadow: 1px 1px #000;
+}
+
+.patch-modal-body {
+    overflow-y: auto;
+    flex: 1;
+    margin-bottom: 24px;
+    padding-right: 8px;
+    text-align: left;
+}
+
+/* Scrollbar styling for patch modal */
+.patch-modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.patch-modal-body::-webkit-scrollbar-track {
+    background: #2a2a2a;
+    border-radius: 3px;
+}
+
+.patch-modal-body::-webkit-scrollbar-thumb {
+    background: #666;
+    border-radius: 3px;
+}
+
+.patch-modal-body::-webkit-scrollbar-thumb:hover {
+    background: #888;
+}
+
+.patch-h3 {
+    font-family: 'RuneScape UF', sans-serif;
+    color: #ffcc00;
+    font-size: 20px;
+    text-shadow: 1px 1px #000;
+    margin: 20px 0 10px 0;
+}
+
+.patch-h3:first-child {
+    margin-top: 0;
+}
+
+.patch-h4 {
+    font-family: 'RuneScape UF', sans-serif;
+    color: #e6b800;
+    font-size: 17px;
+    text-shadow: 1px 1px #000;
+    margin: 16px 0 8px 0;
+}
+
+.patch-text {
+    font-family: 'RuneScape UF', sans-serif;
+    color: #ccc;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0 0 10px 0;
+}
+
+.patch-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px 0;
+}
+
+.patch-list li {
+    font-family: 'RuneScape UF', sans-serif;
+    color: #ccc;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 4px 0 4px 20px;
+    position: relative;
+}
+
+.patch-list li::before {
+    content: '\2022';
+    color: #ffcc00;
+    position: absolute;
+    left: 4px;
+    top: 4px;
+}
+
+.patch-list li strong {
+    color: #fff;
+}
+
+.patch-modal-body hr {
+    border: none;
+    border-top: 1px solid #555;
+    margin: 16px 0;
+}
+
+.patch-modal-body a {
+    color: #ffcc00;
+}
+
+.patch-modal-body a:hover {
+    text-decoration: underline;
+}
+
+.patch-modal-body code {
+    background-color: #2a2a2a;
+    color: #26e37d;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+}

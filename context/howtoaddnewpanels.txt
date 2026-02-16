@@ -1,0 +1,82 @@
+HOW TO ADD A NEW PANEL
+=====================
+
+When you build a new panel tool and want to add it to the site, here's what needs updating.
+
+
+1. CREATE THE PANEL DIRECTORY
+   - Create a folder at the project root, e.g. /newpanel/
+   - Add an index.html inside it with the panel's UI
+   - Add any supporting files (JS, CSS, images) inside the same folder
+
+
+2. ADD THE TOOL TO config/tiers.json
+   - Open config/tiers.json
+   - Add a new entry to the "tools" object:
+
+     "newpanel": {
+       "label": "New Panel",
+       "path": "/newpanel/",
+       "minTier": "enhanced",
+       "description": "Short description of what this panel does."
+     }
+
+   - "label" is the display name shown to users
+   - "path" must match the folder name with leading and trailing slashes
+   - "minTier" is legacy metadata, not used for access control anymore
+   - "description" shows on the setup/chooser page
+
+   That's it for tiers.json. There are no per-tier tool lists to update.
+
+
+3. UPDATE THE FULL TIER ALLOWANCE
+   - In tiers.json, bump "allowances" > "full" to match the new total number
+     of tools (e.g. 7 becomes 8)
+   - This only matters for the static config value. The code in lib/redis.js
+     dynamically counts tools for full-tier users, so this is just for consistency.
+
+
+4. ADD A HOMEPAGE CARD IN index.html
+   - Open index.html
+   - Find the toolCards array in the <script> block
+   - Add a new entry:
+
+     {
+       key: 'newpanel',
+       label: 'New Panel',
+       badge: 'NEW',
+       path: '/newpanel/',
+       image: '/examplepanels/newpanelexample.png',
+       description: 'Longer description for the homepage card.'
+     }
+
+   - Add an example image at /examplepanels/newpanelexample.png
+   - The "badge" field is optional, remove it later once it's not new anymore
+
+
+5. ADD AN EXAMPLE IMAGE
+   - Take a screenshot or export of the panel in use
+   - Save it as /examplepanels/newpanelexample.png
+   - This is what shows on the homepage card
+
+
+WHAT YOU DON'T NEED TO DO
+- No changes to server.js (tool routes are built dynamically from tiers.json)
+- No changes to the setup page (it pulls from /api/panels/available)
+- No changes to middleware (access checks are dynamic)
+- No changes to auth routes (tool access map is built from tiers.json)
+- No changes to Redis config (users pick their own panels)
+
+
+WHAT HAPPENS FOR EXISTING USERS
+- Full-tier users get automatic access to the new panel immediately.
+  The middleware bypasses the Redis selection check for full users.
+- Basic/Enhanced users will see the new panel on their next setup visit.
+  If they're mid-lock, they'll need to wait for the 30-day cooldown to
+  expire before they can swap it in.
+- Existing full users with a stale Redis config (missing the new panel)
+  are still fine because the middleware grants them access regardless.
+
+
+OPTIONAL: WRITE PATCH NOTES
+- See context/howtoaddnewpatchnotes.txt for how to announce the new panel

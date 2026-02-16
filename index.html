@@ -95,6 +95,31 @@
         </div>
     </div>
 
+    <!-- Patch Notes Modal -->
+    <div id="patch-modal" class="setup-modal-overlay" style="display:none;">
+        <div class="setup-modal patch-modal">
+            <button class="setup-modal-close" onclick="closePatchModal()">&times;</button>
+            <div class="patch-modal-header">
+                <span class="patch-badge">UPDATE</span>
+                <span class="patch-version" id="patch-version"></span>
+            </div>
+            <div class="patch-modal-body" id="patch-modal-body">
+                <!-- Rendered markdown content -->
+            </div>
+            <button class="setup-modal-btn setup-modal-btn-confirm" onclick="closePatchModal()">Got it!</button>
+        </div>
+    </div>
+
+    <!-- Setup Modal -->
+    <div id="setup-modal" class="setup-modal-overlay" style="display:none;">
+        <div class="setup-modal">
+            <button class="setup-modal-close" onclick="closeSetupModal()">&times;</button>
+            <div id="setup-modal-content">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
     <script>
         const PATREON_URL = 'https://www.patreon.com/Skeldoor';
 
@@ -143,17 +168,30 @@
                 image: '/examplepanels/lootcalcpanelexample.png',
                 description: 'Visualise loot tables and calculate statistically average drops summarised in a nicely laid out panel. Estimate the loot you\'re going to get from killing men/women (in runescape) for 6000 hours. Good RNG sold separately.'
             },
+            {
+                key: 'levelpanel',
+                label: 'Level Panel',
+                badge: 'NEW',
+                path: '/levelpanel/',
+                image: '/examplepanels/levelpanelexample.png',
+                description: 'Generate that iconic OSRS skill level indicator. Pick your skill, set the top and bottom numbers, and download a pixel-perfect level display. Great for progress updates, or game tasks.'
+            },
         ];
 
-        // Track global auth state so handlers can use it
+        // Track global auth + panel state
         let currentAuth = { authenticated: false, tier: null };
+        let currentPanelConfig = null;
+        let setupModalDismissed = false;
 
-        // Fetch version
-        fetch('/package.json')
-            .then(response => response.json())
+        // Fetch version from patch notes API (avoids exposing package.json)
+        fetch('/api/patches/latest')
+            .then(res => res.json())
             .then(data => {
-                document.getElementById('version').textContent = `v${data.version}`;
-            });
+                if (data.available) {
+                    document.getElementById('version').textContent = `v${data.version}`;
+                }
+            })
+            .catch(() => {});
 
         // Fetch auth state and render everything
         fetch('/api/auth/user')
@@ -164,6 +202,7 @@
                     authenticated: data.authenticated,
                     tier: data.authenticated && data.user ? data.user.tier : null,
                 };
+                currentPanelConfig = data.panelConfig || null;
 
                 // === Desktop auth bar ===
                 document.getElementById('auth-loading').style.display = 'none';
@@ -172,8 +211,20 @@
                     const tierLabel = data.user.tierName
                         ? `<span class="tier-badge tier-${data.user.tier}">${data.user.tierName}</span>`
                         : '<span class="tier-badge tier-none">No active tier</span>';
+
+                    // Config button + change timer
+                    let configBtnHtml = '';
+                    if (data.user.tier) {
+                        let timerHtml = '';
+                        if (data.user.tier !== 'full' && currentPanelConfig && currentPanelConfig.configured && !currentPanelConfig.canChange) {
+                            const days = Math.ceil(currentPanelConfig.timeUntilChange / (24 * 60 * 60 * 1000));
+                            timerHtml = `<span class="config-timer">Change in ${days}d</span>`;
+                        }
+                        configBtnHtml = `<a href="/setup/" class="config-btn" title="Configure your panels">&#9881;${timerHtml}</a>`;
+                    }
+
                     document.getElementById('auth-user-info').innerHTML =
-                        `${data.user.name} ${tierLabel} <span class="patreon-id" title="Your Patreon ID">ID: ${data.user.patreonId}</span>`;
+                        `${data.user.name} ${tierLabel} <span class="patreon-id" title="Your Patreon ID">ID: ${data.user.patreonId}</span>${configBtnHtml}`;
                 } else {
                     document.getElementById('auth-logged-out').style.display = 'flex';
                 }
@@ -185,8 +236,14 @@
                     const mobileTierLabel = data.user.tierName
                         ? `<span class="tier-badge tier-${data.user.tier}">${data.user.tierName}</span>`
                         : '<span class="tier-badge tier-none">No active tier</span>';
+
+                    let mobileConfigBtn = '';
+                    if (data.user.tier) {
+                        mobileConfigBtn = `<a href="/setup/" class="config-btn" title="Configure your panels">&#9881;</a>`;
+                    }
+
                     document.getElementById('mobile-auth-user-info').innerHTML =
-                        `${data.user.name} ${mobileTierLabel}`;
+                        `${data.user.name} ${mobileTierLabel}${mobileConfigBtn}`;
                 } else {
                     document.getElementById('mobile-auth-logged-out').style.display = 'flex';
                 }
@@ -194,6 +251,14 @@
                 // === Render tool cards & patreon section ===
                 renderToolCards(data);
                 updatePatreonSection(currentAuth.tier, currentAuth.authenticated);
+
+                // === Show setup modal if needed ===
+                if (data.authenticated && data.user.tier && currentPanelConfig && !currentPanelConfig.configured) {
+                    showSetupModal(data.user.tier);
+                }
+
+                // === Check for unseen patch notes ===
+                checkPatchNotes();
             })
             .catch(err => {
                 console.error('Auth check failed:', err);
@@ -206,54 +271,244 @@
                 updatePatreonSection(null, false);
             });
 
+        // ============================================================
+        // Patch Notes
+        // ============================================================
+
+        /**
+         * Simple markdown → HTML converter for patch notes.
+         * Handles: headers, bold, lists, paragraphs, horizontal rules.
+         */
+        function renderMarkdown(md) {
+            const lines = md.split('\n');
+            let html = '';
+            let inList = false;
+
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i];
+
+                // Horizontal rule
+                if (/^---+$/.test(line.trim())) {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    html += '<hr>';
+                    continue;
+                }
+
+                // Headers
+                if (line.startsWith('### ')) {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    html += `<h4 class="patch-h4">${line.slice(4)}</h4>`;
+                    continue;
+                }
+                if (line.startsWith('## ')) {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    html += `<h3 class="patch-h3">${line.slice(3)}</h3>`;
+                    continue;
+                }
+                if (line.startsWith('# ')) {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    // Skip the top-level title — we show the version in the header
+                    continue;
+                }
+
+                // List items
+                if (line.startsWith('- ')) {
+                    if (!inList) { html += '<ul class="patch-list">'; inList = true; }
+                    html += `<li>${inlineFormat(line.slice(2))}</li>`;
+                    continue;
+                }
+
+                // Empty line
+                if (line.trim() === '') {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    continue;
+                }
+
+                // Regular paragraph
+                if (inList) { html += '</ul>'; inList = false; }
+                html += `<p class="patch-text">${inlineFormat(line)}</p>`;
+            }
+
+            if (inList) html += '</ul>';
+            return html;
+        }
+
+        function inlineFormat(text) {
+            // Bold: **text**
+            text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            // Italic: *text*
+            text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+            // Inline code: `text`
+            text = text.replace(/`(.+?)`/g, '<code>$1</code>');
+            // Links: [text](url)
+            text = text.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank">$1</a>');
+            return text;
+        }
+
+        let patchVersion = null;
+
+        /**
+         * Check for unseen patch notes and show the modal if needed.
+         * Only runs for authenticated users. Defers to setup modal if that's showing.
+         */
+        function checkPatchNotes() {
+            if (!currentAuth.authenticated) return;
+
+            fetch('/api/patches/latest')
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.available || data.seen) return;
+
+                    patchVersion = data.version;
+                    document.getElementById('patch-version').textContent = `v${data.version}`;
+                    document.getElementById('patch-modal-body').innerHTML = renderMarkdown(data.content);
+
+                    // Don't show if the setup modal is already visible
+                    const setupModal = document.getElementById('setup-modal');
+                    if (setupModal && setupModal.style.display !== 'none') {
+                        // Wait for setup modal to close, then show patch notes
+                        const observer = new MutationObserver(() => {
+                            if (setupModal.style.display === 'none') {
+                                observer.disconnect();
+                                document.getElementById('patch-modal').style.display = 'flex';
+                            }
+                        });
+                        observer.observe(setupModal, { attributes: true, attributeFilter: ['style'] });
+                    } else {
+                        document.getElementById('patch-modal').style.display = 'flex';
+                    }
+                })
+                .catch(err => console.error('Patch notes check failed:', err));
+        }
+
+        function closePatchModal() {
+            document.getElementById('patch-modal').style.display = 'none';
+            // Mark as seen in Redis
+            if (patchVersion) {
+                fetch('/api/patches/seen', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ version: patchVersion }),
+                }).catch(err => console.error('Failed to mark patch as seen:', err));
+            }
+        }
+
+        function showSetupModal(tier) {
+            const modal = document.getElementById('setup-modal');
+            const content = document.getElementById('setup-modal-content');
+
+            if (tier === 'full') {
+                content.innerHTML = `
+                    <h2 class="setup-modal-title">You're all set!</h2>
+                    <p class="setup-modal-text">You've got Full Access — every panel is yours. No need to pick and choose.</p>
+                    <button class="setup-modal-btn setup-modal-btn-confirm" onclick="autoConfigFull()">Got it!</button>
+                `;
+            } else {
+                const allowance = currentPanelConfig ? currentPanelConfig.allowance : (tier === 'basic' ? 1 : 3);
+                content.innerHTML = `
+                    <h2 class="setup-modal-title">Ready to choose your panels?</h2>
+                    <p class="setup-modal-text">Your ${tier.charAt(0).toUpperCase() + tier.slice(1)} tier lets you pick ${allowance} panel${allowance !== 1 ? 's' : ''} to use for the next 30 days. Head to the setup page to make your choice.</p>
+                    <a href="/setup/" class="setup-modal-btn setup-modal-btn-confirm">Choose My Panels</a>
+                `;
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function closeSetupModal() {
+            document.getElementById('setup-modal').style.display = 'none';
+            setupModalDismissed = true;
+        }
+
+        async function autoConfigFull() {
+            try {
+                const allPanelKeys = toolCards.map(t => t.key);
+                const res = await fetch('/api/panels/select', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ panels: allPanelKeys }),
+                });
+                if (res.ok) {
+                    window.location.reload();
+                }
+            } catch (err) {
+                console.error('Auto-config full failed:', err);
+            }
+            closeSetupModal();
+        }
+
         function renderToolCards(authData) {
             const grid = document.getElementById('tools-grid');
             grid.innerHTML = '';
             const isLoggedIn = authData.authenticated;
+            const hasTier = currentAuth.tier != null;
+            const isConfigured = currentPanelConfig && currentPanelConfig.configured;
 
             for (const tool of toolCards) {
                 const toolAccess = authData.tools ? authData.tools[tool.key] : null;
-                const isLocked = toolAccess && toolAccess.locked;
-                const minTier = toolAccess ? toolAccess.minTier : '';
-                const minTierName = toolAccess ? toolAccess.minTierName : 'Patron';
+                const isLocked = toolAccess ? toolAccess.locked : true;
 
                 const card = document.createElement('div');
                 card.className = 'tool-card' + (isLocked ? ' tool-card-locked' : '');
 
-                // If locked and user is logged in, link straight to Patreon sub page.
-                // If locked and not logged in, prompt them to log in first.
                 let lockedHref, lockedOnclick, lockedBtnText;
-                if (isLocked && isLoggedIn) {
+
+                if (isLocked && isLoggedIn && hasTier && !isConfigured) {
+                    // Has tier but hasn't configured — clicking should go to setup
+                    lockedHref = '/setup/';
+                    lockedOnclick = '';
+                    lockedBtnText = 'Set Up Your Panels';
+                } else if (isLocked && isLoggedIn && hasTier && isConfigured) {
+                    // Configured but this panel isn't selected
+                    lockedHref = '/setup/';
+                    lockedOnclick = '';
+                    lockedBtnText = 'Not in Your Selection';
+                } else if (isLocked && isLoggedIn) {
+                    // Logged in but no tier
                     lockedHref = PATREON_URL;
                     lockedOnclick = '';
                     lockedBtnText = 'Subscribe on Patreon';
                 } else if (isLocked) {
+                    // Not logged in
                     lockedHref = tool.path;
-                    lockedOnclick = `onclick="return handleLockedClick(event, '${minTierName}')"`;
+                    lockedOnclick = `onclick="return handleLockedClick(event)"`;
                     lockedBtnText = 'Unlock with Patreon';
                 }
 
                 const badgeHtml = tool.badge ? `<span class="new-badge">${tool.badge}</span>` : '';
 
                 if (isLocked) {
+                    // If user dismissed modal and clicks a locked card, redirect to setup
+                    const cardOnclick = (setupModalDismissed && hasTier && !isConfigured)
+                        ? `onclick="window.location.href='/setup/'; return false;"`
+                        : '';
+
                     card.innerHTML = `
                         <div class="tool-card-image-wrap">
                             <img src="${tool.image}" alt="${tool.label} example" class="tool-card-image" loading="lazy">
                         </div>
                         <div class="tool-card-body">
                             <h3 class="tool-card-title">
-                                <a href="${lockedHref}" ${lockedOnclick} ${isLoggedIn ? 'target="_blank"' : ''}>
+                                <a href="${lockedHref}" ${lockedOnclick} ${isLoggedIn && !hasTier ? 'target="_blank"' : ''}>
                                     ${tool.label}
                                 </a>
                                 ${badgeHtml}
-                                <span class="lock-badge${minTier === 'basic' ? ' lock-badge-basic' : minTier === 'enhanced' ? ' lock-badge-enhanced' : ''}">${minTierName}</span>
+                                <span class="lock-badge">Locked</span>
                             </h3>
                             <p class="tool-card-desc">${tool.description}</p>
-                            <a href="${lockedHref}" class="tool-card-btn tool-card-btn-locked" ${lockedOnclick} ${isLoggedIn ? 'target="_blank"' : ''}>
+                            <a href="${lockedHref}" class="tool-card-btn tool-card-btn-locked" ${lockedOnclick} ${isLoggedIn && !hasTier ? 'target="_blank"' : ''}>
                                 ${lockedBtnText}
                             </a>
                         </div>
                     `;
+
+                    // If modal was dismissed and user has unconfigured tier, redirect on card click
+                    if (setupModalDismissed && hasTier && !isConfigured) {
+                        card.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            window.location.href = '/setup/';
+                        });
+                    }
                 } else {
                     card.innerHTML = `
                         <div class="tool-card-image-wrap">
@@ -280,11 +535,6 @@
 
         /**
          * Update the Patreon CTA section based on the user's current tier.
-         * - Not logged in:       Generic pitch with all 3 tier cards + free trial note
-         * - Logged in, no tier:  "Signed in, now subscribe" with all 3 tiers + free trial note
-         * - Basic tier:          Upsell Enhanced and Full Access
-         * - Enhanced tier:       Upsell Full Access
-         * - Full tier:           Thank-you, no upsell
          */
         function updatePatreonSection(tier, isLoggedIn) {
             const container = document.getElementById('patreon-section-inner');
@@ -299,12 +549,12 @@
 
             if (tier === 'enhanced') {
                 container.innerHTML = `
-                    <h2 class="patreon-heading">Ready for the full set?</h2>
-                    <p class="patreon-pitch">You've got the Info Box, Item Icons, and Option Panel covered. Upgrade to Full Access and unlock Bank Views, Dialog Panels, and the Loot Calculator (plus anything new I build) so you've got the complete toolkit.</p>
+                    <h2 class="patreon-heading">Want access to every panel?</h2>
+                    <p class="patreon-pitch">You're currently picking 3 panels with Enhanced Access. Upgrade to Full Access and get all 6 panels without having to choose — plus anything new I build in the future.</p>
                     <div class="patreon-tiers-row">
                         <div class="patreon-tier-card tier-card-full">
                             <h3>Full Access</h3>
-                            <p>Unlock every remaining tool: Bank Views, Dialog Panels, and the Loot Calculator. One sub, the whole lot.</p>
+                            <p>Every panel, no choosing required. One sub, the whole lot.</p>
                         </div>
                     </div>
                     <a href="${PATREON_URL}" target="_blank" class="patreon-cta-btn">
@@ -316,16 +566,16 @@
 
             if (tier === 'basic') {
                 container.innerHTML = `
-                    <h2 class="patreon-heading">Enjoying the Info Box? There's more where that came from</h2>
-                    <p class="patreon-pitch">You've got the most popular tool sorted. Step up to Enhanced Access for Item Icons and Option Panels, or go straight to Full Access and get the complete set including Bank Views, Dialog Panels, and the Loot Calculator.</p>
+                    <h2 class="patreon-heading">Want to pick more panels?</h2>
+                    <p class="patreon-pitch">You're on Basic with 1 panel choice. Step up to Enhanced for 3 picks, or go Full Access and get every panel without choosing.</p>
                     <div class="patreon-tiers-row">
                         <div class="patreon-tier-card tier-card-enhanced">
                             <h3>Enhanced Access</h3>
-                            <p>Add the Item Icon Panel and Option Panel to your toolkit. Three tools, more creative options.</p>
+                            <p>Choose 3 panels from the full lineup. More tools, more creative options.</p>
                         </div>
                         <div class="patreon-tier-card tier-card-full">
                             <h3>Full Access</h3>
-                            <p>Unlock every tool: Info Boxes, Bank Views, Item Icons, Dialog Panels, Option Menus, and the Loot Calculator. The whole lot.</p>
+                            <p>Every panel, no choosing required. One sub, the whole lot.</p>
                         </div>
                     </div>
                     <a href="${PATREON_URL}" target="_blank" class="patreon-cta-btn">
@@ -336,23 +586,22 @@
             }
 
             if (isLoggedIn && !tier) {
-                // Logged in but no subscription
                 container.innerHTML = `
                     <h2 class="patreon-heading">You're signed in, now unlock the tools</h2>
-                    <p class="patreon-pitch">You've got a Patreon account linked, which is a grand start. Pick a tier below to actually get your hands on the panel generators. It takes seconds and you'll save hours of messing about in image editors.</p>
+                    <p class="patreon-pitch">You've got a Patreon account linked, which is a grand start. Pick a tier below to actually get your hands on the panel generators. You choose which panels you want access to.</p>
                     <div class="patreon-tiers-row">
                         <div class="patreon-tier-card tier-card-basic">
                             <h3>Basic Access</h3>
-                            <p>Get started with the Info Box Panel, the most popular tool for thumbnails and video popups.</p>
-                            <p class="free-trial-note">Includes a 7-day free trial so you can see just how sick the Info Box Panel is in action.</p>
+                            <p>Pick 1 panel from the full lineup. Great for getting started.</p>
+                            <p class="free-trial-note">Includes a 7-day free trial so you can see just how sick the panels are in action.</p>
                         </div>
                         <div class="patreon-tier-card tier-card-enhanced">
                             <h3>Enhanced Access</h3>
-                            <p>Info Box Panel plus the Item Icon Panel and Option Panel. Three tools, more creative options.</p>
+                            <p>Choose 3 panels from the full lineup. More tools, more creative options.</p>
                         </div>
                         <div class="patreon-tier-card tier-card-full">
                             <h3>Full Access</h3>
-                            <p>Unlock every tool: Info Boxes, Bank Views, Item Icons, Dialog Panels, Option Menus, and the Loot Calculator. The whole lot.</p>
+                            <p>Every panel, no choosing required. One sub, the whole lot.</p>
                         </div>
                     </div>
                     <a href="${PATREON_URL}" target="_blank" class="patreon-cta-btn">
@@ -362,23 +611,23 @@
                 return;
             }
 
-            // Not logged in — generic pitch with free trial note
+            // Not logged in
             container.innerHTML = `
                 <h2 class="patreon-heading">Unlock the full toolkit</h2>
-                <p class="patreon-pitch">You can tailor your Patreon sub to give you instant access to all the panels you choose. Spend your time making content instead of wrestling with image editors. It also keeps the site alive and the tools improving.</p>
+                <p class="patreon-pitch">Subscribe on Patreon and choose which panels you want access to. Spend your time making content instead of wrestling with image editors. It also keeps the site alive and the tools improving.</p>
                 <div class="patreon-tiers-row">
                     <div class="patreon-tier-card tier-card-basic">
                         <h3>Basic Access</h3>
-                        <p>Get started with the Info Box Panel, the most popular tool for videos, thumbnails, and social posts.</p>
-                        <p class="free-trial-note">Includes a 7-day free trial so you can see just how sick the Info Box Panel is in action.</p>
+                        <p>Pick 1 panel from the full lineup. Great for getting started.</p>
+                        <p class="free-trial-note">Includes a 7-day free trial so you can see just how sick the panels are in action.</p>
                     </div>
                     <div class="patreon-tier-card tier-card-enhanced">
                         <h3>Enhanced Access</h3>
-                        <p>Info Box Panel plus the Item Icon Panel and Option Panel. Three tools, more creative options.</p>
+                        <p>Choose 3 panels from the full lineup. More tools, more creative options.</p>
                     </div>
                     <div class="patreon-tier-card tier-card-full">
                         <h3>Full Access</h3>
-                        <p>Unlock every tool: Info Boxes, Bank Views, Item Icons, Dialog Panels, Option Menus, and the Loot Calculator. The whole lot.</p>
+                        <p>Every panel, no choosing required. One sub, the whole lot.</p>
                     </div>
                 </div>
                 <a href="${PATREON_URL}" target="_blank" class="patreon-cta-btn">
@@ -387,10 +636,10 @@
             `;
         }
 
-        function handleLockedClick(event, tierName) {
+        function handleLockedClick(event) {
             event.preventDefault();
             const proceed = confirm(
-                `This tool requires a ${tierName} tier Patreon subscription.\n\nWould you like to log in with Patreon?`
+                'You need a Patreon subscription to access this tool.\n\nWould you like to log in with Patreon?'
             );
             if (proceed) {
                 window.location.href = '/api/auth/login';

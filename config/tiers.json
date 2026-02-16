@@ -1,56 +1,67 @@
 {
   "adminIds": ["185596755"],
-  "manualBasic": [],
-  "manualEnhanced": [],
-  "manualFull": ["91233263", "171883379"], 
   "tierOrder": ["basic", "enhanced", "full"],
+  "allowances": {
+    "basic": 1,
+    "enhanced": 3,
+    "full": 7
+  },
   "tiers": {
     "basic": {
       "name": "SkelsPanels Basic Access",
-      "patreonTierId": "27920748",
-      "tools": ["infobox"]
+      "patreonTierId": "27920748"
     },
     "enhanced": {
       "name": "SkelsPanels Enhanced Access",
-      "patreonTierId": "27920771",
-      "tools": ["infobox", "itemcreator", "optionpanel"]
+      "patreonTierId": "27920771"
     },
     "full": {
       "name": "SkelsPanels Full Access",
-      "patreonTierId": "27920791",
-      "tools": ["infobox", "bankview", "itemcreator", "dialogpanel", "optionpanel", "dropsimulator"]
+      "patreonTierId": "27920791"
     }
   },
   "tools": {
     "infobox": {
       "label": "Info Box Panel",
       "path": "/infobox/",
-      "minTier": "basic"
+      "minTier": "basic",
+      "description": "The classic OSRS info box for thumbnails and popups."
     },
     "bankview": {
       "label": "Bank View Panel",
       "path": "/bankview/",
-      "minTier": "full"
+      "minTier": "full",
+      "description": "Build realistic bank screenshots with custom items."
     },
     "itemcreator": {
       "label": "Item Icon Creator",
       "path": "/itemcreator/",
-      "minTier": "enhanced"
+      "minTier": "enhanced",
+      "description": "Generate clean, crisp OSRS-style item icons."
     },
     "dialogpanel": {
       "label": "Dialog Panel",
       "path": "/dialogpanel/",
-      "minTier": "full"
+      "minTier": "full",
+      "description": "Make any NPC say whatever you want."
     },
     "optionpanel": {
       "label": "Option Panel",
       "path": "/optionpanel/",
-      "minTier": "enhanced"
+      "minTier": "enhanced",
+      "description": "Craft custom right-click context menus."
     },
     "dropsimulator": {
       "label": "Loot Calculator",
       "path": "/dropsimulator/",
-      "minTier": "full"
+      "minTier": "full",
+      "description": "Visualise loot tables and calculate average drops."
+    },
+    "levelpanel": {
+      "label": "Level Panel",
+      "path": "/levelpanel/",
+      "minTier": "enhanced",
+      "description": "Generate the iconic OSRS skill level indicator."
     }
   }
 }
