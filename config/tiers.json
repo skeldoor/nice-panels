@@ -1,5 +1,5 @@
 {
-  "adminIds": [],
+  "adminIds": ["185596755"],
   "tierOrder": ["basic", "enhanced", "full"],
   "allowances": {
     "basic": 1,
