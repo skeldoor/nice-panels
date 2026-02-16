@@ -170,7 +170,7 @@ router.get('/user', async (req, res) => {
     }
 
     // Migrate old tier names from stale JWTs (matches middleware logic)
-    const LEGACY_TIER_MAP = { fan: 'basic', limited: 'enhanced', premium: 'full' };
+    const LEGACY_TIER_MAP = tierConfig.legacyTierMap || {};
     if (decoded.tier && !tierConfig.tierOrder.includes(decoded.tier)) {
         decoded.tier = LEGACY_TIER_MAP[decoded.tier] || null;
     }
