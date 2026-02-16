@@ -40,14 +40,21 @@ function updateImageLayout() {
     const content = document.querySelector('.content');
     const imageContainer = document.querySelector('.panel-image-container');
     const image = document.getElementById('panelImage');
+    const holderImg = imageContainer.querySelector('.item-holder');
     const position = document.getElementById('imagePosition').value;
     const requestedSize = parseInt(document.getElementById('imageSize').value);
     const holderSize = parseInt(document.getElementById('holderSize').value);
     const scale = parseInt(document.getElementById('scale').value);
+    const showHolder = document.getElementById('showHolder').checked;
 
     // Remove hidden class from image first
     image.classList.remove('hidden');
     imageContainer.classList.remove('hidden');
+
+    // Toggle holder image visibility
+    if (holderImg) {
+        holderImg.style.display = showHolder ? 'block' : 'none';
+    }
 
     if (position === 'none' || !image.src || image.src === window.location.href) {
         imageContainer.classList.add('hidden');
@@ -233,15 +240,27 @@ function hexToRgb(hex) {
 
 function handleBorderColorPreset() {
     const preset = document.getElementById('borderColorPreset').value;
+    const customColorInput = document.getElementById('borderCustomColor');
     const panel = document.getElementById('panel');
-    
+
+    if (preset === 'custom') {
+        customColorInput.style.display = 'inline-block';
+        const rgb = hexToRgb(customColorInput.value);
+        const elements = panel.querySelectorAll('.corner, .edge');
+        elements.forEach(el => {
+            el.style.filter = calculateColorFilter(rgb);
+        });
+        return;
+    }
+
+    customColorInput.style.display = 'none';
+
     // Reset all filters first
     const elements = panel.querySelectorAll('.corner, .edge');
     elements.forEach(el => {
         if (preset === 'normal') {
             el.style.filter = 'none';
         } else {
-            // Convert the hex color to RGB to calculate the proper filter values
             const rgb = hexToRgb(preset);
             const filter = calculateColorFilter(rgb);
             el.style.filter = filter;
