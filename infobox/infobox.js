@@ -272,35 +272,38 @@ function handleBorderColorPreset() {
     });
 }
 
-function calculateColorFilter(rgb) {
-    // Convert RGB to HSL to better control the colorization
-    const brightness = (rgb.r + rgb.g + rgb.b) / (255 * 3);
+function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
 
-    // Start with a strong grayscale and sepia to remove original colors
-    let filter = 'grayscale(100%) sepia(100%) ';
-
-    // Add strong colorization
-    if (rgb.r == 143 && rgb.g == 87 && rgb.b == 87) {
-        // Agile Red tint
-        filter += 'hue-rotate(-48deg) saturate(260%) brightness(92%)';
-    } else if (rgb.b == 87) {
-        // Agile Green tint
-        filter += 'hue-rotate(85deg) saturate(300%) brightness(90%)';
-    } else if (rgb.b == 1) {
-        // Josh Isn't Green tint
-        filter += 'hue-rotate(90deg) saturate(1250%) brightness(100%)';
-    } else if (rgb.r > rgb.g && rgb.r > rgb.b) {
-        // Red tint
-        filter += 'hue-rotate(-30deg) saturate(300%) brightness(100%)';
-    } else if (rgb.g > rgb.r && rgb.g > rgb.b) {
-        // Green tint
-        filter += 'hue-rotate(40deg) saturate(500%) brightness(100%)';
+    if (max === min) {
+        h = s = 0;
     } else {
-        // Default/brown tint
-        filter += 'hue-rotate(0deg) saturate(100%) brightness(100%)';
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+            case g: h = ((b - r) / d + 2) / 6; break;
+            case b: h = ((r - g) / d + 4) / 6; break;
+        }
     }
+    return { h: h * 360, s, l };
+}
 
-    return filter;
+function calculateColorFilter(rgb) {
+    // grayscale(100%) sepia(100%) produces a base colour around hue 50deg
+    // We rotate from that base hue to the target hue, then adjust saturation and brightness
+    const sepiaBaseHue = 50;
+    const target = rgbToHsl(rgb.r, rgb.g, rgb.b);
+
+    const hueRotate = target.h - sepiaBaseHue;
+    // Sepia base saturation is roughly 0.6, scale to match target
+    const saturate = target.s / 0.6;
+    // Sepia base lightness is roughly 0.5, scale to match target
+    const brightness = target.l / 0.5;
+
+    return `grayscale(100%) sepia(100%) hue-rotate(${hueRotate.toFixed(1)}deg) saturate(${(saturate * 100).toFixed(0)}%) brightness(${(brightness * 100).toFixed(0)}%)`;
 }
 
 
