@@ -4,7 +4,7 @@
   "allowances": {
     "basic": 1,
     "enhanced": 3,
-    "full": 7
+    "full": 8
   },
   "tiers": {
     "basic": {
@@ -62,6 +62,12 @@
       "path": "/levelpanel/",
       "minTier": "enhanced",
       "description": "Generate the iconic OSRS skill level indicator."
+    },
+    "chunkmap": {
+      "label": "Chunk Map",
+      "path": "/chunkmap/",
+      "minTier": "full",
+      "description": "Highlight and track chunks on the OSRS world map."
     }
   }
 }

@@ -1,0 +1,387 @@
+.chunkmap-body {
+    background-color: #1a1a2e;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Top bar */
+.chunkmap-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 16px;
+    background: #16213e;
+    border-bottom: 2px solid #0f3460;
+    z-index: 100;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+.chunkmap-toolbar .back-link {
+    color: #e94560;
+    text-decoration: none;
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 16px;
+    margin-right: 8px;
+}
+
+.chunkmap-toolbar .back-link:hover {
+    text-decoration: underline;
+}
+
+.chunkmap-toolbar h1 {
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 20px;
+    color: #ffcf40;
+    margin: 0;
+    text-shadow: 1px 1px 2px #000;
+}
+
+.toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 12px;
+}
+
+.toolbar-group label {
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 13px;
+    color: #ccc;
+}
+
+.toolbar-group select,
+.toolbar-group input[type="color"] {
+    background: #0f3460;
+    color: #fff;
+    border: 1px solid #533483;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.toolbar-group input[type="color"] {
+    width: 32px;
+    height: 26px;
+    padding: 2px;
+    border-radius: 4px;
+}
+
+.toolbar-range {
+    width: 70px;
+    height: 4px;
+    accent-color: #e94560;
+    cursor: pointer;
+}
+
+.toolbar-group-perspective label {
+    min-width: unset;
+}
+
+.toolbar-btn {
+    background: #533483;
+    color: #fff;
+    border: 1px solid #e94560;
+    border-radius: 4px;
+    padding: 5px 14px;
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.toolbar-btn:hover {
+    background: #e94560;
+}
+
+.toolbar-btn.active {
+    background: #e94560;
+    box-shadow: 0 0 8px rgba(233, 69, 96, 0.5);
+}
+
+.chunk-counter {
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 13px;
+    color: #7ec8e3;
+    margin-left: auto;
+}
+
+.toolbar-hint {
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 12px;
+    color: #888;
+    font-style: italic;
+}
+
+/* Map viewport */
+.chunkmap-viewport {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    cursor: grab;
+}
+
+.chunkmap-viewport:active {
+    cursor: grabbing;
+}
+
+.chunkmap-viewport.drawing {
+    cursor: crosshair;
+}
+
+.chunkmap-canvas-wrap {
+    position: absolute;
+    transform-origin: 0 0;
+}
+
+#mapImage {
+    display: block;
+    image-rendering: pixelated;
+}
+
+#chunkOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+#gridOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+#skullOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+/* Coordinate tooltip */
+.chunk-tooltip {
+    position: fixed;
+    background: rgba(15, 52, 96, 0.92);
+    color: #ffcf40;
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid #533483;
+    pointer-events: none;
+    z-index: 200;
+    display: none;
+    white-space: nowrap;
+}
+
+/* Minimap */
+.chunkmap-minimap {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 200px;
+    border: 2px solid #533483;
+    border-radius: 4px;
+    overflow: hidden;
+    z-index: 90;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+}
+
+.chunkmap-minimap canvas {
+    display: block;
+    width: 100%;
+}
+
+.minimap-viewport {
+    position: absolute;
+    border: 2px solid #e94560;
+    pointer-events: none;
+    box-sizing: border-box;
+}
+
+/* Save modal */
+.save-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 500;
+    align-items: center;
+    justify-content: center;
+}
+
+.save-overlay.open {
+    display: flex;
+}
+
+.save-modal {
+    background: #16213e;
+    border: 2px solid #533483;
+    border-radius: 8px;
+    padding: 24px;
+    max-width: 320px;
+    width: 90%;
+    text-align: center;
+}
+
+.save-modal h2 {
+    font-family: 'RuneScape UF', sans-serif;
+    color: #ffcf40;
+    margin-top: 0;
+}
+
+.save-modal .toolbar-btn {
+    margin: 6px;
+}
+
+/* Queue sidebar */
+.queue-sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200px;
+    height: 100%;
+    background: rgba(22, 33, 62, 0.95);
+    border-right: 2px solid #0f3460;
+    z-index: 95;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.25s ease;
+    overflow: hidden;
+}
+
+.queue-sidebar.collapsed {
+    transform: translateX(-170px);
+}
+
+.queue-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border-bottom: 1px solid #0f3460;
+}
+
+.queue-header h3 {
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 14px;
+    color: #ffcf40;
+    margin: 0;
+}
+
+.queue-toggle-btn {
+    padding: 2px 6px !important;
+    font-size: 11px !important;
+    min-width: unset;
+}
+
+.queue-sidebar.collapsed .queue-toggle-btn {
+    transform: rotate(180deg);
+}
+
+.queue-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    flex-wrap: wrap;
+}
+
+.queue-controls label {
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 12px;
+    color: #ccc;
+}
+
+#queueDelayLabel {
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 11px;
+    color: #7ec8e3;
+    min-width: 40px;
+}
+
+.queue-hint {
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 11px;
+    color: #666;
+    padding: 2px 10px 4px;
+    font-style: italic;
+}
+
+.queue-list {
+    list-style: none;
+    margin: 0;
+    padding: 0 6px 6px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    counter-reset: queue-counter;
+}
+
+/* Styled scrollbar for queue list */
+.queue-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.queue-list::-webkit-scrollbar-track {
+    background: rgba(15, 52, 96, 0.3);
+    border-radius: 3px;
+}
+
+.queue-list::-webkit-scrollbar-thumb {
+    background: #533483;
+    border-radius: 3px;
+}
+
+.queue-list::-webkit-scrollbar-thumb:hover {
+    background: #e94560;
+}
+
+.queue-list li {
+    counter-increment: queue-counter;
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 12px;
+    color: #ccc;
+    padding: 3px 6px;
+    margin: 2px 0;
+    background: rgba(15, 52, 96, 0.5);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: default;
+}
+
+.queue-list li::before {
+    content: counter(queue-counter) ".";
+    color: #ffcf40;
+    margin-right: 6px;
+    min-width: 18px;
+}
+
+.queue-list li.active {
+    background: rgba(233, 69, 96, 0.4);
+    color: #fff;
+}
+
+.queue-list li .queue-remove {
+    background: none;
+    border: none;
+    color: #e94560;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0 2px;
+    line-height: 1;
+}
+
+.queue-list li .queue-remove:hover {
+    color: #ff8888;
+}
