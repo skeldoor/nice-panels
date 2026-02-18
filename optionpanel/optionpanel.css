@@ -42,7 +42,7 @@
     height: 16px;
     word-wrap: break-word;
     white-space: nowrap;
-    overflow: hidden;
+    overflow: visible;
     text-shadow: 1px 1px 0px #000000;
     font-family: 'RuneScape Bold 12', 'chat';
     -webkit-font-smoothing: subpixel-antialiased;
