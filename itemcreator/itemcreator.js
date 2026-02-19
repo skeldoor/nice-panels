@@ -66,6 +66,12 @@ function generateItemIcon(itemIconUrl, itemCount, scale, iconSizePercent) {
 
     iconSizePercent = iconSizePercent || 100;
 
+    const showShadowCheckbox = document.getElementById('show-shadow');
+    const shadowStyleSelect = document.getElementById('shadow-style');
+    const shadowColourInput = document.getElementById('shadow-colour');
+    const showShadow = showShadowCheckbox ? showShadowCheckbox.checked : true;
+    const shadowStyle = shadowStyleSelect ? shadowStyleSelect.value : 'ingame';
+
     itemSlot.innerHTML = ''; // Clear existing content
 
     if (itemIconUrl) {
@@ -77,6 +83,20 @@ function generateItemIcon(itemIconUrl, itemCount, scale, iconSizePercent) {
         iconEl.className = 'item-icon';
         const iconScale = scale * (iconSizePercent / 100);
         iconEl.style.transform = `scale(${iconScale})`; // Apply scale + size adjustment to icon
+
+        // Apply shadow style to icon
+        if (showShadow) {
+            if (shadowStyle === 'ingame') {
+                iconEl.style.filter = `drop-shadow(1px 1px 0 rgb(51, 51, 51, 1))`;
+            } else if (shadowStyle === 'solid-black') {
+                iconEl.style.filter = `drop-shadow(1px 1px 0 rgb(0, 0, 0, 1))`;
+            } else if (shadowStyle === 'custom') {
+                const customColour = shadowColourInput ? shadowColourInput.value : '#000000';
+                iconEl.style.filter = `drop-shadow(1px 1px 0 ${customColour})`;
+            }
+        } else {
+            iconEl.style.filter = 'none';
+        }
 
         itemEl.appendChild(iconEl);
 
@@ -104,6 +124,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const itemCountInput = document.getElementById('item-count');
     const itemScaleInput = document.getElementById('item-scale');
     const showBackgroundCheckbox = document.getElementById('show-background');
+    const showShadowCheckbox = document.getElementById('show-shadow');
+    const shadowStyleSelect = document.getElementById('shadow-style');
+    const shadowColourInput = document.getElementById('shadow-colour');
+    const shadowStyleGroup = document.getElementById('shadow-style-group');
+    const shadowColourGroup = document.getElementById('shadow-colour-group');
     const bgSizeInput = document.getElementById('bg-size');
     const iconSizeInput = document.getElementById('icon-size');
     const saveImageBtn = document.getElementById('save-image-btn');
@@ -111,17 +136,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const itemSlotEl = document.querySelector('.item-slot');
     const itemHolderBg = document.querySelector('.item-creator-bg');
 
+    function getShadowColour() {
+        const style = shadowStyleSelect.value;
+        if (style === 'ingame') return 'rgba(0, 0, 0, 1)';
+        if (style === 'solid-black') return 'rgba(0, 0, 0, 1)';
+        if (style === 'custom') return shadowColourInput.value;
+        return 'rgba(0, 0, 0, 1)';
+    }
+
+    function updateShadowControls() {
+        const showShadow = showShadowCheckbox.checked;
+        shadowStyleGroup.style.display = showShadow ? 'flex' : 'none';
+        shadowColourGroup.style.display = (showShadow && shadowStyleSelect.value === 'custom') ? 'flex' : 'none';
+    }
+
     const renderItem = () => {
         const iconUrl = itemIconUrlInput.value;
         const count = parseInt(itemCountInput.value, 10);
         const scale = parseInt(itemScaleInput.value, 10);
         const showBg = showBackgroundCheckbox.checked;
+        const showShadow = showShadowCheckbox.checked;
+        const shadowStyle = shadowStyleSelect.value;
         const bgSize = parseInt(bgSizeInput.value, 10) || 36;
         const iconSizePercent = parseInt(iconSizeInput.value, 10) || 100;
 
+        updateShadowControls();
+
         // Always use consistent square sizing so toggling background doesn't shift the icon
         const scaledBgSize = bgSize * scale;
-        const shadowOffset = 1 * scale; // 1px per scale to match infobox proportions
+        const shadowOffset = showShadow ? 1 * scale : 0; // 1px per scale, or 0 if shadow disabled
         itemPanel.style.width = `${scaledBgSize + shadowOffset}px`;
         itemPanel.style.height = `${scaledBgSize + shadowOffset}px`;
         itemPanel.style.overflow = 'visible';
@@ -134,7 +177,19 @@ document.addEventListener('DOMContentLoaded', () => {
             // Size and style the background image
             itemHolderBg.style.width = `${scaledBgSize}px`;
             itemHolderBg.style.height = `${scaledBgSize}px`;
-            itemHolderBg.style.filter = `drop-shadow(${shadowOffset}px ${shadowOffset}px 0px rgba(0, 0, 0, 1))`;
+
+            if (showShadow) {
+                const shadowColour = getShadowColour();
+                if (shadowStyle === 'ingame') {
+                    // In-game style: original semi-transparent dark shadow
+                    itemHolderBg.style.filter = `drop-shadow(${shadowOffset}px ${shadowOffset}px 0px rgba(0, 0, 0, 1))`;
+                } else {
+                    // Solid black or custom colour
+                    itemHolderBg.style.filter = `drop-shadow(${shadowOffset}px ${shadowOffset}px 0px ${shadowColour})`;
+                }
+            } else {
+                itemHolderBg.style.filter = 'none';
+            }
         }
 
         // Toggle background visibility
@@ -144,6 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Initial render
+    updateShadowControls();
     renderItem();
 
     // Event Listeners
@@ -151,6 +207,9 @@ document.addEventListener('DOMContentLoaded', () => {
     itemCountInput.addEventListener('input', renderItem);
     itemScaleInput.addEventListener('input', renderItem);
     showBackgroundCheckbox.addEventListener('change', renderItem);
+    showShadowCheckbox.addEventListener('change', renderItem);
+    shadowStyleSelect.addEventListener('change', renderItem);
+    shadowColourInput.addEventListener('input', renderItem);
     bgSizeInput.addEventListener('input', renderItem);
     iconSizeInput.addEventListener('input', renderItem);
 
