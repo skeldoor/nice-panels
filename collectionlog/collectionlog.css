@@ -27,11 +27,26 @@
     z-index: 1;
 }
 
+.collection-log-edges {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 178px;
+    height: 100px;
+    background-image: url('background_edges.png');
+    background-size: 100% 100%;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+    z-index: 11;
+    pointer-events: none;
+}
+
 .collection-log-text {
     text-shadow: 1px 1px 0 #000;
     text-align: center;
     line-height: 1;
-    z-index: 10;
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
@@ -45,18 +60,21 @@
     font-family: 'RuneScape Bold 12', sans-serif;
     color: #ff981f;
     top: 10px;
+    z-index: 10;
 }
 
 .collection-log-text-mid {
     font-family: 'RuneScape Plain 11', sans-serif;
     color: #ff981f;
     top: 40px;
+    z-index: 3;
 }
 
 .collection-log-text-bottom {
     font-family: 'RuneScape Plain 11', sans-serif;
     color: #ffffff;
     top: 64px;
+    z-index: 3;
 }
 
 /* Control styling */

@@ -43,11 +43,13 @@
 
         <div class="save-controls">
             <button id="save-image-btn" class="save-button">Save Panel as Image</button>
+            <button id="save-gif-btn" class="save-button">Save Animation as GIF</button>
         </div>
 
         <div id="collection-log-viewer-container">
             <div id="collection-log-panel" class="collection-log-panel">
                 <div class="collection-log-bg" data-panel-id="examine-log-bg"></div>
+                <div class="collection-log-edges"></div>
                 <span class="collection-log-text collection-log-text-top">Collection log</span>
                 <span class="collection-log-text collection-log-text-mid">New item:</span>
                 <span class="collection-log-text collection-log-text-bottom">Skeldoor's panel</span>
@@ -56,6 +58,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.6.0/dist/dom-to-image-more.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
     <script src="collectionlog.js"></script>
 </body>
 </html>
