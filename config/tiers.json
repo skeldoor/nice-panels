@@ -9,7 +9,7 @@
   "allowances": {
     "basic": 1,
     "enhanced": 3,
-    "full": 8
+    "full": 9
   },
   "tiers": {
     "basic": {
@@ -73,6 +73,12 @@
       "path": "/collectionlog/",
       "minTier": "enhanced",
       "description": "Create collection log notification panels."
+    },
+    "orbpanel": {
+      "label": "Orb Panel",
+      "path": "/orbpanel/",
+      "minTier": "enhanced",
+      "description": "Create hitpoints, prayer, and run energy orb indicators."
     }
   }
 }
