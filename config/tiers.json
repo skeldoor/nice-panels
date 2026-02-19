@@ -1,10 +1,15 @@
 {
   "adminIds": ["185596755"],
   "tierOrder": ["basic", "enhanced", "full"],
+  "legacyTierMap": {
+    "fan": "basic",
+    "limited": "enhanced",
+    "premium": "full"
+  },
   "allowances": {
     "basic": 1,
     "enhanced": 3,
-    "full": 7
+    "full": 9
   },
   "tiers": {
     "basic": {
@@ -62,6 +67,18 @@
       "path": "/levelpanel/",
       "minTier": "enhanced",
       "description": "Generate the iconic OSRS skill level indicator."
+    },
+    "collectionlog": {
+      "label": "Collection Log",
+      "path": "/collectionlog/",
+      "minTier": "enhanced",
+      "description": "Create collection log notification panels."
+    },
+    "orbpanel": {
+      "label": "Orb Panel",
+      "path": "/orbpanel/",
+      "minTier": "enhanced",
+      "description": "Create hitpoints, prayer, and run energy orb indicators."
     }
   }
 }
