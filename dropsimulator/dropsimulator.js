@@ -626,10 +626,9 @@ function applyPanelDimensions(panel, content, naturalWidth, naturalHeight, borde
     panel.style.width = naturalWidth + 'px';
     panel.style.height = naturalHeight + 'px';
     panel.style.transform = `scale(${scale})`;
-    panel.style.transformOrigin = 'top left';
+    panel.style.transformOrigin = 'top center';
     // Reserve the full scaled size so the layout box matches the visual size
     panel.style.marginBottom = ((naturalHeight * scale) - naturalHeight) + 'px';
-    panel.style.marginRight = ((naturalWidth * scale) - naturalWidth) + 'px';
 }
 
 function escapeHtml(str) {

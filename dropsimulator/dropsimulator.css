@@ -241,6 +241,10 @@
     justify-content: center;
     padding: 20px 0;
     overflow-x: auto;
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 /* Checkbox label styling */
