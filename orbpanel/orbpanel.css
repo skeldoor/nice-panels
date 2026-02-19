@@ -1,0 +1,103 @@
+#orb-viewer-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.orb-panel {
+    position: relative;
+    width: 57px;
+    height: 34px;
+    transform-origin: top center;
+}
+
+.orb-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 57px;
+    height: 34px;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+    z-index: 1;
+}
+
+.orb-circle-container {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 26px;
+    height: 26px;
+    overflow: hidden;
+    z-index: 2;
+}
+
+.orb-circle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 26px;
+    height: 26px;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+}
+
+.orb-icon {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 26px;
+    height: 26px;
+    z-index: 3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+}
+
+.orb-icon img {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+}
+
+.orb-value {
+    position: absolute;
+    top: 14px;
+    left: 1px;
+    width: 27px;
+    text-align: center;
+    font-family: 'RuneScape Plain 11', sans-serif;
+    font-size: 16px;
+    line-height: 1;
+    text-shadow: 1px 1px 0 #000;
+    z-index: 2;
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: none;
+}
+
+/* Control panel styling */
+#orb-select {
+    width: 160px;
+    padding: 3px 5px;
+    background-color: #555;
+    color: #fff;
+    border: 1px solid #666;
+    border-radius: 3px;
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 14px;
+}
+
+#custom-icon-url {
+    min-width: 300px;
+    width: 100%;
+}
