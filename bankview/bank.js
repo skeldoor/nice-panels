@@ -123,15 +123,11 @@ function generateBank(stateToRender = null) {
                 const countEl = document.createElement('div');
                 countEl.className = 'item-count';
                 countEl.innerHTML = formatCount(item.count);
-
+                
                 const baseFontSize = 31;
-                const baseTop = -1;
-                const baseLeft = 5;
-                const baseShadow = 1.5;
                 countEl.style.fontSize = `${baseFontSize * (scaleFactor / 2)}px`;
-                countEl.style.top = `${baseTop * (scaleFactor / 2)}px`;
-                countEl.style.left = `${baseLeft * (scaleFactor / 2)}px`;
-                countEl.style.textShadow = `${baseShadow * (scaleFactor / 2)}px ${baseShadow * (scaleFactor / 2)}px 0 #000`;
+                countEl.style.top = '7px'; //`${1 * (scaleFactor / 2)}px`;
+                countEl.style.left = '14px'; //`${5 * (scaleFactor / 2)}px`;
 
                 itemEl.appendChild(countEl);
             }

@@ -63,13 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatheadXInput = document.getElementById('chatheadX');
     const chatheadYInput = document.getElementById('chatheadY');
     const chatheadScaleInput = document.getElementById('chatheadScale');
-    const chatheadUpload = document.getElementById('chatheadUpload');
-    const chatheadUrlInput = document.getElementById('chatheadUrl');
     const panel = document.getElementById('panel');
     const content = panel.querySelector('.content');
-
-    // Flag: when true, skip wiki auto-fetch and use the custom image
-    let useCustomChathead = false;
 
     // Store base object-position and transform values
     let baseObjectPositionX = 50; // Default center
@@ -197,134 +192,102 @@ document.addEventListener('DOMContentLoaded', () => {
         return Array.from(variations);
     }
 
-    // Apply a loaded image (custom or wiki) to the chathead element
-    function applyChatheadImage(src, altText) {
-        npcChathead.src = src;
-        npcChathead.alt = altText || 'Chathead';
-        npcChathead.style.display = 'block';
-
-        const tempImg = new Image();
-        tempImg.onload = () => {
-            const naturalHeight = tempImg.naturalHeight;
-            const naturalWidth = tempImg.naturalWidth;
-
-            const heightMin = 90, offsetMin = -15;
-            const heightMax = 130, offsetMax = -20;
-            let objectPositionOffset;
-            if (naturalHeight <= heightMin) {
-                objectPositionOffset = offsetMin;
-            } else if (naturalHeight >= heightMax) {
-                objectPositionOffset = offsetMax;
-            } else {
-                objectPositionOffset = offsetMin + (naturalHeight - heightMin) * (offsetMax - offsetMin) / (heightMax - heightMin);
-            }
-
-            if (naturalWidth > naturalHeight) {
-                npcChathead.style.width = '130px';
-                npcChathead.style.height = 'auto';
-                baseObjectPositionX = 50;
-                baseObjectPositionY = 0;
-            } else if (naturalHeight <= 90) {
-                npcChathead.style.height = '110px';
-                npcChathead.style.width = 'auto';
-                baseObjectPositionX = 50;
-                baseObjectPositionY = 0;
-            } else {
-                npcChathead.style.height = '130px';
-                npcChathead.style.width = 'auto';
-                baseObjectPositionX = 50;
-                baseObjectPositionY = objectPositionOffset;
-            }
-            baseTransformScale = 0.95;
-            applyChatheadTweaks();
-        };
-        tempImg.src = src;
-    }
-
-    // Handle custom chathead file upload
-    chatheadUpload.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                useCustomChathead = true;
-                chatheadUrlInput.value = ''; // Clear URL input
-                applyChatheadImage(ev.target.result, 'Custom Chathead');
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    // Handle custom chathead URL
-    chatheadUrlInput.addEventListener('input', () => {
-        const url = chatheadUrlInput.value.trim();
-        if (url) {
-            useCustomChathead = true;
-            chatheadUpload.value = ''; // Clear file input
-            applyChatheadImage(url, 'Custom Chathead');
-        } else {
-            useCustomChathead = false;
-            updateDialogContent(); // Re-fetch from wiki
-        }
-    });
-
     function updateDialogContent() {
         const npcName = npcNameInput.value.trim();
         const dialogText = dialogTextInput.value.trim();
 
         if (npcName) {
             npcNameDisplay.textContent = npcName;
+            npcChathead.style.display = 'block'; // Show chathead while trying to load
 
-            // If a custom chathead is set, skip wiki auto-fetch
-            if (useCustomChathead) {
-                // Name updates but chathead stays as-is
-            } else {
-                npcChathead.style.display = 'block';
+            const variations = generateCapitalizationVariations(npcName);
+            let imageLoaded = false;
 
-                const variations = generateCapitalizationVariations(npcName);
-                let imageLoaded = false;
+            const tryLoadImage = (index) => {
+                if (index >= variations.length) {
+                    // All variations tried, hide chathead
+                    npcChathead.style.display = 'none';
+                    npcChathead.src = ''; // Clear src
+                    npcChathead.style.width = 'auto';
+                    npcChathead.style.height = 'auto';
+                    npcChathead.style.objectPosition = '50% 50%';
+                    npcChathead.style.transform = 'none';
+                    return;
+                }
 
-                const tryLoadImage = (index) => {
-                    if (index >= variations.length) {
-                        npcChathead.style.display = 'none';
-                        npcChathead.src = '';
-                        npcChathead.style.width = 'auto';
-                        npcChathead.style.height = 'auto';
-                        npcChathead.style.objectPosition = '50% 50%';
-                        npcChathead.style.transform = 'none';
-                        return;
+                const currentNpcName = variations[index];
+                const chatheadUrl = `https://oldschool.runescape.wiki/images/${encodeURIComponent(currentNpcName.replace(/ /g, '_'))}_chathead.png`;
+
+                // Use a new Image object for loading to reliably trigger onload/onerror
+                const tempImg = new Image();
+                tempImg.onload = () => {
+                    if (imageLoaded) return; // Prevent multiple loads if a previous one was slow
+
+                    imageLoaded = true;
+                    npcChathead.src = chatheadUrl; // Set the actual chathead src
+                    npcChathead.alt = `${currentNpcName} Chathead`;
+                    npcChathead.style.display = 'block'; // Ensure it's visible
+
+                    // Apply initial sizing and positioning based on natural dimensions
+                    let objectPositionOffset;
+                    const naturalHeight = tempImg.naturalHeight; // Use tempImg's naturalHeight
+                    const naturalWidth = tempImg.naturalWidth; // Use tempImg's naturalWidth
+
+                    // Linear interpolation for object-position
+                    const heightMin = 90;
+                    const offsetMin = -15;
+                    const heightMax = 130;
+                    const offsetMax = -20;
+
+                    if (naturalHeight <= heightMin) {
+                        objectPositionOffset = offsetMin;
+                    } else if (naturalHeight >= heightMax) {
+                        objectPositionOffset = offsetMax;
+                    } else {
+                        objectPositionOffset = offsetMin + (naturalHeight - heightMin) * (offsetMax - offsetMin) / (heightMax - heightMin);
                     }
 
-                    const currentNpcName = variations[index];
-                    const chatheadUrl = `https://oldschool.runescape.wiki/images/${encodeURIComponent(currentNpcName.replace(/ /g, '_'))}_chathead.png`;
-
-                    const tempImg = new Image();
-                    tempImg.onload = () => {
-                        if (imageLoaded) return;
-                        imageLoaded = true;
-                        applyChatheadImage(chatheadUrl, `${currentNpcName} Chathead`);
-                    };
-
-                    tempImg.onerror = () => {
-                        if (imageLoaded) return;
-                        tryLoadImage(index + 1);
-                    };
-
-                    tempImg.src = chatheadUrl;
+                    if (naturalWidth > naturalHeight) {
+                        npcChathead.style.width = '130px';
+                        npcChathead.style.height = 'auto';
+                        baseObjectPositionX = 50;
+                        baseObjectPositionY = 0;
+                    } else { // Taller or square images
+                        if (naturalHeight <= 90) { // Smallish square/tall, e.g., 85x89
+                            npcChathead.style.height = '110px';
+                            npcChathead.style.width = 'auto';
+                            baseObjectPositionX = 50;
+                            baseObjectPositionY = 0;
+                        } else { // Taller, >90px
+                            npcChathead.style.height = '130px';
+                            npcChathead.style.width = 'auto';
+                            baseObjectPositionX = 50;
+                            baseObjectPositionY = objectPositionOffset;
+                        }
+                    }
+                    baseTransformScale = 0.95; // Set base scale
+                    applyChatheadTweaks(); // Apply tweakers after initial sizing/positioning
                 };
 
-                tryLoadImage(0);
-            }
+                tempImg.onerror = () => {
+                    if (imageLoaded) return; // If another image already loaded, ignore this error
+                    tryLoadImage(index + 1); // Try the next variation
+                };
+
+                tempImg.src = chatheadUrl;
+            };
+
+            // Start trying from the first variation
+            tryLoadImage(0);
+
         } else {
-            npcChathead.style.display = useCustomChathead ? 'block' : 'none';
+            npcChathead.style.display = 'none';
             npcNameDisplay.textContent = '';
-            if (!useCustomChathead) {
-                npcChathead.src = '';
-                npcChathead.style.width = 'auto';
-                npcChathead.style.height = 'auto';
-                npcChathead.style.objectPosition = '50% 50%';
-                npcChathead.style.transform = 'none';
-            }
+            npcChathead.src = ''; // Clear src
+            npcChathead.style.width = 'auto'; // Reset styles when no chathead
+            npcChathead.style.height = 'auto';
+            npcChathead.style.objectPosition = '50% 50%'; // Reset object-position
+            npcChathead.style.transform = 'none'; // Reset transform
         }
 
         dialogTextDisplay.textContent = dialogText;
