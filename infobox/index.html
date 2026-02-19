@@ -43,7 +43,9 @@
                 <option value="#598F57">Agile Green</option>
                 <option value="#FF0000">Red</option>
                 <option value="#8F5757">Agile Red</option>
+                <option value="custom">Custom...</option>
             </select>
+            <input type="color" id="borderCustomColor" value="#8B4513" style="display: none;" onchange="handleBorderColorPreset()"  oninput="handleBorderColorPreset()">
             <label>
                 Check Mark:
                 <select id="checkType" onchange="updatePanel()">
@@ -135,6 +137,7 @@
                         <select id="primaryFontSelect">
                             <option value="chat">Chat</option>
                             <option value="fancy">Fancy</option>
+                            <option value="RuneScape UF">RS UF</option>
                         </select>
                     </label>
                     <label>Font Size: <input type="number" id="primaryFontSize" value="65" min="8" max="144"></label>
@@ -218,6 +221,7 @@
                         <select id="secondaryFontSelect">
                             <option value="chat">Chat</option>
                             <option value="fancy">Fancy</option>
+                            <option value="RuneScape UF">RS UF</option>
                         </select>
                     </label>
                     <label>Font Size: <input type="number" id="secondaryFontSize" value="45" min="8" max="144"></label>
@@ -237,6 +241,7 @@
             </select>
             <label>Image Size: <input type="number" id="imageSize" value="43" min="32" max="400">px</label>
             <label>Holder Size: <input type="number" id="holderSize" value="60" min="16" max="200">px</label>
+            <label>Show Holder: <input type="checkbox" id="showHolder" checked></label>
             <label>
         Frame Style:
         <select id="frameType" onchange="updateFrameType()">

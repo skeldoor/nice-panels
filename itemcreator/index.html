@@ -46,6 +46,22 @@
                     <label for="icon-size">Icon Size (%):</label>
                     <input type="number" id="icon-size" value="85" min="10" max="300" step="5">
                 </div>
+                <div class="control-group">
+                    <label for="show-shadow">Drop Shadow:</label>
+                    <input type="checkbox" id="show-shadow" checked>
+                </div>
+                <div class="control-group" id="shadow-style-group">
+                    <label for="shadow-style">Shadow Style:</label>
+                    <select id="shadow-style">
+                        <option value="ingame">In-game Style</option>
+                        <option value="solid-black">Solid Black</option>
+                        <option value="custom">Custom Colour</option>
+                    </select>
+                </div>
+                <div class="control-group" id="shadow-colour-group" style="display: none;">
+                    <label for="shadow-colour">Shadow Colour:</label>
+                    <input type="color" id="shadow-colour" value="#000000">
+                </div>
             </div>
         </div>
         <div class="save-controls">
