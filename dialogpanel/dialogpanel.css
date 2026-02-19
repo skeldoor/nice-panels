@@ -120,6 +120,32 @@
     background-color: #0056b3;
 }
 
+.custom-chathead-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: bold;
+}
+
+.custom-chathead-label input[type="file"] {
+    font-size: 0.85em;
+    max-width: 200px;
+}
+
+.clear-chathead-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+}
+
+.clear-chathead-btn:hover {
+    background-color: #b02a37;
+}
+
 .panel-container {
     display: flex;
     justify-content: center;
