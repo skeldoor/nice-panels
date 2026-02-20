@@ -151,6 +151,35 @@ footer a {
     width: 100%; /* Allow it to expand within its container */
 }
 
+.panel-controls select {
+    padding: 4px 8px;
+    background-color: #555;
+    color: #fff;
+    border: 1px solid #666;
+    border-radius: 3px;
+    font-family: 'RuneScape UF', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.panel-controls select:hover {
+    background-color: #666;
+}
+
+.panel-controls input[type="color"] {
+    width: 40px;
+    height: 30px;
+    padding: 2px;
+    background-color: #555;
+    border: 1px solid #666;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+#shadow-colour-group {
+    transition: opacity 0.2s ease;
+}
+
 .custom-panel {
     position: relative;
     width: 300px;

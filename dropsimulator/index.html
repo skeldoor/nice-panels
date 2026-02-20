@@ -35,12 +35,34 @@
                 </select>
             </div>
             <div class="control-row">
+                <label>Section:</label>
+                <select id="dropSection">
+                    <option value="_all">All Sections</option>
+                </select>
+            </div>
+            <div class="control-row">
                 <label>Kill Count:</label>
                 <input type="number" id="killCount" value="256" min="0" max="10000000">
+                <label>Sort:</label>
+                <select id="sortOrder">
+                    <option value="wiki">Wiki Order</option>
+                    <option value="rate-desc">Rarest First</option>
+                    <option value="rate-asc">Most Common First</option>
+                    <option value="qty-desc">Highest Expected First</option>
+                    <option value="alpha">Alphabetical</option>
+                </select>
+            </div>
+            <div class="control-row">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="probMode">
+                    Probability Mode <span class="prob-hint">(shows % chance of at least 1 drop)</span>
+                </label>
             </div>
             <div class="control-row">
                 <label>Width:</label>
-                <input type="number" id="panelWidth" value="400" min="200" max="600" step="10">
+                <input type="number" id="panelWidth" value="400" min="200" max="1920" step="10">
+                <label>Height:</label>
+                <input type="number" id="panelHeight" value="0" min="0" max="1080" step="10" placeholder="Auto">
                 <label>Padding:</label>
                 <input type="number" id="panelPadding" value="26" min="0" max="60" step="1">
                 <label>Scale:</label>
@@ -51,6 +73,22 @@
                     <option value="frame2">Frame 2</option>
                     <option value="frame3">Frame 3</option>
                 </select>
+            </div>
+            <div class="control-row">
+                <label>Preset:</label>
+                <select id="sizePreset">
+                    <option value="custom">Custom</option>
+                    <option value="1920x1080">Full Screen (1920x1080)</option>
+                    <option value="1280x720">HD (1280x720)</option>
+                    <option value="800x600">Small (800x600)</option>
+                    <option value="400x0">Panel (400 wide, auto height)</option>
+                </select>
+                <label>Columns:</label>
+                <input type="number" id="lootColumns" value="1" min="1" max="6" step="1">
+                <label>Title Color:</label>
+                <input type="color" id="titleColor" value="#FF981F">
+                <label>BG Color:</label>
+                <input type="color" id="bgColor" value="#494034">
             </div>
         </div>
 
