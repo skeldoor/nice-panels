@@ -9,7 +9,7 @@
   "allowances": {
     "basic": 1,
     "enhanced": 3,
-    "full": 9
+    "full": 10
   },
   "tiers": {
     "basic": {
@@ -79,6 +79,12 @@
       "path": "/orbpanel/",
       "minTier": "enhanced",
       "description": "Create hitpoints, prayer, and run energy orb indicators."
+    },
+    "gepurchase": {
+      "label": "GE Purchase Panel",
+      "path": "/gepurchase/",
+      "minTier": "enhanced",
+      "description": "Create Grand Exchange purchase offer panels with custom items and text."
     }
   }
 }
