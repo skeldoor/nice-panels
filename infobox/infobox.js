@@ -381,42 +381,43 @@ async function savePanelAsImage() {
     const imagePositionSelect = document.getElementById('imagePosition');
     const isNoImage = imagePositionSelect.value === 'none';
 
-    let nodeToCapture = node;
-    let cleanup = () => {};
+    // Always clone the panel so we never mutate the visible DOM
+    // (inlineBackgroundImages rewrites background-image URLs in-place)
+    const clonedNode = node.cloneNode(true);
+    clonedNode.style.position = 'absolute';
+    clonedNode.style.left = '-9999px';
+    clonedNode.style.top = '-9999px';
+    // Force overflow hidden so the SVG foreignObject render boundary
+    // matches the panel dimensions — without this, absolutely-positioned
+    // children (corners, edges) can be clipped in the export
+    clonedNode.style.overflow = 'hidden';
+    document.body.appendChild(clonedNode);
 
     if (isNoImage) {
-        // Create a clone of the panel to manipulate without affecting the visible one
-        const clonedNode = node.cloneNode(true);
-        clonedNode.style.position = 'absolute';
-        clonedNode.style.left = '-9999px'; // Move off-screen
-        clonedNode.style.top = '-9999px';
-        document.body.appendChild(clonedNode);
-
         const clonedImageContainer = clonedNode.querySelector('.panel-image-container');
         const clonedContent = clonedNode.querySelector('.content');
 
-        // If 'no image' is selected, remove the image container from the clone
         if (clonedImageContainer) {
             clonedImageContainer.remove();
         }
-        // Ensure content flex direction is column when no image is present
         clonedContent.style.flexDirection = 'column';
-
-        nodeToCapture = clonedNode;
-        cleanup = () => {
-            document.body.removeChild(clonedNode);
-        };
     }
 
-    await inlineBackgroundImages(nodeToCapture); // 👈 inline the CSS background images first
+    const cleanup = () => {
+        document.body.removeChild(clonedNode);
+    };
 
-    // Explicitly pass dimensions to avoid dom-to-image miscalculating
-    // the size of the panel (absolute-positioned children can cause
-    // scrollWidth/scrollHeight to undercount, leading to clipped exports)
-    const captureWidth = nodeToCapture.offsetWidth;
-    const captureHeight = nodeToCapture.offsetHeight;
+    // Inline CSS background images on the clone (not the original panel)
+    await inlineBackgroundImages(clonedNode);
 
-    domtoimage.toPng(nodeToCapture, {
+    // Use getBoundingClientRect for accurate rendered dimensions —
+    // offsetWidth/scrollWidth can disagree when children are absolutely
+    // positioned, leading dom-to-image to clip the right/bottom edges
+    const rect = clonedNode.getBoundingClientRect();
+    const captureWidth = Math.ceil(rect.width);
+    const captureHeight = Math.ceil(rect.height);
+
+    domtoimage.toPng(clonedNode, {
         cacheBust: true,
         width: captureWidth,
         height: captureHeight,
