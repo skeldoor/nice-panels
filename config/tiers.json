@@ -1,10 +1,15 @@
 {
   "adminIds": ["185596755"],
   "tierOrder": ["basic", "enhanced", "full"],
+  "legacyTierMap": {
+    "fan": "basic",
+    "limited": "enhanced",
+    "premium": "full"
+  },
   "allowances": {
     "basic": 1,
     "enhanced": 3,
-    "full": 8
+    "full": 11
   },
   "tiers": {
     "basic": {
@@ -63,7 +68,25 @@
       "minTier": "enhanced",
       "description": "Generate the iconic OSRS skill level indicator."
     },
-    "chunkmap": {
+    "collectionlog": {
+      "label": "Collection Log",
+      "path": "/collectionlog/",
+      "minTier": "enhanced",
+      "description": "Create collection log notification panels."
+    },
+    "orbpanel": {
+      "label": "Orb Panel",
+      "path": "/orbpanel/",
+      "minTier": "enhanced",
+      "description": "Create hitpoints, prayer, and run energy orb indicators."
+    },
+    "gepurchase": {
+      "label": "GE Purchase Panel",
+      "path": "/gepurchase/",
+      "minTier": "enhanced",
+      "description": "Create Grand Exchange purchase offer panels with custom items and text."
+    },
+      "chunkmap": {
       "label": "Chunk Map",
       "path": "/chunkmap/",
       "minTier": "full",

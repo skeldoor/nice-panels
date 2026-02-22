@@ -408,7 +408,7 @@
         }
 
         function renderChooser(data, isGrace) {
-            const allowance = (panelConfig && panelConfig.allowance) || (userTier === 'basic' ? 1 : userTier === 'enhanced' ? 3 : 6);
+            const allowance = (panelConfig && panelConfig.allowance != null && panelConfig.allowance > 0) ? panelConfig.allowance : 0;
             const tierName = userTier.charAt(0).toUpperCase() + userTier.slice(1);
 
             // Pre-select any existing selections

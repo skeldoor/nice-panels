@@ -1,0 +1,54 @@
+/* GE Purchase Panel Styles */
+
+#gepurchase-viewer-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.gepurchase-panel {
+    position: relative;
+    overflow: visible;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+}
+
+.gepurchase-panel .ui-panel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    box-sizing: border-box;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-color: #3e3529;
+    border: none;
+    z-index: 1;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+}
+
+.gepurchase-panel .sprite {
+    position: absolute;
+    z-index: 3;
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+}
+
+.gepurchase-panel .ui-text {
+    position: absolute;
+    z-index: 10;
+    font-family: 'RuneScape Plain 11', 'RuneScape UF', sans-serif;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
+    pointer-events: none;
+    image-rendering: pixelated;
+}

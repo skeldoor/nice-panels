@@ -53,7 +53,10 @@ async function inlineBackgroundImages(element) {
 
 document.addEventListener('DOMContentLoaded', () => {
     const npcNameInput = document.getElementById('npcNameInput');
+    const nameOverrideInput = document.getElementById('nameOverrideInput');
     const dialogTextInput = document.getElementById('dialogTextInput');
+    const customChatheadInput = document.getElementById('customChatheadInput');
+    const clearCustomChatheadBtn = document.getElementById('clearCustomChathead');
     const npcChathead = document.getElementById('npc-chathead');
     const npcNameDisplay = document.getElementById('npc-name');
     const dialogTextDisplay = document.getElementById('dialog-text');
@@ -65,6 +68,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatheadScaleInput = document.getElementById('chatheadScale');
     const panel = document.getElementById('panel');
     const content = panel.querySelector('.content');
+
+    // Custom chathead state
+    let customChatheadDataUrl = null;
 
     // Store base object-position and transform values
     let baseObjectPositionX = 50; // Default center
@@ -192,102 +198,120 @@ document.addEventListener('DOMContentLoaded', () => {
         return Array.from(variations);
     }
 
+    function applyImageSizing(imgElement, naturalWidth, naturalHeight) {
+        let objectPositionOffset;
+
+        // Linear interpolation for object-position
+        const heightMin = 90;
+        const offsetMin = -15;
+        const heightMax = 130;
+        const offsetMax = -20;
+
+        if (naturalHeight <= heightMin) {
+            objectPositionOffset = offsetMin;
+        } else if (naturalHeight >= heightMax) {
+            objectPositionOffset = offsetMax;
+        } else {
+            objectPositionOffset = offsetMin + (naturalHeight - heightMin) * (offsetMax - offsetMin) / (heightMax - heightMin);
+        }
+
+        if (naturalWidth > naturalHeight) {
+            imgElement.style.width = '130px';
+            imgElement.style.height = 'auto';
+            baseObjectPositionX = 50;
+            baseObjectPositionY = 0;
+        } else {
+            if (naturalHeight <= 90) {
+                imgElement.style.height = '110px';
+                imgElement.style.width = 'auto';
+                baseObjectPositionX = 50;
+                baseObjectPositionY = 0;
+            } else {
+                imgElement.style.height = '130px';
+                imgElement.style.width = 'auto';
+                baseObjectPositionX = 50;
+                baseObjectPositionY = objectPositionOffset;
+            }
+        }
+        baseTransformScale = 0.95;
+        applyChatheadTweaks();
+    }
+
     function updateDialogContent() {
         const npcName = npcNameInput.value.trim();
+        const nameOverride = nameOverrideInput.value.trim();
         const dialogText = dialogTextInput.value.trim();
 
-        if (npcName) {
-            npcNameDisplay.textContent = npcName;
-            npcChathead.style.display = 'block'; // Show chathead while trying to load
+        // Use name override for display if provided, otherwise use NPC name
+        const displayName = nameOverride || npcName;
 
-            const variations = generateCapitalizationVariations(npcName);
-            let imageLoaded = false;
+        if (npcName || customChatheadDataUrl) {
+            npcNameDisplay.textContent = displayName;
 
-            const tryLoadImage = (index) => {
-                if (index >= variations.length) {
-                    // All variations tried, hide chathead
-                    npcChathead.style.display = 'none';
-                    npcChathead.src = ''; // Clear src
-                    npcChathead.style.width = 'auto';
-                    npcChathead.style.height = 'auto';
-                    npcChathead.style.objectPosition = '50% 50%';
-                    npcChathead.style.transform = 'none';
-                    return;
-                }
+            // If a custom chathead is uploaded, use it instead of wiki fetch
+            if (customChatheadDataUrl) {
+                npcChathead.src = customChatheadDataUrl;
+                npcChathead.alt = `${displayName} Chathead`;
+                npcChathead.style.display = 'block';
 
-                const currentNpcName = variations[index];
-                const chatheadUrl = `https://oldschool.runescape.wiki/images/${encodeURIComponent(currentNpcName.replace(/ /g, '_'))}_chathead.png`;
-
-                // Use a new Image object for loading to reliably trigger onload/onerror
+                // Apply sizing once the custom image loads
                 const tempImg = new Image();
                 tempImg.onload = () => {
-                    if (imageLoaded) return; // Prevent multiple loads if a previous one was slow
+                    applyImageSizing(npcChathead, tempImg.naturalWidth, tempImg.naturalHeight);
+                };
+                tempImg.src = customChatheadDataUrl;
+            } else if (npcName) {
+                // Fetch from wiki as before
+                npcChathead.style.display = 'block';
 
-                    imageLoaded = true;
-                    npcChathead.src = chatheadUrl; // Set the actual chathead src
-                    npcChathead.alt = `${currentNpcName} Chathead`;
-                    npcChathead.style.display = 'block'; // Ensure it's visible
+                const variations = generateCapitalizationVariations(npcName);
+                let imageLoaded = false;
 
-                    // Apply initial sizing and positioning based on natural dimensions
-                    let objectPositionOffset;
-                    const naturalHeight = tempImg.naturalHeight; // Use tempImg's naturalHeight
-                    const naturalWidth = tempImg.naturalWidth; // Use tempImg's naturalWidth
-
-                    // Linear interpolation for object-position
-                    const heightMin = 90;
-                    const offsetMin = -15;
-                    const heightMax = 130;
-                    const offsetMax = -20;
-
-                    if (naturalHeight <= heightMin) {
-                        objectPositionOffset = offsetMin;
-                    } else if (naturalHeight >= heightMax) {
-                        objectPositionOffset = offsetMax;
-                    } else {
-                        objectPositionOffset = offsetMin + (naturalHeight - heightMin) * (offsetMax - offsetMin) / (heightMax - heightMin);
-                    }
-
-                    if (naturalWidth > naturalHeight) {
-                        npcChathead.style.width = '130px';
+                const tryLoadImage = (index) => {
+                    if (index >= variations.length) {
+                        npcChathead.style.display = 'none';
+                        npcChathead.src = '';
+                        npcChathead.style.width = 'auto';
                         npcChathead.style.height = 'auto';
-                        baseObjectPositionX = 50;
-                        baseObjectPositionY = 0;
-                    } else { // Taller or square images
-                        if (naturalHeight <= 90) { // Smallish square/tall, e.g., 85x89
-                            npcChathead.style.height = '110px';
-                            npcChathead.style.width = 'auto';
-                            baseObjectPositionX = 50;
-                            baseObjectPositionY = 0;
-                        } else { // Taller, >90px
-                            npcChathead.style.height = '130px';
-                            npcChathead.style.width = 'auto';
-                            baseObjectPositionX = 50;
-                            baseObjectPositionY = objectPositionOffset;
-                        }
+                        npcChathead.style.objectPosition = '50% 50%';
+                        npcChathead.style.transform = 'none';
+                        return;
                     }
-                    baseTransformScale = 0.95; // Set base scale
-                    applyChatheadTweaks(); // Apply tweakers after initial sizing/positioning
+
+                    const currentNpcName = variations[index];
+                    const chatheadUrl = `https://oldschool.runescape.wiki/images/${encodeURIComponent(currentNpcName.replace(/ /g, '_'))}_chathead.png`;
+
+                    const tempImg = new Image();
+                    tempImg.onload = () => {
+                        if (imageLoaded) return;
+
+                        imageLoaded = true;
+                        npcChathead.src = chatheadUrl;
+                        npcChathead.alt = `${currentNpcName} Chathead`;
+                        npcChathead.style.display = 'block';
+
+                        applyImageSizing(npcChathead, tempImg.naturalWidth, tempImg.naturalHeight);
+                    };
+
+                    tempImg.onerror = () => {
+                        if (imageLoaded) return;
+                        tryLoadImage(index + 1);
+                    };
+
+                    tempImg.src = chatheadUrl;
                 };
 
-                tempImg.onerror = () => {
-                    if (imageLoaded) return; // If another image already loaded, ignore this error
-                    tryLoadImage(index + 1); // Try the next variation
-                };
-
-                tempImg.src = chatheadUrl;
-            };
-
-            // Start trying from the first variation
-            tryLoadImage(0);
+                tryLoadImage(0);
+            }
 
         } else {
             npcChathead.style.display = 'none';
             npcNameDisplay.textContent = '';
-            npcChathead.src = ''; // Clear src
-            npcChathead.style.width = 'auto'; // Reset styles when no chathead
+            npcChathead.src = '';
+            npcChathead.style.width = 'auto';
             npcChathead.style.height = 'auto';
-            npcChathead.style.objectPosition = '50% 50%'; // Reset object-position
-            npcChathead.style.transform = 'none'; // Reset transform
+            npcChathead.style.objectPosition = '50% 50%';
+            npcChathead.style.transform = 'none';
         }
 
         dialogTextDisplay.textContent = dialogText;
@@ -355,8 +379,31 @@ document.addEventListener('DOMContentLoaded', () => {
         npcChathead.style.transform = `scale(${baseTransformScale * chatheadScale})`;
     }
 
+    // Custom chathead upload handler
+    customChatheadInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                customChatheadDataUrl = event.target.result;
+                clearCustomChatheadBtn.style.display = 'inline-block';
+                updateDialogContent();
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Clear custom chathead handler
+    clearCustomChatheadBtn.addEventListener('click', () => {
+        customChatheadDataUrl = null;
+        customChatheadInput.value = '';
+        clearCustomChatheadBtn.style.display = 'none';
+        updateDialogContent();
+    });
+
     // Event Listeners
     npcNameInput.addEventListener('input', updateDialogContent);
+    nameOverrideInput.addEventListener('input', updateDialogContent);
     dialogTextInput.addEventListener('input', updateDialogContent);
     scaleInput.addEventListener('input', updatePanel);
     chatheadXInput.addEventListener('input', applyChatheadTweaks);
@@ -440,8 +487,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const link = document.createElement('a');
                 const npcName = npcNameInput.value.trim();
+                const nameOverride = nameOverrideInput.value.trim();
                 const dialogText = dialogTextInput.value.trim();
-                const filename = `${npcName}_${dialogText.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_')}.png`;
+                const displayName = nameOverride || npcName;
+                const filename = `${displayName}_${dialogText.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_')}.png`;
                 link.download = filename;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
