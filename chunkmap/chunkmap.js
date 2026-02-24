@@ -43,8 +43,12 @@
     const glowSizeInput = document.getElementById('glowSize');
     const glowIntensityInput = document.getElementById('glowIntensity');
     const glowPowerInput = document.getElementById('glowPower');
-    const glowBorderInput = document.getElementById('glowBorder');
-    const glowCornersSelect = document.getElementById('glowCorners');
+    const glowThicknessInput = document.getElementById('glowThickness');
+    const borderToggle = document.getElementById('borderToggle');
+    const borderColorInput = document.getElementById('borderColor');
+    const borderWidthInput = document.getElementById('borderWidth');
+    const borderCornersSelect = document.getElementById('borderCorners');
+    const borderStyleSelect = document.getElementById('borderStyle');
     const perspTilt   = document.getElementById('perspTilt');
     const perspTiltY  = document.getElementById('perspTiltY');
     const perspRotate = document.getElementById('perspRotate');
@@ -65,32 +69,52 @@
     const skullCtx    = skullCanvas.getContext('2d');
 
     // ── preload marker icons ────────────────────────────────────
-    const MARKER_TYPES = ['skull', 'redskull', 'lock']; // cycle order
+    const MARKER_TYPES = [
+        // Markers
+        'skull', 'redskull', 'lock',
+        // Skills
+        'attack', 'strength', 'defence', 'ranged', 'prayer', 'magic',
+        'hitpoints', 'mining', 'smithing', 'fishing', 'cooking',
+        'firemaking', 'woodcutting', 'agility', 'herblore', 'thieving',
+        'crafting', 'fletching', 'slayer', 'hunter', 'farming',
+        'construction', 'runecraft', 'sailing', 'total',
+        // Activities
+        'quest', 'minigame', 'achievement_diary', 'clue_scroll', 'collection_log', 'combat_task', 'friends_list', 'ignore_list',
+    ];
     const markerImgs  = {};
     let markersReady  = 0;
-    const totalMarkers = 3;
-    function onMarkerLoad() { markersReady++; if (markersReady === totalMarkers) drawOverlay(); }
+    const totalMarkers = MARKER_TYPES.length;
+    function onMarkerLoad() { markersReady++; if (markersReady === totalMarkers) drawSkulls(); }
 
-    const skullImg = new Image();
-    skullImg.src   = '/chunkmap/Skull.png';
-    skullImg.onload = onMarkerLoad;
-    markerImgs.skull = skullImg;
-
-    const redSkullImg = new Image();
-    redSkullImg.src   = '/chunkmap/RedSkull.png';
-    redSkullImg.onload = onMarkerLoad;
-    markerImgs.redskull = redSkullImg;
-
-    const lockImg = new Image();
-    lockImg.src   = '/chunkmap/Lock.png';
-    lockImg.onload = onMarkerLoad;
-    markerImgs.lock = lockImg;
+    // Custom icon paths (overrides for names that don't match filename)
+    const iconPaths = {
+        skull: '/chunkmap/icons/Skull.png',
+        redskull: '/chunkmap/icons/RedSkull.png',
+        lock: '/chunkmap/icons/Lock.png',
+        quest: '/chunkmap/icons/Quest.png',
+        minigame: '/chunkmap/icons/Minigame.png',
+        clue_scroll: '/chunkmap/icons/Clue_scroll_(master).png',
+        achievement_diary: '/chunkmap/icons/AchievementDiary.png',
+        collection_log: '/chunkmap/icons/collectionlog.png',
+        combat_task: '/chunkmap/icons/combattask.png',
+        friends_list: '/chunkmap/icons/Friends_List.png',
+        ignore_list: '/chunkmap/icons/Ignore_List.png',
+    };
+    for (const type of MARKER_TYPES) {
+        const img = new Image();
+        img.src = iconPaths[type] || `/chunkmap/icons/${type}.png`;
+        img.onload = onMarkerLoad;
+        img.onerror = onMarkerLoad;
+        markerImgs[type] = img;
+    }
 
     // ── state ──────────────────────────────────────────────────
     // Set of unlocked chunk keys ("col,row"). Everything NOT in this set is darkened.
     const unlocked    = new Set();
-    // Map of chunk keys → marker type ('skull' | 'redskull' | 'lock')
+    // Map of chunk keys → array of marker types (e.g. ['skull', 'mining'])
     const markers     = new Map();
+    // Map of chunk keys → text label string
+    const chunkLabels = new Map();
 
     // Ordered queue of chunk keys for playback
     const chunkQueue  = [];
@@ -103,6 +127,18 @@
     const animatingChunks = new Map();
     const ANIM_DURATION   = 400; // ms for the grow-in animation
     let animFrameId       = null;
+
+    // ── line dash patterns ───────────────────────────────────────
+    function getLineDash(style, w) {
+        switch (style) {
+            case 'dashed':   return [w * 4, w * 3];
+            case 'dotted':   return [w, w * 2];
+            case 'dashdot':  return [w * 4, w * 2, w, w * 2];
+            case 'short':    return [w * 2, w * 2];
+            case 'long':     return [w * 8, w * 4];
+            default:         return [];
+        }
+    }
 
     // ── offscreen glow cache ────────────────────────────────────
     // The expensive shadowBlur multi-pass bloom is rendered to an offscreen
@@ -125,12 +161,17 @@
 
     function buildGlowSettingsKey() {
         return [
+            glowToggle.value,
             glowColorInput.value,
             glowSizeInput.value,
             glowIntensityInput.value,
             glowPowerInput.value,
-            glowBorderInput.value,
-            glowCornersSelect.value,
+            glowThicknessInput.value,
+            borderToggle.value,
+            borderColorInput.value,
+            borderWidthInput.value,
+            borderCornersSelect.value,
+            borderStyleSelect.value,
         ].join('|');
     }
 
@@ -142,6 +183,7 @@
     let _glowFadeActive = false;
     let _glowFadeFrameId = null;
     let _glowHidden = false;       // true while glow is suppressed (during playback)
+    let _resettingAll = false;     // true after Reset All clicked, prevents saveState re-writing
 
     function rebuildGlowCache(settledSet, lowQuality) {
         // Create offscreen canvas on first use
@@ -174,36 +216,47 @@
                 edges.push(x + CHUNK_PX, y, x + CHUNK_PX, y + CHUNK_PX);
         }
 
+        // Instead of stroking individual edge segments (which leave seam
+        // gaps at vertices), fill the unlocked region outline as a shape.
+        // We build a path of all unlocked chunk rects and stroke it —
+        // the clip region (locked chunks) ensures only the outer boundary
+        // is visible.  Internal shared edges get stroked twice in opposite
+        // directions, producing a net-zero visual (they cancel under the
+        // clip).  This guarantees seamless glow/border with no stitching.
+
         function strokeEdges(target) {
             target.beginPath();
-            for (let i = 0; i < edges.length; i += 4) {
-                target.moveTo(edges[i], edges[i + 1]);
-                target.lineTo(edges[i + 2], edges[i + 3]);
+            for (const key of settledSet) {
+                const [c, r] = key.split(',').map(Number);
+                target.rect(c * CHUNK_PX, r * CHUNK_PX, CHUNK_PX, CHUNK_PX);
             }
             target.stroke();
         }
 
         // ── Read glow settings ────────────────────────────────
+        const glowOn = glowToggle.value === 'on';
+        const borderOn = borderToggle.value === 'on';
         const glowColor = glowColorInput.value;
         const { r: gr, g: gg, b: gb } = hexToRgb(glowColor);
-        const roundCorners = glowCornersSelect.value === 'round';
         const spread    = parseFloat(glowSizeInput.value) / 100;
         const intensity = parseFloat(glowIntensityInput.value) / 100;
         const power     = parseInt(glowPowerInput.value, 10) || 3;
-        const border    = parseFloat(glowBorderInput.value) / 100;
-        const wr = Math.round(gr * 0.15 + 255 * 0.85);
-        const wg = Math.round(gg * 0.15 + 255 * 0.85);
-        const wb = Math.round(gb * 0.15 + 255 * 0.85);
-        const borderW = Math.max(2, Math.round(14 * border));
         const maxBlur = Math.round(200 * spread);
 
-        // ── Outer glow (clipped to locked chunks) ─────────────
-        gc.save();
-        gc.lineJoin = roundCorners ? 'round' : 'miter';
-        if (!roundCorners) gc.miterLimit = 10;
-        gc.lineCap  = roundCorners ? 'round' : 'butt';
+        // Border settings (independent)
+        const bColor = borderColorInput.value;
+        const { r: br2, g: bg2, b: bb2 } = hexToRgb(bColor);
+        const bwr = br2;
+        const bwg = bg2;
+        const bwb = bb2;
+        const borderVal = parseFloat(borderWidthInput.value) / 100;
+        const borderW = Math.max(2, Math.round(14 * borderVal));
+        const roundCorners = borderCornersSelect.value === 'round';
+        const lineStyle = borderStyleSelect.value;
+        const dashPattern = getLineDash(lineStyle, borderW);
 
         // Clip to locked chunks
+        gc.save();
         gc.beginPath();
         for (let ri = 0; ri < ROWS; ri++) {
             for (let ci = 0; ci < COLS; ci++) {
@@ -215,33 +268,44 @@
         gc.clip();
 
         // When animations are active, use reduced quality for speed.
-        // Full quality rebuild happens once all animations complete.
         const lqPasses = lowQuality ? 2 : 6;
         const lqPower  = lowQuality ? 1 : power;
         _cachedGlowIsLowQ = !!lowQuality;
 
-        // Bloom passes
-        for (let i = lqPasses; i >= 1; i--) {
-            const frac = i / lqPasses;
-            const alpha = (0.7 * intensity * (1 - frac * 0.4));
-            gc.shadowColor = `rgba(${gr},${gg},${gb},${alpha.toFixed(2)})`;
-            gc.shadowBlur  = Math.round(maxBlur * frac);
-            gc.lineWidth   = Math.max(2, Math.round(borderW * (1 - frac * 0.5)));
-            gc.strokeStyle = `rgba(${gr},${gg},${gb},${(alpha * 0.4).toFixed(2)})`;
-            for (let p = 0; p < lqPower; p++) strokeEdges(gc);
+        // Bloom passes (glow)
+        if (glowOn) {
+            const glowW = Math.max(2, parseInt(glowThicknessInput.value, 10));
+            gc.lineJoin = 'round';
+            gc.lineCap  = 'round';
+            gc.setLineDash([]);
+            for (let i = lqPasses; i >= 1; i--) {
+                const frac = i / lqPasses;
+                const alpha = (0.7 * intensity * (1 - frac * 0.4));
+                gc.shadowColor = `rgba(${gr},${gg},${gb},${alpha.toFixed(2)})`;
+                gc.shadowBlur  = Math.round(maxBlur * frac);
+                gc.lineWidth   = Math.max(2, Math.round(glowW * (1 - frac * 0.5)));
+                gc.strokeStyle = `rgba(${gr},${gg},${gb},${(alpha * 0.4).toFixed(2)})`;
+                for (let p = 0; p < lqPower; p++) strokeEdges(gc);
+            }
         }
 
-        // Final crisp border
-        gc.shadowColor = `rgba(${gr},${gg},${gb},${(0.9 * intensity).toFixed(2)})`;
-        gc.shadowBlur  = Math.round(15 * spread);
-        gc.lineWidth   = borderW;
-        gc.strokeStyle = `rgba(${wr},${wg},${wb},${(0.95 * intensity).toFixed(2)})`;
-        strokeEdges(gc);
+        // Crisp border line
+        if (borderOn) {
+            gc.lineJoin = roundCorners ? 'round' : 'miter';
+            if (!roundCorners) gc.miterLimit = 10;
+            gc.lineCap  = roundCorners ? 'round' : 'square';
+            gc.setLineDash(dashPattern);
+            gc.shadowColor = 'transparent';
+            gc.shadowBlur  = 0;
+            gc.lineWidth   = borderW;
+            gc.strokeStyle = `rgba(${bwr},${bwg},${bwb},0.95)`;
+            strokeEdges(gc);
+        }
         gc.restore();
 
         // ── Inner shadow (clipped to settled unlocked chunks) ─
-        // Skip inner shadow entirely in low quality mode
-        if (!lowQuality) {
+        // Skip inner shadow entirely in low quality mode or if glow is off
+        if (!lowQuality && glowOn) {
             gc.save();
             gc.beginPath();
             for (const key of settledSet) {
@@ -252,7 +316,8 @@
 
             gc.lineJoin = roundCorners ? 'round' : 'miter';
             if (!roundCorners) gc.miterLimit = 10;
-            gc.lineCap  = roundCorners ? 'round' : 'butt';
+            gc.lineCap  = roundCorners ? 'round' : 'square';
+            gc.setLineDash(dashPattern);
 
             gc.shadowColor = `rgba(0,0,0,${(0.6 * intensity).toFixed(2)})`;
             gc.shadowBlur  = 25;
@@ -326,7 +391,7 @@
     let paintMode     = 'unlock'; // 'unlock' or 'lock' — determined on first click
 
     // ── helpers ────────────────────────────────────────────────
-    function darknessOpacity() { return parseFloat(darknessSelect.value); }
+    function darknessOpacity() { return parseInt(darknessSelect.value, 10) / 100; }
 
     function hexToRgb(hex) {
         const n = parseInt(hex.replace('#', ''), 16);
@@ -503,8 +568,30 @@
                         } else if (animStyle === 'wipe') {
                             // Wipe down: darkness sweeps away top to bottom
                             const revealH = CHUNK_PX * ease;
-                            // Top portion is clear (revealed), bottom is still dark
                             ctx.fillRect(chunkX, chunkY + revealH, CHUNK_PX, CHUNK_PX - revealH);
+                        } else if (animStyle === 'wipeup') {
+                            // Wipe up: darkness sweeps away bottom to top
+                            const revealH = CHUNK_PX * ease;
+                            ctx.fillRect(chunkX, chunkY, CHUNK_PX, CHUNK_PX - revealH);
+                        } else if (animStyle === 'wipeleft') {
+                            // Wipe left: darkness sweeps away right to left
+                            const revealW = CHUNK_PX * ease;
+                            ctx.fillRect(chunkX, chunkY, CHUNK_PX - revealW, CHUNK_PX);
+                        } else if (animStyle === 'wiperight') {
+                            // Wipe right: darkness sweeps away left to right
+                            const revealW = CHUNK_PX * ease;
+                            ctx.fillRect(chunkX + revealW, chunkY, CHUNK_PX - revealW, CHUNK_PX);
+                        } else if (animStyle === 'shutter') {
+                            // Shutter: horizontal blinds open from center of each strip
+                            const strips = 4;
+                            const stripH = CHUNK_PX / strips;
+                            ctx.fillRect(chunkX, chunkY, CHUNK_PX, CHUNK_PX);
+                            for (let s = 0; s < strips; s++) {
+                                const sy = chunkY + s * stripH;
+                                const mid = sy + stripH / 2;
+                                const half = (stripH / 2) * ease;
+                                ctx.clearRect(chunkX, mid - half, CHUNK_PX, half * 2);
+                            }
                         } else if (animStyle === 'radar') {
                             // Radar sweep: rotating wedge reveals chunk
                             // Uses linear progress (not ease-out) for steady rotation
@@ -580,18 +667,25 @@
             }
         }
 
-        // Draw glow borders for animating chunks + settled chunks during playback
-        if (glowToggle.value === 'on') {
+        // Draw glow/border for animating chunks + settled chunks during playback
+        if ((glowToggle.value === 'on' || borderToggle.value === 'on')) {
+            const wantGlow   = glowToggle.value === 'on';
+            const wantBorder = borderToggle.value === 'on';
             const glowColor = glowColorInput.value;
             const { r: agr, g: agg, b: agb } = hexToRgb(glowColor);
-            const awr = Math.round(agr * 0.15 + 255 * 0.85);
-            const awg = Math.round(agg * 0.15 + 255 * 0.85);
-            const awb = Math.round(agb * 0.15 + 255 * 0.85);
             const intensity = parseFloat(glowIntensityInput.value) / 100;
-            const borderVal = parseFloat(glowBorderInput.value) / 100;
-            const borderW = Math.max(2, Math.round(14 * borderVal));
-            const roundCorners = glowCornersSelect.value === 'round';
             const spread = parseFloat(glowSizeInput.value) / 100;
+            // Border settings
+            const bColor = borderColorInput.value;
+            const { r: abr, g: abg, b: abb } = hexToRgb(bColor);
+            const awr = abr;
+            const awg = abg;
+            const awb = abb;
+            const borderVal = parseFloat(borderWidthInput.value) / 100;
+            const borderW = Math.max(2, Math.round(14 * borderVal));
+            const roundCorners = borderCornersSelect.value === 'round';
+            const lineStyle = borderStyleSelect.value;
+            const dashPattern = getLineDash(lineStyle, borderW);
 
             // During fade-out, reduce per-chunk border alpha as settled glow fades in
             let borderAlphaMul = 1;
@@ -629,33 +723,47 @@
 
                 ctx.save();
                 if (alpha < 1) ctx.globalAlpha = alpha;
-                ctx.lineJoin = roundCorners ? 'round' : 'miter';
-                ctx.lineCap  = roundCorners ? 'round' : 'butt';
-                ctx.lineWidth = borderW;
+                ctx.lineJoin = wantBorder ? (roundCorners ? 'round' : 'miter') : 'round';
+                ctx.lineCap  = wantBorder ? (roundCorners ? 'round' : 'square') : 'round';
+                const glowW = Math.max(2, parseInt(glowThicknessInput.value, 10));
+                ctx.lineWidth = wantBorder ? borderW : glowW;
+                if (wantBorder) ctx.setLineDash(dashPattern);
+                // Helper: shadow/stroke setters that respect independent glow/border
+                const setShadow = (color, blur) => {
+                    ctx.shadowColor = wantGlow ? color : 'transparent';
+                    ctx.shadowBlur  = wantGlow ? blur : 0;
+                };
+                const setStroke = (color) => {
+                    if (wantBorder) {
+                        ctx.strokeStyle = color;
+                    } else if (wantGlow) {
+                        // Use a semi-transparent glow-colored stroke to feed the shadow
+                        const a = parseFloat(color.match(/[\d.]+(?=\))/)?.[0] || '0.9');
+                        ctx.strokeStyle = `rgba(${agr},${agg},${agb},${(a * 0.4).toFixed(2)})`;
+                    } else {
+                        ctx.strokeStyle = 'transparent';
+                    }
+                };
 
                 // Settled chunks always draw a simple full border
                 if (isSettled) {
-                    ctx.shadowColor = `rgba(${agr},${agg},${agb},${(0.8 * intensity).toFixed(2)})`;
-                    ctx.shadowBlur  = Math.round(60 * spread);
-                    ctx.strokeStyle = `rgba(${awr},${awg},${awb},${(0.9 * intensity).toFixed(2)})`;
+                    setShadow(`rgba(${agr},${agg},${agb},${(0.8 * intensity).toFixed(2)})`, Math.round(60 * spread));
+                    setStroke(`rgba(${awr},${awg},${awb},${(0.9 * intensity).toFixed(2)})`);
                     ctx.strokeRect(chunkX, chunkY, CHUNK_PX, CHUNK_PX);
                 } else if (animStyle === 'grow') {
                     const halfW = (CHUNK_PX / 2) * ease;
                     const halfH = (CHUNK_PX / 2) * ease;
-                    ctx.shadowColor = `rgba(${agr},${agg},${agb},${(0.8 * intensity * ease).toFixed(2)})`;
-                    ctx.shadowBlur  = Math.round(60 * spread * ease);
-                    ctx.strokeStyle = `rgba(${awr},${awg},${awb},${(0.9 * intensity).toFixed(2)})`;
+                    setShadow(`rgba(${agr},${agg},${agb},${(0.8 * intensity * ease).toFixed(2)})`, Math.round(60 * spread * ease));
+                    setStroke(`rgba(${awr},${awg},${awb},${(0.9 * intensity).toFixed(2)})`);
                     ctx.strokeRect(cx - halfW, cy - halfH, halfW * 2, halfH * 2);
                 } else if (animStyle === 'fade') {
-                    ctx.shadowColor = `rgba(${agr},${agg},${agb},${(0.8 * intensity * ease).toFixed(2)})`;
-                    ctx.shadowBlur  = Math.round(60 * spread * ease);
-                    ctx.strokeStyle = `rgba(${awr},${awg},${awb},${(0.9 * intensity * ease).toFixed(2)})`;
+                    setShadow(`rgba(${agr},${agg},${agb},${(0.8 * intensity * ease).toFixed(2)})`, Math.round(60 * spread * ease));
+                    setStroke(`rgba(${awr},${awg},${awb},${(0.9 * intensity * ease).toFixed(2)})`);
                     ctx.strokeRect(chunkX, chunkY, CHUNK_PX, CHUNK_PX);
                 } else if (animStyle === 'wipe') {
                     const revealH = CHUNK_PX * ease;
-                    ctx.shadowColor = `rgba(${agr},${agg},${agb},${(0.8 * intensity * ease).toFixed(2)})`;
-                    ctx.shadowBlur  = Math.round(60 * spread * ease);
-                    ctx.strokeStyle = `rgba(${awr},${awg},${awb},${(0.9 * intensity).toFixed(2)})`;
+                    setShadow(`rgba(${agr},${agg},${agb},${(0.8 * intensity * ease).toFixed(2)})`, Math.round(60 * spread * ease));
+                    setStroke(`rgba(${awr},${awg},${awb},${(0.9 * intensity).toFixed(2)})`);
                     ctx.beginPath();
                     ctx.moveTo(chunkX, chunkY);
                     ctx.lineTo(chunkX + CHUNK_PX, chunkY);
@@ -663,6 +771,43 @@
                     ctx.moveTo(chunkX, chunkY);
                     ctx.lineTo(chunkX, chunkY + revealH);
                     ctx.stroke();
+                } else if (animStyle === 'wipeup') {
+                    const revealH = CHUNK_PX * ease;
+                    setShadow(`rgba(${agr},${agg},${agb},${(0.8 * intensity * ease).toFixed(2)})`, Math.round(60 * spread * ease));
+                    setStroke(`rgba(${awr},${awg},${awb},${(0.9 * intensity).toFixed(2)})`);
+                    ctx.beginPath();
+                    ctx.moveTo(chunkX, chunkY + CHUNK_PX);
+                    ctx.lineTo(chunkX + CHUNK_PX, chunkY + CHUNK_PX);
+                    ctx.lineTo(chunkX + CHUNK_PX, chunkY + CHUNK_PX - revealH);
+                    ctx.moveTo(chunkX, chunkY + CHUNK_PX);
+                    ctx.lineTo(chunkX, chunkY + CHUNK_PX - revealH);
+                    ctx.stroke();
+                } else if (animStyle === 'wipeleft') {
+                    const revealW = CHUNK_PX * ease;
+                    setShadow(`rgba(${agr},${agg},${agb},${(0.8 * intensity * ease).toFixed(2)})`, Math.round(60 * spread * ease));
+                    setStroke(`rgba(${awr},${awg},${awb},${(0.9 * intensity).toFixed(2)})`);
+                    ctx.beginPath();
+                    ctx.moveTo(chunkX + CHUNK_PX, chunkY);
+                    ctx.lineTo(chunkX + CHUNK_PX, chunkY + CHUNK_PX);
+                    ctx.lineTo(chunkX + CHUNK_PX - revealW, chunkY + CHUNK_PX);
+                    ctx.moveTo(chunkX + CHUNK_PX, chunkY);
+                    ctx.lineTo(chunkX + CHUNK_PX - revealW, chunkY);
+                    ctx.stroke();
+                } else if (animStyle === 'wiperight') {
+                    const revealW = CHUNK_PX * ease;
+                    setShadow(`rgba(${agr},${agg},${agb},${(0.8 * intensity * ease).toFixed(2)})`, Math.round(60 * spread * ease));
+                    setStroke(`rgba(${awr},${awg},${awb},${(0.9 * intensity).toFixed(2)})`);
+                    ctx.beginPath();
+                    ctx.moveTo(chunkX, chunkY);
+                    ctx.lineTo(chunkX, chunkY + CHUNK_PX);
+                    ctx.lineTo(chunkX + revealW, chunkY + CHUNK_PX);
+                    ctx.moveTo(chunkX, chunkY);
+                    ctx.lineTo(chunkX + revealW, chunkY);
+                    ctx.stroke();
+                } else if (animStyle === 'shutter') {
+                    setShadow(`rgba(${agr},${agg},${agb},${(0.8 * intensity * ease).toFixed(2)})`, Math.round(60 * spread * ease));
+                    setStroke(`rgba(${awr},${awg},${awb},${(0.9 * intensity * ease).toFixed(2)})`);
+                    ctx.strokeRect(chunkX, chunkY, CHUNK_PX, CHUNK_PX);
                 } else if (animStyle === 'radar') {
                     const maxR = Math.sqrt(2) * CHUNK_PX / 2 + 2;
                     const sweepAngle = Math.PI * 2 * progress;
@@ -670,9 +815,8 @@
                     ctx.beginPath();
                     ctx.rect(chunkX, chunkY, CHUNK_PX, CHUNK_PX);
                     ctx.clip();
-                    ctx.shadowColor = `rgba(${agr},${agg},${agb},${(0.8 * intensity * Math.min(1, progress * 2)).toFixed(2)})`;
-                    ctx.shadowBlur  = Math.round(60 * spread * Math.min(1, progress * 2));
-                    ctx.strokeStyle = `rgba(${awr},${awg},${awb},${(0.9 * intensity).toFixed(2)})`;
+                    setShadow(`rgba(${agr},${agg},${agb},${(0.8 * intensity * Math.min(1, progress * 2)).toFixed(2)})`, Math.round(60 * spread * Math.min(1, progress * 2)));
+                    setStroke(`rgba(${awr},${awg},${awb},${(0.9 * intensity).toFixed(2)})`);
                     ctx.beginPath();
                     ctx.moveTo(cx, cy);
                     ctx.lineTo(cx + Math.cos(endA) * maxR, cy + Math.sin(endA) * maxR);
@@ -682,9 +826,8 @@
                     ctx.beginPath();
                     ctx.rect(chunkX, chunkY, CHUNK_PX, CHUNK_PX);
                     ctx.clip();
-                    ctx.shadowColor = `rgba(${agr},${agg},${agb},${(0.8 * intensity * ease).toFixed(2)})`;
-                    ctx.shadowBlur  = Math.round(60 * spread * ease);
-                    ctx.strokeStyle = `rgba(${awr},${awg},${awb},${(0.9 * intensity).toFixed(2)})`;
+                    setShadow(`rgba(${agr},${agg},${agb},${(0.8 * intensity * ease).toFixed(2)})`, Math.round(60 * spread * ease));
+                    setStroke(`rgba(${awr},${awg},${awb},${(0.9 * intensity).toFixed(2)})`);
                     ctx.beginPath();
                     ctx.moveTo(cx, cy - halfD);
                     ctx.lineTo(cx + halfD, cy);
@@ -693,9 +836,8 @@
                     ctx.closePath();
                     ctx.stroke();
                 } else if (animStyle === 'pixelate') {
-                    ctx.shadowColor = `rgba(${agr},${agg},${agb},${(0.8 * intensity * ease).toFixed(2)})`;
-                    ctx.shadowBlur  = Math.round(60 * spread * ease);
-                    ctx.strokeStyle = `rgba(${awr},${awg},${awb},${(0.9 * intensity * ease).toFixed(2)})`;
+                    setShadow(`rgba(${agr},${agg},${agb},${(0.8 * intensity * ease).toFixed(2)})`, Math.round(60 * spread * ease));
+                    setStroke(`rgba(${awr},${awg},${awb},${(0.9 * intensity * ease).toFixed(2)})`);
                     ctx.strokeRect(chunkX, chunkY, CHUNK_PX, CHUNK_PX);
                 }
                 ctx.restore();
@@ -711,7 +853,7 @@
             if (!animatingChunks.has(key)) settledUnlocked.add(key);
         }
 
-        if (glowToggle.value === 'on' && settledUnlocked.size > 0 && !_glowHidden) {
+        if ((glowToggle.value === 'on' || borderToggle.value === 'on') && settledUnlocked.size > 0 && !_glowHidden) {
             const settledKey = buildSettledKey(settledUnlocked);
             const glowSettingsKey = buildGlowSettingsKey();
             if (settledKey !== _cachedSettledKey || glowSettingsKey !== _cachedGlowSettingsKey) {
@@ -743,15 +885,16 @@
         const skullSz = parseInt(skullSizeSelect.value, 10) || SKULL_SIZE_DEFAULT;
         const pos = skullPosSelect.value;
         const pad = 6;
+        const stackOffsetX = Math.round(skullSz * 0.3);  // horizontal fan offset per card
+        const stackOffsetY = Math.round(skullSz * 0.08);  // slight vertical stagger
 
-        for (const [key, type] of markers) {
+        for (const [key, types] of markers) {
+            const typeArr = Array.isArray(types) ? types : [types];
             const [c, r] = key.split(',').map(Number);
             const chunkX = c * CHUNK_PX;
             const chunkY = r * CHUNK_PX;
-            const img = markerImgs[type];
-            if (!img) continue;
 
-            // Anchor point (centre of icon) based on position setting
+            // Anchor point (centre of first icon) based on position setting
             let anchorX, anchorY;
             switch (pos) {
                 case 'top-left':
@@ -778,30 +921,79 @@
                     anchorX = chunkX + CHUNK_PX - SKULL_SIZE_DEFAULT / 2 - pad;
                     anchorY = chunkY + SKULL_SIZE_DEFAULT / 2 + pad;
             }
-            // Scale to fit within skullSz box while preserving aspect ratio
-            const natW = img.naturalWidth || img.width;
-            const natH = img.naturalHeight || img.height;
-            const scale = Math.min(skullSz / natW, skullSz / natH);
-            const drawW = Math.round(natW * scale);
-            const drawH = Math.round(natH * scale);
-            const x = anchorX - drawW / 2;
-            const y = anchorY - drawH / 2;
 
-            // Blurred drop shadow
-            skullCtx.save();
-            skullCtx.shadowColor = 'rgba(0, 0, 0, 0.7)';
-            skullCtx.shadowBlur  = 10;
-            skullCtx.shadowOffsetX = 3;
-            skullCtx.shadowOffsetY = 3;
-            skullCtx.imageSmoothingEnabled = false;
-            skullCtx.drawImage(img, x, y, drawW, drawH);
-            skullCtx.restore();
+            // Centre the fan so the stack is balanced around the anchor
+            const totalFanW = (typeArr.length - 1) * stackOffsetX;
+            const fanStartX = anchorX - totalFanW / 2;
 
-            // Crisp icon on top (no shadow, no smoothing)
-            skullCtx.save();
-            skullCtx.imageSmoothingEnabled = false;
-            skullCtx.drawImage(img, x, y, drawW, drawH);
-            skullCtx.restore();
+            for (let idx = 0; idx < typeArr.length; idx++) {
+                const type = typeArr[idx];
+                const img = markerImgs[type];
+                if (!img) continue;
+
+                const natW = img.naturalWidth || img.width;
+                const natH = img.naturalHeight || img.height;
+                const scale = Math.min(skullSz / natW, skullSz / natH);
+                const drawW = Math.round(natW * scale);
+                const drawH = Math.round(natH * scale);
+                const ix = fanStartX + idx * stackOffsetX - drawW / 2;
+                const iy = anchorY - drawH / 2 + idx * stackOffsetY;
+
+                // Blurred drop shadow
+                skullCtx.save();
+                skullCtx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+                skullCtx.shadowBlur  = 10;
+                skullCtx.shadowOffsetX = 3;
+                skullCtx.shadowOffsetY = 3;
+                skullCtx.imageSmoothingEnabled = false;
+                skullCtx.drawImage(img, ix, iy, drawW, drawH);
+                skullCtx.restore();
+
+                // Crisp icon on top (no shadow, no smoothing)
+                skullCtx.save();
+                skullCtx.imageSmoothingEnabled = false;
+                skullCtx.drawImage(img, ix, iy, drawW, drawH);
+                skullCtx.restore();
+            }
+        }
+
+    }
+
+    // ── DOM-based text labels (pixel-crisp via CSS font-smoothing) ──
+    const labelLayer = document.getElementById('labelLayer');
+    const labelEls = new Map();  // key → DOM element
+
+    function drawLabels() {
+        // Remove labels that no longer exist
+        for (const [key, el] of labelEls) {
+            if (!chunkLabels.has(key)) {
+                el.remove();
+                labelEls.delete(key);
+            }
+        }
+        // Create or update labels
+        for (const [key, text] of chunkLabels) {
+            const [c, r] = key.split(',').map(Number);
+            let el = labelEls.get(key);
+            if (!el) {
+                el = document.createElement('div');
+                el.className = 'chunk-label';
+                labelLayer.appendChild(el);
+                labelEls.set(key, el);
+            }
+            el.textContent = text;
+            el.style.left = (c * CHUNK_PX + 6) + 'px';
+            el.style.top  = ((r + 1) * CHUNK_PX - 6) + 'px';
+            el.style.maxWidth = (CHUNK_PX - 12) + 'px';
+            el.style.transform = 'translateY(-100%)';
+
+            // Auto-shrink: try sizes from 24 down to 8
+            let fontSize = 24;
+            el.style.fontSize = fontSize + 'px';
+            while (fontSize > 8 && el.scrollWidth > CHUNK_PX - 12) {
+                fontSize--;
+                el.style.fontSize = fontSize + 'px';
+            }
         }
     }
 
@@ -810,7 +1002,7 @@
         if (gridToggle.value !== 'on') return;
 
         const { r, g, b } = hexToRgb(gridColorInput.value);
-        const opacity = parseFloat(gridOpacitySelect.value);
+        const opacity = parseInt(gridOpacitySelect.value, 10) / 100;
         gridCtx.strokeStyle = `rgba(${r},${g},${b},${opacity})`;
         gridCtx.lineWidth = 1;
         gridCtx.beginPath();
@@ -852,12 +1044,29 @@
         }
 
         // draw marker dots on minimap
-        const markerColors = { skull: '#ffffff', redskull: '#ff4444', lock: '#ffaa00' };
-        for (const [key, type] of markers) {
+        const markerColors = {
+            skull: '#ffffff', redskull: '#ff4444', lock: '#ffaa00',
+            attack: '#cc3333', strength: '#00cc00', defence: '#6666ff',
+            ranged: '#339933', prayer: '#cccc00', magic: '#6666cc',
+            hitpoints: '#cc0000', mining: '#996633', smithing: '#666666',
+            fishing: '#3399cc', cooking: '#993399', firemaking: '#ff6600',
+            woodcutting: '#336600', agility: '#336699', herblore: '#009933',
+            thieving: '#993366', crafting: '#996633', fletching: '#006666',
+            slayer: '#333333', hunter: '#663300', farming: '#339933',
+            construction: '#996600', runecraft: '#cccc33', sailing: '#3399ff',
+            quest: '#ffcc00', total: '#ffcf40',
+            minigame: '#ff3333', clue_scroll: '#cc9933',
+            achievement_diary: '#33cc33', collection_log: '#cc6600', combat_task: '#cc0000', friends_list: '#00cc00', ignore_list: '#cc3333',
+        };
+        for (const [key, types] of markers) {
+            const typeArr = Array.isArray(types) ? types : [types];
             const [c, r] = key.split(',').map(Number);
+            // Use the first marker's color for the minimap dot
+            const firstType = typeArr[0];
+            if (!firstType) continue;
             const cx = (c + 0.75) * CHUNK_PX * sx;
             const cy = (r + 0.25) * CHUNK_PX * sy;
-            mmCtx.fillStyle = markerColors[type] || '#ff4444';
+            mmCtx.fillStyle = markerColors[firstType] || '#ff4444';
             mmCtx.beginPath();
             mmCtx.arc(cx, cy, 2, 0, Math.PI * 2);
             mmCtx.fill();
@@ -896,30 +1105,130 @@
     }
 
     // ── toggle skull on a chunk ────────────────────────────────
+    // ── icon picker popup ─────────────────────────────────────
+    let iconPickerEl = null;
+    let iconPickerKey = null;
+    let _iconPickerOutsideHandler = null;
+
+    function closeIconPicker() {
+        if (_iconPickerOutsideHandler) {
+            window.removeEventListener('pointerdown', _iconPickerOutsideHandler, true);
+            _iconPickerOutsideHandler = null;
+        }
+        if (iconPickerEl) { iconPickerEl.remove(); iconPickerEl = null; iconPickerKey = null; }
+    }
+
+    function openIconPicker(pageX, pageY, chunkKeyStr) {
+        closeIconPicker();
+        iconPickerKey = chunkKeyStr;
+
+        const picker = document.createElement('div');
+        picker.className = 'icon-picker';
+        picker.style.left = `${pageX}px`;
+        picker.style.top  = `${pageY}px`;
+
+        // Remove All button if chunk already has markers
+        const currentTypes = markers.get(chunkKeyStr) || [];
+        if (currentTypes.length > 0) {
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'icon-picker-remove';
+            removeBtn.textContent = '✕ Remove All';
+            removeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                markers.delete(iconPickerKey);
+                drawSkulls(); saveState(); closeIconPicker();
+            });
+            picker.appendChild(removeBtn);
+        }
+
+        // Group labels
+        const groups = [
+            { label: 'Markers', items: ['skull', 'redskull', 'lock', 'friends_list', 'ignore_list'] },
+            { label: 'Skills', items: ['attack', 'strength', 'defence', 'ranged', 'prayer', 'magic', 'hitpoints', 'mining', 'smithing', 'fishing', 'cooking', 'firemaking', 'woodcutting', 'agility', 'herblore', 'thieving', 'crafting', 'fletching', 'slayer', 'hunter', 'farming', 'construction', 'runecraft', 'sailing', 'total'] },
+            { label: 'Activities', items: ['quest', 'minigame', 'achievement_diary', 'clue_scroll', 'collection_log', 'combat_task'] },
+        ];
+
+        for (const group of groups) {
+            const lbl = document.createElement('div');
+            lbl.className = 'icon-picker-label';
+            lbl.textContent = group.label;
+            picker.appendChild(lbl);
+
+            const row = document.createElement('div');
+            row.className = 'icon-picker-row';
+            for (const type of group.items) {
+                const btn = document.createElement('button');
+                btn.className = 'icon-picker-btn';
+                if (currentTypes.includes(type)) btn.classList.add('selected');
+                btn.title = type === 'redskull' ? 'Red Skull' : type.includes('_') ? type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : type.charAt(0).toUpperCase() + type.slice(1);
+                const img = markerImgs[type];
+                if (img && img.complete && img.naturalWidth > 0) {
+                    const icon = document.createElement('img');
+                    icon.src = img.src;
+                    icon.width = 20; icon.height = 20;
+                    icon.style.imageRendering = 'pixelated';
+                    btn.appendChild(icon);
+                } else {
+                    btn.textContent = type.slice(0, 3);
+                }
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const arr = markers.get(iconPickerKey) || [];
+                    const idx = arr.indexOf(type);
+                    if (idx >= 0) {
+                        arr.splice(idx, 1);
+                        if (arr.length === 0) markers.delete(iconPickerKey);
+                        else markers.set(iconPickerKey, arr);
+                        btn.classList.remove('selected');
+                    } else {
+                        arr.push(type);
+                        markers.set(iconPickerKey, arr);
+                        btn.classList.add('selected');
+                    }
+                    drawSkulls(); saveState();
+                });
+                row.appendChild(btn);
+            }
+            picker.appendChild(row);
+        }
+
+        document.body.appendChild(picker);
+        iconPickerEl = picker;
+
+        // Close on outside click — use capture phase and delay registration
+        // so the current pointerdown doesn't immediately trigger it
+        setTimeout(() => {
+            if (iconPickerEl !== picker) return; // picker was already replaced
+            _iconPickerOutsideHandler = function(e) {
+                if (iconPickerEl && !iconPickerEl.contains(e.target)) {
+                    closeIconPicker();
+                }
+            };
+            window.addEventListener('pointerdown', _iconPickerOutsideHandler, true);
+        }, 50);
+    }
+
     function toggleMarker(pageX, pageY) {
         const c = pageToChunk(pageX, pageY);
         if (!c) return;
         const key = chunkKey(c.col, c.row);
-
-        const current = markers.get(key);
-        if (!current) {
-            // No marker → first in cycle
-            markers.set(key, MARKER_TYPES[0]);
-        } else {
-            const idx = MARKER_TYPES.indexOf(current);
-            if (idx < MARKER_TYPES.length - 1) {
-                // Advance to next marker
-                markers.set(key, MARKER_TYPES[idx + 1]);
-            } else {
-                // Last marker → remove
-                markers.delete(key);
-            }
-        }
-        drawSkulls();
-        saveState();
+        openIconPicker(pageX, pageY, key);
     }
 
     // ── zoom ───────────────────────────────────────────────────
+    const zoomSelect = document.getElementById('zoomSelect');
+
+    // Sync the dropdown to the nearest option for the current zoom level
+    function syncZoomSelect() {
+        let best = zoomSelect.options[0];
+        let bestDist = Infinity;
+        for (const opt of zoomSelect.options) {
+            const d = Math.abs(parseFloat(opt.value) - zoom);
+            if (d < bestDist) { bestDist = d; best = opt; }
+        }
+        zoomSelect.value = best.value;
+    }
+
     function handleWheel(e) {
         e.preventDefault();
         const rect  = viewport.getBoundingClientRect();
@@ -932,6 +1241,7 @@
         panY = my - (my - panY) * (newZoom / zoom);
         zoom = newZoom;
 
+        syncZoomSelect();
         applyTransform();
         drawMinimap();
         saveState();
@@ -941,7 +1251,25 @@
     function onPointerDown(e) {
         if (e.button !== 0) return;
 
-        // Ctrl+click (or Cmd+click on Mac) → toggle skull
+        // Alt+click (Option on Mac) → add/edit text label
+        if (e.altKey) {
+            e.preventDefault();
+            const c = pageToChunk(e.clientX, e.clientY);
+            if (!c) return;
+            const key = chunkKey(c.col, c.row);
+            const existing = chunkLabels.get(key) || '';
+            const text = prompt('Enter label for chunk:', existing);
+            if (text === null) return; // cancelled
+            if (text.trim() === '') {
+                chunkLabels.delete(key);
+            } else {
+                chunkLabels.set(key, text.trim());
+            }
+            drawSkulls(); drawLabels(); saveState();
+            return;
+        }
+
+        // Ctrl+click (or Cmd+click on Mac) → open icon picker
         if (e.ctrlKey || e.metaKey) {
             e.preventDefault();
             toggleMarker(e.clientX, e.clientY);
@@ -976,14 +1304,17 @@
     }
 
     function onPointerMove(e) {
-        // tooltip
-        const c = pageToChunk(e.clientX, e.clientY);
+        // tooltip — hide when hovering over toolbar/UI elements
+        const overUI = e.target.closest('.chunkmap-toolbar, .toolbar-group, .howto-overlay, .icon-picker, #sidebar');
+        const c = !overUI ? pageToChunk(e.clientX, e.clientY) : null;
         if (c) {
             const key = chunkKey(c.col, c.row);
             hoveredKey = key;
             const lockStatus = unlocked.has(key) ? 'Unlocked' : 'Locked';
-            const markerType = markers.get(key);
-            const markerLabel = markerType ? ` [${markerType === 'redskull' ? 'Red Skull' : markerType.charAt(0).toUpperCase() + markerType.slice(1)}]` : '';
+            const markerTypes = markers.get(key) || [];
+            const typeArr = Array.isArray(markerTypes) ? markerTypes : [markerTypes];
+            const formatName = (t) => t === 'redskull' ? 'Red Skull' : t.includes('_') ? t.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : t.charAt(0).toUpperCase() + t.slice(1);
+            const markerLabel = typeArr.length > 0 ? ` [${typeArr.map(formatName).join(', ')}]` : '';
             const queueIdx = chunkQueue.indexOf(key);
             const queueLabel = queueIdx >= 0 ? ` #${queueIdx + 1}` : '';
             tooltip.style.display = 'block';
@@ -996,8 +1327,15 @@
         }
 
         if (dragging) {
-            panX = panStartX + (e.clientX - dragStartX);
-            panY = panStartY + (e.clientY - dragStartY);
+            const dx = e.clientX - dragStartX;
+            const dy = e.clientY - dragStartY;
+            // When the map is rotated, screen-space drag must be
+            // rotated into the map's local coordinate system.
+            const rot = parseFloat(perspRotate.value) * Math.PI / 180;
+            const cos = Math.cos(-rot);
+            const sin = Math.sin(-rot);
+            panX = panStartX + dx * cos - dy * sin;
+            panY = panStartY + dx * sin + dy * cos;
             applyTransform();
             drawMinimap();
         }
@@ -1131,52 +1469,46 @@
         }
     }
 
-    // ── export ─────────────────────────────────────────────────
-    function doExport(fullMap) {
-        const expCanvas = document.createElement('canvas');
+    // ── export (html2canvas — captures exactly what's on screen) ──
+    function doExport() {
+        // Temporarily hide UI elements that shouldn't be in the export
+        const hideEls = [
+            document.querySelector('.chunkmap-toolbar'),
+            tooltip,
+            minimapWrap,
+            document.getElementById('queueSidebar'),
+        ].filter(Boolean);
+        hideEls.forEach(el => el.style.visibility = 'hidden');
 
-        if (fullMap) {
-            expCanvas.width  = MAP_W;
-            expCanvas.height = MAP_H;
-            const ectx = expCanvas.getContext('2d');
-            ectx.drawImage(mapImg, 0, 0);
-            ectx.drawImage(overlay, 0, 0);
-        } else {
-            const vpRect = viewport.getBoundingClientRect();
-            const vw = vpRect.width;
-            const vh = vpRect.height;
-            expCanvas.width  = vw;
-            expCanvas.height = vh;
-            const ectx = expCanvas.getContext('2d');
-
-            ectx.save();
-            ectx.translate(panX, panY);
-            ectx.scale(zoom, zoom);
-            ectx.drawImage(mapImg, 0, 0);
-            ectx.drawImage(overlay, 0, 0);
-            ectx.restore();
-        }
-
-        expCanvas.toBlob(blob => {
-            const url = URL.createObjectURL(blob);
-            const a   = document.createElement('a');
-            a.href     = url;
-            a.download = 'chunkmap_export.png';
-            a.click();
-            URL.revokeObjectURL(url);
-        }, 'image/png');
-
-        saveOverlay.classList.remove('open');
+        html2canvas(viewport, {
+            backgroundColor: '#1a1a2e',
+            useCORS: true,
+            scale: 1,
+        }).then(canvas => {
+            hideEls.forEach(el => el.style.visibility = '');
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a   = document.createElement('a');
+                a.href     = url;
+                a.download = 'chunkmap_export.png';
+                a.click();
+                URL.revokeObjectURL(url);
+            }, 'image/png');
+        }).catch(() => {
+            hideEls.forEach(el => el.style.visibility = '');
+        });
     }
 
     // ── local-storage persistence ──────────────────────────────
     const STORAGE_KEY = 'skelspanels_chunkmap';
 
     function saveState() {
+        if (_resettingAll) return;
         try {
             const data = {
                 unlocked: [...unlocked],
                 markers: Object.fromEntries(markers),
+                labels: Object.fromEntries(chunkLabels),
                 queue: [...chunkQueue],
                 view: { panX, panY, zoom },
                 settings: {
@@ -1190,8 +1522,12 @@
                     glowSize: glowSizeInput.value,
                     glowIntensity: glowIntensityInput.value,
                     glowPower: glowPowerInput.value,
-                    glowBorder: glowBorderInput.value,
-                    glowCorners: glowCornersSelect.value,
+                    glowThickness: glowThicknessInput.value,
+                    borderToggle: borderToggle.value,
+                    borderColor: borderColorInput.value,
+                    borderWidth: borderWidthInput.value,
+                    borderCorners: borderCornersSelect.value,
+                    borderStyle: borderStyleSelect.value,
                     perspTilt: perspTilt.value,
                     perspTiltY: perspTiltY.value,
                     perspRotate: perspRotate.value,
@@ -1220,9 +1556,17 @@
                 if (data.unlocked) for (const key of data.unlocked) unlocked.add(key);
                 // Load markers (new format: object) or migrate old skulls (array)
                 if (data.markers) {
-                    for (const [key, type] of Object.entries(data.markers)) markers.set(key, type);
+                    for (const [key, val] of Object.entries(data.markers)) {
+                        // Handle old format (single string) and new format (array)
+                        markers.set(key, Array.isArray(val) ? val : [val]);
+                    }
                 } else if (data.skulls) {
-                    for (const key of data.skulls) markers.set(key, 'skull');
+                    for (const key of data.skulls) markers.set(key, ['skull']);
+                }
+                if (data.labels) {
+                    for (const [key, val] of Object.entries(data.labels)) {
+                        chunkLabels.set(key, val);
+                    }
                 }
                 if (data.view)     savedView = data.view;
                 if (data.queue) { chunkQueue.length = 0; chunkQueue.push(...data.queue); }
@@ -1230,18 +1574,39 @@
                 // Restore all toolbar settings
                 if (data.settings) {
                     const s = data.settings;
-                    if (s.darknessOpacity) darknessSelect.value = s.darknessOpacity;
+                    if (s.darknessOpacity) {
+                        let v = parseFloat(s.darknessOpacity);
+                        if (v <= 1) v = Math.round(v * 100);
+                        darknessSelect.value = v;
+                        document.getElementById('darknessLabel').textContent = v + '%';
+                    }
                     if (s.darknessColor)   darknessColorInput.value = s.darknessColor;
                     if (s.gridToggle)      gridToggle.value = s.gridToggle;
                     if (s.gridColor)       gridColorInput.value = s.gridColor;
-                    if (s.gridOpacity)     gridOpacitySelect.value = s.gridOpacity;
-                    if (s.glowToggle)      glowToggle.value = s.glowToggle;
+                    if (s.gridOpacity) {
+                        // Handle old format (decimal like "0.15") vs new (integer like "15")
+                        let v = parseFloat(s.gridOpacity);
+                        if (v <= 1) v = Math.round(v * 100);
+                        gridOpacitySelect.value = v;
+                        document.getElementById('gridOpacityLabel').textContent = v + '%';
+                    }
+                    if (s.glowToggle)      glowToggle.value = (s.glowToggle === 'on' || s.glowToggle === 'both' || s.glowToggle === 'glow') ? 'on' : 'off';
                     if (s.glowColor)       glowColorInput.value = s.glowColor;
                     if (s.glowSize)        glowSizeInput.value = s.glowSize;
                     if (s.glowIntensity)   glowIntensityInput.value = s.glowIntensity;
                     if (s.glowPower)       glowPowerInput.value = s.glowPower;
-                    if (s.glowBorder)      glowBorderInput.value = s.glowBorder;
-                    if (s.glowCorners)     glowCornersSelect.value = s.glowCorners;
+                    if (s.glowThickness)   glowThicknessInput.value = s.glowThickness;
+                    // Border (new independent controls — migrate from old combined format)
+                    if (s.borderToggle)    borderToggle.value = s.borderToggle;
+                    else if (s.glowToggle === 'both' || s.glowToggle === 'border') borderToggle.value = 'on';
+                    if (s.borderColor)     borderColorInput.value = s.borderColor;
+                    else if (s.glowColor)  borderColorInput.value = s.glowColor; // migrate
+                    if (s.borderWidth)     borderWidthInput.value = s.borderWidth;
+                    else if (s.glowBorder) borderWidthInput.value = s.glowBorder; // migrate
+                    if (s.borderCorners)   borderCornersSelect.value = s.borderCorners;
+                    else if (s.glowCorners) borderCornersSelect.value = s.glowCorners; // migrate
+                    if (s.borderStyle)     borderStyleSelect.value = s.borderStyle;
+                    else if (s.glowStyle)  borderStyleSelect.value = s.glowStyle; // migrate
                     if (s.perspTilt)       perspTilt.value = s.perspTilt;
                     if (s.perspTiltY)      perspTiltY.value = s.perspTiltY;
                     if (s.perspRotate)     perspRotate.value = s.perspRotate;
@@ -1277,6 +1642,7 @@
         minimapEl.height = mmH;
 
         loadState();
+        drawLabels();
 
         // Restore saved view or centre the map in the viewport
         if (savedView && savedView.zoom) {
@@ -1290,6 +1656,7 @@
             panY = (vpRect.height - MAP_H * zoom) / 2;
         }
 
+        syncZoomSelect();
         applyTransform();
         drawOverlay();
         drawGrid();
@@ -1304,18 +1671,57 @@
         // prevent default context menu on ctrl+click (some browsers)
         viewport.addEventListener('contextmenu', (e) => e.preventDefault());
 
+        // How-to modal
+        const howtoOverlay = document.getElementById('howtoOverlay');
+        document.getElementById('howtoBtn').addEventListener('click', () => {
+            howtoOverlay.classList.add('open');
+        });
+        document.getElementById('howtoClose').addEventListener('click', () => {
+            howtoOverlay.classList.remove('open');
+        });
+        howtoOverlay.addEventListener('click', (e) => {
+            if (e.target === howtoOverlay) howtoOverlay.classList.remove('open');
+        });
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && howtoOverlay.classList.contains('open')) {
+                howtoOverlay.classList.remove('open');
+            }
+        });
+
         gridToggle.addEventListener('change', () => { drawGrid(); saveState(); });
         gridColorInput.addEventListener('input', () => { drawGrid(); saveState(); });
-        gridOpacitySelect.addEventListener('change', () => { drawGrid(); saveState(); });
-        darknessSelect.addEventListener('change', () => { drawOverlay(); saveState(); });
+        gridOpacitySelect.addEventListener('input', () => {
+            document.getElementById('gridOpacityLabel').textContent = gridOpacitySelect.value + '%';
+            drawGrid(); saveState();
+        });
+        zoomSelect.addEventListener('change', () => {
+            const newZoom = parseFloat(zoomSelect.value);
+            const vpRect = viewport.getBoundingClientRect();
+            const cx = vpRect.width / 2;
+            const cy = vpRect.height / 2;
+            panX = cx - (cx - panX) * (newZoom / zoom);
+            panY = cy - (cy - panY) * (newZoom / zoom);
+            zoom = newZoom;
+            applyTransform();
+            drawMinimap();
+            saveState();
+        });
+        darknessSelect.addEventListener('input', () => {
+            document.getElementById('darknessLabel').textContent = darknessSelect.value + '%';
+            drawOverlay(); saveState();
+        });
         darknessColorInput.addEventListener('input', () => { drawOverlay(); drawMinimap(); saveState(); });
-        glowToggle.addEventListener('change', () => { drawOverlay(); saveState(); });
-        glowColorInput.addEventListener('input', () => { drawOverlay(); saveState(); });
-        glowSizeInput.addEventListener('input', () => { drawOverlay(); saveState(); });
-        glowIntensityInput.addEventListener('input', () => { drawOverlay(); saveState(); });
-        glowPowerInput.addEventListener('input', () => { drawOverlay(); saveState(); });
-        glowBorderInput.addEventListener('input', () => { drawOverlay(); saveState(); });
-        glowCornersSelect.addEventListener('change', () => { drawOverlay(); saveState(); });
+        glowToggle.addEventListener('change', () => { invalidateGlowCache(); drawOverlay(); saveState(); });
+        glowColorInput.addEventListener('input', () => { invalidateGlowCache(); drawOverlay(); saveState(); });
+        glowSizeInput.addEventListener('input', () => { invalidateGlowCache(); drawOverlay(); saveState(); });
+        glowIntensityInput.addEventListener('input', () => { invalidateGlowCache(); drawOverlay(); saveState(); });
+        glowPowerInput.addEventListener('input', () => { invalidateGlowCache(); drawOverlay(); saveState(); });
+        glowThicknessInput.addEventListener('input', () => { invalidateGlowCache(); drawOverlay(); saveState(); });
+        borderToggle.addEventListener('change', () => { invalidateGlowCache(); drawOverlay(); saveState(); });
+        borderColorInput.addEventListener('input', () => { invalidateGlowCache(); drawOverlay(); saveState(); });
+        borderWidthInput.addEventListener('change', () => { invalidateGlowCache(); drawOverlay(); saveState(); });
+        borderCornersSelect.addEventListener('change', () => { invalidateGlowCache(); drawOverlay(); saveState(); });
+        borderStyleSelect.addEventListener('change', () => { invalidateGlowCache(); drawOverlay(); saveState(); });
         skullSizeSelect.addEventListener('change', () => { drawOverlay(); saveState(); });
         skullPosSelect.addEventListener('change', () => { drawSkulls(); saveState(); });
         animStyleSelect.addEventListener('change', () => { saveState(); });
@@ -1325,6 +1731,48 @@
         for (const el of perspControls) {
             el.addEventListener('input', () => { applyTransform(); saveState(); });
         }
+
+        // Reset glow to defaults
+        document.getElementById('resetGlowBtn').addEventListener('click', () => {
+            glowToggle.value = 'off';
+            glowColorInput.value = '#00ff00';
+            glowSizeInput.value = '85';
+            glowIntensityInput.value = '90';
+            glowPowerInput.value = '3';
+            glowThicknessInput.value = '6';
+            invalidateGlowCache();
+            drawOverlay();
+            saveState();
+        });
+
+        // Reset border to defaults
+        document.getElementById('resetBorderBtn').addEventListener('click', () => {
+            borderToggle.value = 'off';
+            borderColorInput.value = '#00ff00';
+            borderWidthInput.value = '26';
+            borderCornersSelect.value = 'square';
+            borderStyleSelect.value = 'solid';
+            invalidateGlowCache();
+            drawOverlay();
+            saveState();
+        });
+
+        // Reset transforms to defaults
+        document.getElementById('resetTransformBtn').addEventListener('click', () => {
+            perspTilt.value = '0';
+            perspTiltY.value = '0';
+            perspRotate.value = '0';
+            applyTransform();
+            saveState();
+        });
+
+        // Reset All — wipe localStorage for this panel and reload
+        document.getElementById('resetAllBtn').addEventListener('click', () => {
+            if (!confirm('Reset everything to defaults? This will clear all unlocked chunks, markers, queue, and settings. This cannot be undone.')) return;
+            _resettingAll = true;
+            localStorage.removeItem(STORAGE_KEY);
+            location.reload();
+        });
 
         clearBtn.addEventListener('click', () => {
             if (!confirm('Lock all chunks? This will re-darken everything.')) return;
@@ -1343,10 +1791,40 @@
             saveState();
         });
 
-        saveBtn.addEventListener('click', () => saveOverlay.classList.add('open'));
-        cancelExport.addEventListener('click', () => saveOverlay.classList.remove('open'));
-        exportFull.addEventListener('click', () => doExport(true));
-        exportView.addEventListener('click', () => doExport(false));
+        saveBtn.addEventListener('click', () => doExport());
+
+        // Minimap click/drag to navigate
+        let minimapDragging = false;
+        function minimapNavigate(e) {
+            const rect = minimapEl.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            const sx = minimapEl.width / MAP_W;
+            const sy = minimapEl.height / MAP_H;
+            // Convert minimap coords to map image coords
+            const imgX = mx / sx;
+            const imgY = my / sy;
+            // Center that point in the viewport
+            const vpRect = viewport.getBoundingClientRect();
+            panX = vpRect.width / 2 - imgX * zoom;
+            panY = vpRect.height / 2 - imgY * zoom;
+            applyTransform();
+            drawMinimap();
+            saveState();
+        }
+        minimapWrap.addEventListener('pointerdown', (e) => {
+            e.stopPropagation();
+            minimapDragging = true;
+            minimapWrap.setPointerCapture(e.pointerId);
+            minimapNavigate(e);
+        });
+        minimapWrap.addEventListener('pointermove', (e) => {
+            if (minimapDragging) minimapNavigate(e);
+        });
+        minimapWrap.addEventListener('pointerup', (e) => {
+            minimapDragging = false;
+            minimapWrap.releasePointerCapture(e.pointerId);
+        });
 
         // touch: two-finger pan handled natively; single long-press could toggle
         viewport.addEventListener('touchstart', (e) => {
@@ -1371,6 +1849,9 @@
 
         queueToggleBtn.addEventListener('click', () => {
             queueSidebar.classList.toggle('collapsed');
+        });
+        document.getElementById('queueCollapsedLabel').addEventListener('click', () => {
+            queueSidebar.classList.remove('collapsed');
         });
         queuePlayBtn.addEventListener('click', startPlayback);
         queueLoopBtn.addEventListener('click', () => {
