@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chunk Map – SkelsPanels</title>
+    <link rel="icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/chunkmap/chunkmap.css">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-M5J3QJKJPC"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-M5J3QJKJPC');
+    </script>
+</head>
+<body class="chunkmap-body">
+
+    <!-- Toolbar -->
+    <div class="chunkmap-toolbar">
+        <a href="/" class="back-link">< Back to Home</a>
+        <h1>Chunk Map</h1>
+
+        <div class="toolbar-group">
+            <label>Darkness:</label>
+            <input type="range" id="darknessOpacity" min="0" max="100" value="50" class="toolbar-range">
+            <span id="darknessLabel">50%</span>
+            <label>Tint:</label>
+            <input type="color" id="darknessColor" value="#000000">
+        </div>
+
+        <div class="toolbar-group">
+            <label>Grid:</label>
+            <select id="gridToggle">
+                <option value="off">Off</option>
+                <option value="on" selected>On</option>
+            </select>
+            <label>Grid Color:</label>
+            <input type="color" id="gridColor" value="#ffffff">
+            <label>Grid Opacity:</label>
+            <input type="range" id="gridOpacity" min="0" max="100" value="15" class="toolbar-range">
+            <span id="gridOpacityLabel">15%</span>
+            <label>Zoom:</label>
+            <select id="zoomSelect">
+                <option value="0.25">25%</option>
+                <option value="0.5">50%</option>
+                <option value="0.75">75%</option>
+                <option value="1" selected>100%</option>
+                <option value="1.5">150%</option>
+                <option value="2">200%</option>
+                <option value="3">300%</option>
+                <option value="4">400%</option>
+            </select>
+            <button class="toolbar-btn" id="howtoBtn" title="Controls & hotkeys">Tutorial</button>
+        </div>
+
+        <!-- How-to modal -->
+        <div class="howto-overlay" id="howtoOverlay">
+            <div class="howto-modal">
+                <div class="howto-header">
+                    <h2>Controls &amp; Hotkeys</h2>
+                    <button class="howto-close" id="howtoClose">&times;</button>
+                </div>
+                <div class="howto-body">
+                    <div class="howto-section">
+                        <h3>Navigation</h3>
+                        <div class="howto-row"><kbd>Drag</kbd><span>Pan the map</span></div>
+                        <div class="howto-row"><kbd>Scroll</kbd><span>Zoom in / out</span></div>
+                        <div class="howto-row"><kbd>Minimap click</kbd><span>Jump to location</span></div>
+                    </div>
+                    <div class="howto-section">
+                        <h3>Chunks</h3>
+                        <div class="howto-row"><kbd>Shift + Click</kbd><span>Unlock / lock a chunk</span></div>
+                        <div class="howto-row"><kbd>Shift + Drag</kbd><span>Paint unlock / lock across chunks</span></div>
+                        <div class="howto-row"><kbd>G</kbd><span>Toggle grid overlay</span></div>
+                    </div>
+                    <div class="howto-section">
+                        <h3>Markers</h3>
+                        <div class="howto-row"><kbd>Ctrl + Click</kbd><span>Open icon picker on a chunk</span></div>
+                        <div class="howto-row"><kbd>Alt / Option + Click</kbd><span>Add or edit a text label on a chunk</span></div>
+                    </div>
+                    <div class="howto-section">
+                        <h3>Animator</h3>
+                        <div class="howto-row"><kbd>1</kbd><span>Add hovered chunk to queue</span></div>
+                        <div class="howto-row"><kbd>Del / Backspace</kbd><span>Remove hovered chunk from queue</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="toolbar-group">
+            <label>Glow:</label>
+            <select id="glowToggle">
+                <option value="off" selected>Off</option>
+                <option value="on">On</option>
+            </select>
+            <input type="color" id="glowColor" value="#00ff00">
+            <label>Size:</label>
+            <input type="range" id="glowSize" min="0" max="200" value="85" class="toolbar-range">
+            <label>Intensity:</label>
+            <input type="range" id="glowIntensity" min="0" max="100" value="90" class="toolbar-range">
+            <label>Power:</label>
+            <input type="range" id="glowPower" min="1" max="8" value="3" class="toolbar-range">
+            <label>Thickness:</label>
+            <input type="range" id="glowThickness" min="1" max="20" value="6" class="toolbar-range">
+            <button class="toolbar-btn" id="resetGlowBtn" title="Reset glow to defaults">Reset</button>
+        </div>
+
+        <div class="toolbar-group">
+            <label>Border:</label>
+            <select id="borderToggle">
+                <option value="off" selected>Off</option>
+                <option value="on">On</option>
+            </select>
+            <input type="color" id="borderColor" value="#00ff00">
+            <label>Width:</label>
+            <select id="borderWidth">
+                <option value="0">None</option>
+                <option value="26" selected>Very Thin</option>
+                <option value="40">Thin</option>
+                <option value="54">Medium</option>
+                <option value="70">Thick</option>
+                <option value="84">Thicc</option>
+                <option value="100">Thiccc</option>
+                <option value="132">Thock</option>
+            </select>
+            <label>Corners:</label>
+            <select id="borderCorners">
+                <option value="square" selected>Square</option>
+                <option value="round">Round</option>
+            </select>
+            <label>Style:</label>
+            <select id="borderStyle">
+                <option value="solid" selected>Solid</option>
+                <option value="dashed">Dashed</option>
+                <option value="dotted">Dotted</option>
+                <option value="dashdot">Dash-Dot</option>
+                <option value="short">Short Dashes</option>
+                <option value="long">Long Dashes</option>
+            </select>
+            <button class="toolbar-btn" id="resetBorderBtn" title="Reset border to defaults">Reset</button>
+        </div>
+
+        <div class="toolbar-group toolbar-group-perspective">
+            <label>Tilt X:</label>
+            <input type="range" id="perspTilt" min="-60" max="60" value="0" class="toolbar-range">
+            <label>Tilt Y:</label>
+            <input type="range" id="perspTiltY" min="-60" max="60" value="0" class="toolbar-range">
+            <label>Rotate:</label>
+            <input type="range" id="perspRotate" min="-45" max="45" value="0" class="toolbar-range">
+            <button class="toolbar-btn" id="resetTransformBtn" title="Reset transforms to defaults">Reset</button>
+        </div>
+
+        <div class="toolbar-group">
+            <label>Icon:</label>
+            <select id="skullSize">
+                <option value="25">Small</option>
+                <option value="50" selected>Medium</option>
+                <option value="100">Large</option>
+                <option value="150">Very Large</option>
+            </select>
+            <label>Position:</label>
+            <select id="skullPosition">
+                <option value="top-right" selected>Top Right</option>
+                <option value="top-left">Top Left</option>
+                <option value="bottom-right">Bottom Right</option>
+                <option value="bottom-left">Bottom Left</option>
+                <option value="center">Center</option>
+            </select>
+        </div>
+
+        <button class="toolbar-btn" id="clearBtn">Lock All</button>
+        <button class="toolbar-btn" id="unlockAllBtn">Unlock All</button>
+        <button class="toolbar-btn" id="saveBtn">Export Image</button>
+        <button class="toolbar-btn" id="resetAllBtn" style="color:#ff4444;" title="Reset everything to defaults">Reset All</button>
+
+        <span class="chunk-counter" id="chunkCounter">0 / 0 chunks unlocked</span>
+    </div>
+
+    <!-- Map viewport -->
+    <div class="chunkmap-viewport" id="viewport">
+        <div class="chunkmap-canvas-wrap" id="canvasWrap">
+            <img id="mapImage" src="/chunkmap/osrs_world_map.png" draggable="false">
+            <canvas id="chunkOverlay"></canvas>
+            <canvas id="gridOverlay"></canvas>
+            <canvas id="skullOverlay"></canvas>
+            <div id="labelLayer"></div>
+        </div>
+
+        <!-- Queue sidebar (inside viewport so it's positioned relative to map area) -->
+        <div class="queue-sidebar collapsed" id="queueSidebar">
+            <div class="queue-collapsed-label" id="queueCollapsedLabel">Animator</div>
+            <div class="queue-header">
+                <h3>Animator</h3>
+                <button class="toolbar-btn queue-toggle-btn" id="queueToggleBtn" title="Toggle sidebar">◀</button>
+            </div>
+            <div class="queue-hint">
+                Hover a chunk and press <kbd>1</kbd> to queue it.<br>
+                Press <kbd>Del</kbd> to remove a hovered chunk.<br>
+                Hit <strong>Play</strong> to animate unlocks in order.
+            </div>
+            <div class="queue-controls">
+                <label>Delay:</label>
+                <input type="range" id="queueDelay" min="50" max="3000" value="500" step="50" class="toolbar-range" style="width:90px;">
+                <span id="queueDelayLabel">500ms</span>
+                <label>Effect:</label>
+                <select id="animStyle">
+                    <option value="grow" selected>Grow</option>
+                    <option value="fade">Fade</option>
+                    <option value="wipe">Wipe Down</option>
+                    <option value="wipeup">Wipe Up</option>
+                    <option value="wipeleft">Wipe Left</option>
+                    <option value="wiperight">Wipe Right</option>
+                    <option value="radar">Radar Sweep</option>
+                    <option value="diamond">Diamond</option>
+                    <option value="pixelate">Pixelate</option>
+                    <option value="shutter">Shutter</option>
+                </select>
+            </div>
+            <div class="queue-controls">
+                <button class="toolbar-btn" id="queuePlayBtn">▶ Play</button>
+                <button class="toolbar-btn" id="queueResetBtn" title="Lock all queued chunks so they're ready to animate">⏮ Reset</button>
+                <button class="toolbar-btn" id="queueLoopBtn">🔁 Loop</button>
+                <button class="toolbar-btn" id="queueClearBtn">Clear</button>
+            </div>
+            <ol class="queue-list" id="queueList"></ol>
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div class="chunk-tooltip" id="tooltip"></div>
+
+    <!-- Minimap -->
+    <div class="chunkmap-minimap" id="minimapWrap">
+        <canvas id="minimap"></canvas>
+        <div class="minimap-viewport" id="minimapViewport"></div>
+    </div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="/chunkmap/chunkmap.js"></script>
+</body>
+</html>
