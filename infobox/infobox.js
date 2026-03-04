@@ -147,17 +147,31 @@ function updatePanel() {
     const borderDepth = 6 * scale;
 
     const panel = document.getElementById('panel');
+    const isTransparent = document.getElementById('bgColorPreset').value === 'transparent';
+
     panel.style.width = `${width}px`;
     panel.style.height = `${height}px`;
 
     // Update content size and position
     const content = panel.querySelector('.content');
+    const shadowOverlay = panel.querySelector('.shadow-overlay');
+
     content.style.top = `${borderDepth}px`;
     content.style.left = `${borderDepth}px`;
     content.style.right = `${borderDepth}px`;
     content.style.bottom = `${borderDepth}px`;
     content.style.padding = `${borderDepth}px`;
-    content.style.backgroundColor = bgColor;
+
+    if (isTransparent) {
+        // Transparent mode: remove background, shadow, and noise but keep the frame
+        content.style.backgroundColor = 'transparent';
+        shadowOverlay.style.display = 'none';
+        content.classList.add('no-noise');
+    } else {
+        content.style.backgroundColor = bgColor;
+        shadowOverlay.style.display = '';
+        content.classList.remove('no-noise');
+    }
 
     // Update text properties for both text elements
     const primaryText = document.getElementById('primaryText').value;
@@ -417,10 +431,13 @@ async function savePanelAsImage() {
     const captureWidth = Math.ceil(rect.width);
     const captureHeight = Math.ceil(rect.height);
 
+    const isTransparentExport = document.getElementById('bgColorPreset').value === 'transparent';
+
     domtoimage.toPng(clonedNode, {
         cacheBust: true,
         width: captureWidth,
         height: captureHeight,
+        bgcolor: isTransparentExport ? null : undefined,
         style: {
             'image-rendering': 'pixelated',
         }
@@ -456,10 +473,13 @@ document.head.appendChild(style);
 function handleBgColorPreset() {
     const preset = document.getElementById('bgColorPreset');
     const colorInput = document.getElementById('bgColor');
-    
+
     if (preset.value === 'custom') {
         colorInput.style.display = 'inline-block';
         colorInput.click(); // Open the color picker
+    } else if (preset.value === 'transparent') {
+        colorInput.style.display = 'none';
+        updatePanel(); // Update the panel with transparent background
     } else {
         colorInput.style.display = 'none';
         colorInput.value = preset.value;
