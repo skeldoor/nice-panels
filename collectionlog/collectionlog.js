@@ -334,6 +334,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 ctx.restore();
 
+                // ── Magenta fringe cleanup ────────────────────────────
+                //
+                // Problem:
+                //   GIF transparency is binary — a pixel is either fully
+                //   transparent or fully opaque. We fill each frame with
+                //   #FF00FF (magenta) and tell the GIF encoder to treat
+                //   that exact colour as transparent.
+                //
+                //   However, domtoimage captures the panel with anti-aliased
+                //   edges (semi-transparent pixels). When those are composited
+                //   onto the magenta fill, they produce blended colours that
+                //   are *close* to magenta but not exact — e.g. #7a0578,
+                //   #b368b1. The GIF encoder doesn't recognise these as the
+                //   transparency key, so they render as a visible pinkish
+                //   fringe. This is most noticeable during the early scaleY
+                //   frames when the panel is just a thin horizontal sliver.
+                //
+                // Fix:
+                //   After compositing all layers but before handing the frame
+                //   to the GIF encoder, scan every pixel. Any pixel where
+                //   both R and B significantly exceed G is "magenta-ish" and
+                //   gets snapped to exact #FF00FF.
+                //
+                // Why the condition works:
+                //   magentaScore = (R - G) + (B - G)
+                //   This measures how much red and blue each dominate green,
+                //   which is the defining characteristic of magenta hues.
+                //
+                //   - Pure magenta #FF00FF  → (255-0)+(255-0)   = 510  ✓
+                //   - Blended     #7a0578   → (122-5)+(120-5)   = 232  ✓
+                //   - Blended     #b368b1   → (179-104)+(177-104)= 148  ✓
+                //   - Orange text #ff981f   → fails r>g but B<G         ✗ safe
+                //   - White text  #ffffff   → fails r>g (equal)         ✗ safe
+                //   - Brown/tan borders     → G ≥ B always              ✗ safe
+                //
+                //   Threshold of 80 comfortably separates magenta bleed
+                //   from any legitimate OSRS panel colour (browns, oranges,
+                //   whites, yellows — none of which have B far above G).
+                //   If new panel colours are added that are purple-ish,
+                //   this threshold may need to be raised.
+                // ──────────────────────────────────────────────────────────
+                const imageData = ctx.getImageData(0, 0, imgW, imgH);
+                const px = imageData.data;
+                for (let p = 0; p < px.length; p += 4) {
+                    const r = px[p], g = px[p + 1], b = px[p + 2];
+                    const magentaScore = (r - g) + (b - g);
+                    if (r > g && b > g && magentaScore > 80) {
+                        px[p]     = 0xFF; // R
+                        px[p + 1] = 0x00; // G
+                        px[p + 2] = 0xFF; // B
+                    }
+                }
+                ctx.putImageData(imageData, 0, 0);
+
                 gif.addFrame(ctx, { copy: true, delay: FRAME_DELAY });
             }
 

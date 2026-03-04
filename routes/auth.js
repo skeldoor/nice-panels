@@ -14,7 +14,70 @@ const {
     isInGracePeriod,
     getGraceTimeRemaining,
     parseConfig,
+    setPatreonTokens,
+    getPatreonTokens,
+    updateLastTierCheck,
+    clearPatreonTokens,
 } = require('../lib/redis');
+
+// Revalidation intervals — how often we re-check Patreon for tier changes
+const REVALIDATION_MS_NO_TIER = 2 * 60 * 1000;   // 2 minutes for no-tier users
+const REVALIDATION_MS_HAS_TIER = 30 * 60 * 1000;  // 30 minutes for users with a tier
+
+/**
+ * Handle tier change detection and Redis config updates.
+ * Reused by both the OAuth callback (initial login) and background revalidation.
+ * Returns the new tier for convenience.
+ */
+async function handleTierChange(patreonId, userName, newTier) {
+    try {
+        const rawConfig = await getUserConfig(patreonId);
+        const existingConfig = parseConfig(rawConfig);
+
+        if (!newTier) {
+            // User cancelled / no active subscription — revoke immediately
+            await clearUserConfig(patreonId);
+        } else if (existingConfig && existingConfig.tier && existingConfig.tier !== newTier) {
+            // Tier changed (upgrade or downgrade) — reset config, force re-setup
+            await setUserConfig(patreonId, {
+                name: userName,
+                tier: newTier,
+                selectedPanels: [],
+                lockedAt: null,
+                configured: false,
+                lastSeenPatch: existingConfig.lastSeenPatch || null,
+            });
+        } else if (!existingConfig && newTier) {
+            // New user with a tier but no config yet — create placeholder
+            await setUserConfig(patreonId, {
+                name: userName,
+                tier: newTier,
+                selectedPanels: [],
+                lockedAt: null,
+                configured: false,
+            });
+        } else if (existingConfig && !existingConfig.tier && newTier) {
+            // Had no tier before, now has one — reset config but preserve lastSeenPatch
+            await setUserConfig(patreonId, {
+                name: userName,
+                tier: newTier,
+                selectedPanels: [],
+                lockedAt: null,
+                configured: false,
+                lastSeenPatch: existingConfig.lastSeenPatch || null,
+            });
+        } else if (existingConfig && newTier) {
+            // Tier unchanged — just update the name in case it changed on Patreon
+            await setUserConfig(patreonId, {
+                ...existingConfig,
+                name: userName,
+            });
+        }
+    } catch (redisErr) {
+        console.error('Redis tier-change handling failed:', redisErr);
+    }
+    return newTier;
+}
 
 /**
  * GET /api/auth/login
@@ -58,55 +121,15 @@ router.get('/callback', async (req, res) => {
         const token = createToken(jwtPayload);
         setTokenCookie(res, token);
 
-        // --- Tier change detection ---
+        // Store Patreon tokens in Redis for background tier revalidation
         try {
-            const rawConfig = await getUserConfig(user.id);
-            const existingConfig = parseConfig(rawConfig);
-
-            if (!tier) {
-                // User cancelled / no active subscription — revoke immediately
-                await clearUserConfig(user.id);
-            } else if (existingConfig && existingConfig.tier && existingConfig.tier !== tier) {
-                // Tier changed (upgrade or downgrade) — reset config, force re-setup
-                await setUserConfig(user.id, {
-                    name: user.name,
-                    tier: tier,
-                    selectedPanels: [],
-                    lockedAt: null,
-                    configured: false,
-                    lastSeenPatch: existingConfig.lastSeenPatch || null,
-                });
-            } else if (!existingConfig && tier) {
-                // New user with a tier but no config yet — create placeholder
-                await setUserConfig(user.id, {
-                    name: user.name,
-                    tier: tier,
-                    selectedPanels: [],
-                    lockedAt: null,
-                    configured: false,
-                });
-            } else if (existingConfig && !existingConfig.tier && tier) {
-                // Had no tier before, now has one — reset config but preserve lastSeenPatch
-                await setUserConfig(user.id, {
-                    name: user.name,
-                    tier: tier,
-                    selectedPanels: [],
-                    lockedAt: null,
-                    configured: false,
-                    lastSeenPatch: existingConfig.lastSeenPatch || null,
-                });
-            } else if (existingConfig && tier) {
-                // Tier unchanged — just update the name in case it changed on Patreon
-                await setUserConfig(user.id, {
-                    ...existingConfig,
-                    name: user.name,
-                });
-            }
-            // If tier is the same, leave config untouched
-        } catch (redisErr) {
-            // Don't block login if Redis fails — just log it
-            console.error('Redis tier-change check failed:', redisErr);
+            await setPatreonTokens(user.id, accessToken, tokenData.refresh_token);
+        } catch (tokenErr) {
+            console.error('Failed to store Patreon tokens:', tokenErr);
         }
+
+        // Handle tier change detection (reuses shared logic)
+        await handleTierChange(user.id, user.name, tier);
 
         // Redirect to homepage
         res.redirect('/');
@@ -120,7 +143,19 @@ router.get('/callback', async (req, res) => {
  * GET /api/auth/logout
  * Clears the auth cookie and redirects to homepage.
  */
-router.get('/logout', (req, res) => {
+router.get('/logout', async (req, res) => {
+    // Clear stored Patreon tokens from Redis
+    const token = getTokenFromRequest(req);
+    if (token) {
+        const decoded = verifyToken(token);
+        if (decoded?.patreonId) {
+            try {
+                await clearPatreonTokens(decoded.patreonId);
+            } catch (err) {
+                console.error('Failed to clear Patreon tokens on logout:', err);
+            }
+        }
+    }
     clearTokenCookie(res);
     res.redirect('/');
 });
@@ -173,6 +208,86 @@ router.get('/user', async (req, res) => {
     const LEGACY_TIER_MAP = tierConfig.legacyTierMap || {};
     if (decoded.tier && !tierConfig.tierOrder.includes(decoded.tier)) {
         decoded.tier = LEGACY_TIER_MAP[decoded.tier] || null;
+    }
+
+    // --- Background tier revalidation ---
+    // Check Patreon for tier changes on a schedule:
+    //   No tier / free: every 2 minutes (they likely just upgraded)
+    //   Has a tier: every 30 minutes (less urgent)
+    try {
+        const storedTokens = await getPatreonTokens(decoded.patreonId);
+        if (storedTokens) {
+            const interval = decoded.tier ? REVALIDATION_MS_HAS_TIER : REVALIDATION_MS_NO_TIER;
+            const elapsed = Date.now() - (storedTokens.lastTierCheck || 0);
+
+            if (elapsed >= interval) {
+                let accessToken = storedTokens.accessToken;
+
+                // Try fetching current tier from Patreon
+                try {
+                    const { user: patreonUser, tier: freshTier } = await patreon.getPatronInfo(accessToken);
+
+                    // If tier actually changed, update everything
+                    if (freshTier !== decoded.tier) {
+                        await handleTierChange(decoded.patreonId, patreonUser.name, freshTier);
+
+                        // Reissue the JWT with the updated tier
+                        const newPayload = {
+                            patreonId: decoded.patreonId,
+                            name: patreonUser.name,
+                            email: patreonUser.email || decoded.email,
+                            imageUrl: patreonUser.imageUrl || decoded.imageUrl,
+                            tier: freshTier,
+                        };
+                        const newToken = createToken(newPayload);
+                        setTokenCookie(res, newToken);
+
+                        // Update decoded so the rest of this response uses the new tier
+                        decoded.tier = freshTier;
+                        decoded.name = patreonUser.name;
+                    }
+
+                    await updateLastTierCheck(decoded.patreonId);
+                } catch (patreonErr) {
+                    // If access token expired, try refreshing it
+                    if (patreonErr.response?.status === 401 && storedTokens.refreshToken) {
+                        try {
+                            const refreshed = await patreon.refreshAccessToken(storedTokens.refreshToken);
+                            await setPatreonTokens(decoded.patreonId, refreshed.access_token, refreshed.refresh_token);
+
+                            // Retry with new token
+                            const { user: patreonUser, tier: freshTier } = await patreon.getPatronInfo(refreshed.access_token);
+
+                            if (freshTier !== decoded.tier) {
+                                await handleTierChange(decoded.patreonId, patreonUser.name, freshTier);
+
+                                const newPayload = {
+                                    patreonId: decoded.patreonId,
+                                    name: patreonUser.name,
+                                    email: patreonUser.email || decoded.email,
+                                    imageUrl: patreonUser.imageUrl || decoded.imageUrl,
+                                    tier: freshTier,
+                                };
+                                const newToken = createToken(newPayload);
+                                setTokenCookie(res, newToken);
+
+                                decoded.tier = freshTier;
+                                decoded.name = patreonUser.name;
+                            }
+
+                            await updateLastTierCheck(decoded.patreonId);
+                        } catch (refreshErr) {
+                            console.error('Patreon token refresh failed:', refreshErr.message);
+                        }
+                    } else {
+                        console.error('Patreon revalidation failed:', patreonErr.message);
+                    }
+                }
+            }
+        }
+    } catch (revalErr) {
+        // Never block the /user endpoint if revalidation fails
+        console.error('Tier revalidation error:', revalErr);
     }
 
     // Fetch panel config from Redis
